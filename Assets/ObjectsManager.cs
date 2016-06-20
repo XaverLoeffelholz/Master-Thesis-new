@@ -5,6 +5,7 @@ public class ObjectsManager : Singleton<ObjectsManager>
 {
     // restructure, create List of Objects
 
+    public Transform DistanceVisualisation;
 
     // Use this for initialization
     void Start () {

@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class BiManualOperations : MonoBehaviour {
+public class BiManualOperations : Singleton<BiManualOperations> {
 
     public Selection controller1;
     public Selection controller2;
@@ -56,5 +56,10 @@ public class BiManualOperations : MonoBehaviour {
         Vector3 newScalevector = initialscale * newScale;
         controller1.currentFocus.transform.localScale = RasterManager.Instance.Raster(newScalevector);
 
+    }
+
+    public bool IsScalingStarted()
+    {
+        return scalingStarted;
     }
 }

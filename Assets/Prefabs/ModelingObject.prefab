@@ -2300,7 +2300,7 @@ MeshFilter:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 146008}
-  m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+  m_Mesh: {fileID: 4300000, guid: 0fe7a8892778b494f805afd29eaa480a, type: 3}
 --- !u!33 &3374078
 MeshFilter:
   m_ObjectHideFlags: 1
@@ -2546,7 +2546,7 @@ MeshCollider:
   m_Enabled: 1
   serializedVersion: 2
   m_Convex: 1
-  m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+  m_Mesh: {fileID: 4300000, guid: 0fe7a8892778b494f805afd29eaa480a, type: 3}
 --- !u!65 &6503942
 BoxCollider:
   m_ObjectHideFlags: 1
@@ -2986,6 +2986,7 @@ MonoBehaviour:
   NormalPrefab: {fileID: 171164, guid: 16c6017e52ecc48e2868f9563974ea10, type: 2}
   Vertex2Prefab: {fileID: 181918, guid: 82b02794e4ac64561a32d3a962e632c1, type: 2}
   FacePrefab: {fileID: 152184, guid: 0b383287961d53245afa9362bdc83570, type: 2}
+  DistanceVisualPrefab: {fileID: 109844, guid: 5a0eb25196fdfb642884382fa7e33171, type: 2}
 --- !u!1001 &100100000
 Prefab:
   m_ObjectHideFlags: 1

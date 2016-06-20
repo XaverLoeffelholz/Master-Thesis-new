@@ -57,7 +57,7 @@ public class StageController : MonoBehaviour {
                 float amountY = device.GetAxis().y - lastY;
                 lastY = device.GetAxis().y;
 
-                Vector3 scaleStage = stage.localScale;
+                Vector3 scaleStage = stage.parent.localScale;
                 scaleStage = scaleStage + (scaleStage * amountY * 2);
 
                 Vector3 libraryStage = library.localScale;
@@ -65,7 +65,7 @@ public class StageController : MonoBehaviour {
 
                 if (scaleStage.x >= 0.2f && scaleStage.x <= 3f)
                 {
-                    stage.localScale = scaleStage; 
+                    stage.parent.localScale = scaleStage; 
                     library.localScale = libraryStage; 
                 }
 

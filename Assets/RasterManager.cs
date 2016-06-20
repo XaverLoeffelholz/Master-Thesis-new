@@ -3,7 +3,7 @@ using System.Collections;
 
 public class RasterManager : Singleton<RasterManager> {
 
-    public float rasterLevel = 0.001f;
+    public float rasterLevel;
 
     public float max_X;
     public float min_X;
@@ -25,11 +25,17 @@ public class RasterManager : Singleton<RasterManager> {
 	
 	}
 
+    public int getNumberOfGridUnits(float value1, float value2)
+    {
+        int count = (int) (Mathf.Round(value1 / rasterLevel) - Mathf.Round(value2 / rasterLevel));
+        return count;
+    }
+
     public float Raster(float input)
     {
-        double count = System.Math.Round((input/rasterLevel), 1);
-        float rasteredFloat = (float) (count * rasterLevel);
-        return input;
+        float count = Mathf.Round(input/rasterLevel);
+        float rasteredFloat = count * rasterLevel;
+        return rasteredFloat;
     }
 
     // 
@@ -72,6 +78,6 @@ public class RasterManager : Singleton<RasterManager> {
 
         */
 
-        return input;
+        return rasteredVector;
     }
 }

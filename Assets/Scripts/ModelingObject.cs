@@ -46,32 +46,144 @@ public class ModelingObject : MonoBehaviour
     private bool moving = false;
     bool focused = false;
 
+    private Vector3 PositionOnMovementStart;
+
+    public GameObject DistanceVisualPrefab;
+    private Transform DistanceVisualisation;
+
+    private Vector3 lastPositionX;
+    private Vector3 lastPositionY;
+    private bool firstTimeMoving = true;
 
     // Use this for initialization
     void Start()
     {
         handles.gameObject.transform.GetChild(0).gameObject.SetActive(false);
+        DistanceVisualisation = ObjectsManager.Instance.DistanceVisualisation;
     }
 
     // Update is called once per frame
     void FixedUpdate()
     {
-        if (moving)
+        if (moving && !BiManualOperations.Instance.IsScalingStarted())
         {
+            // destroz previous distance vis
+            foreach (Transform visualObject in DistanceVisualisation)
+            {
+                Destroy(visualObject.gameObject);
+            }
+
             if (!transform.parent.CompareTag("Objects"))
             {
                 transform.SetParent(ObjectsManager.Instance.transform);
                 library.Instance.ClearLibrary();
+                transform.localEulerAngles = new Vector3(0f, 0f, 0f);
             }
-            
-            Vector3 newPosition = this.transform.position + (controllerForMovement.pointOfCollisionGO.transform.position - lastPositionController);
 
-            this.transform.position = Vector3.Lerp(this.transform.position, newPosition, Time.deltaTime * 60f);
+            Vector3 newPositionCollider = transform.TransformPoint(RasterManager.Instance.Raster(transform.InverseTransformPoint(controllerForMovement.pointOfCollisionGO.transform.position)));
 
-            lastPositionController = controllerForMovement.pointOfCollisionGO.transform.position;
 
-            // rasterize local Position
+            Vector3 newPositionWorld = this.transform.position + (newPositionCollider - lastPositionController);
+            this.transform.position = newPositionWorld;
             this.transform.localPosition = RasterManager.Instance.Raster(this.transform.localPosition);
+
+            lastPositionController = newPositionCollider;
+
+            lastPositionX = PositionOnMovementStart;
+            lastPositionY = PositionOnMovementStart;
+
+            if (!firstTimeMoving)
+            {
+                // show amount of movement on x
+                if (bottomFace.center.coordinates.x != transform.InverseTransformPoint(PositionOnMovementStart).x)
+                {
+                    // maybe check local positon
+                    int count = RasterManager.Instance.getNumberOfGridUnits(bottomFace.center.coordinates.x, transform.InverseTransformPoint(PositionOnMovementStart).x);
+
+                    for (int i = 0; i <= Mathf.Abs(count); i++)
+                    {
+                        GameObject DistanceVisualX = Instantiate(DistanceVisualPrefab);
+                        DistanceVisualX.transform.SetParent(DistanceVisualisation);
+                        DistanceVisualX.transform.localEulerAngles = new Vector3(0f, 0f, 0f);
+                        DistanceVisualX.transform.localScale = new Vector3(1f, 1f, 1f);
+                        DistanceVisualX.transform.position = PositionOnMovementStart;
+
+                        if (bottomFace.center.coordinates.x > transform.InverseTransformPoint(PositionOnMovementStart).x)
+                        {
+                            DistanceVisualX.transform.localPosition += new Vector3(i * RasterManager.Instance.rasterLevel, 0f, 0f);
+                        }
+                        else
+                        {
+                            DistanceVisualX.transform.localPosition += new Vector3(i * RasterManager.Instance.rasterLevel * (-1.0f), 0f, 0f);
+                        }
+
+                        lastPositionX = DistanceVisualX.transform.position;
+                    }
+
+                }
+
+
+
+                // show amount of movement on y
+                if (bottomFace.center.coordinates.y != transform.InverseTransformPoint(PositionOnMovementStart).y)
+                {
+                    // use raster manager
+                    int count = RasterManager.Instance.getNumberOfGridUnits(bottomFace.center.coordinates.y, transform.InverseTransformPoint(PositionOnMovementStart).y);
+
+                    for (int i = 0; i <= Mathf.Abs(count); i++)
+                    {
+                        GameObject DistanceVisualY = Instantiate(DistanceVisualPrefab);
+                        DistanceVisualY.transform.SetParent(DistanceVisualisation);
+                        DistanceVisualY.transform.localEulerAngles = new Vector3(0f, 0f, 0f);
+                        DistanceVisualY.transform.localScale = new Vector3(1f, 1f, 1f);
+                        DistanceVisualY.transform.position = lastPositionX;
+
+                        if (bottomFace.center.coordinates.y > transform.InverseTransformPoint(PositionOnMovementStart).y)
+                        {
+                            DistanceVisualY.transform.localPosition += new Vector3(0f, i * RasterManager.Instance.rasterLevel, 0f);
+                        }
+                        else
+                        {
+                            DistanceVisualY.transform.localPosition += new Vector3(0f, i * RasterManager.Instance.rasterLevel * (-1.0f), 0f);
+                        }
+
+                        lastPositionY = DistanceVisualY.transform.position;
+                    }
+
+                }
+
+
+                // show amount of movement on z
+                if (bottomFace.center.coordinates.z != transform.InverseTransformPoint(PositionOnMovementStart).z)
+                {
+                    // use raster manager
+                    int count = RasterManager.Instance.getNumberOfGridUnits(bottomFace.center.coordinates.z, transform.InverseTransformPoint(PositionOnMovementStart).z);
+
+                    for (int i = 0; i <= Mathf.Abs(count); i++)
+                    {
+                        GameObject DistanceVisualZ = Instantiate(DistanceVisualPrefab);
+                        DistanceVisualZ.transform.SetParent(DistanceVisualisation);
+                        DistanceVisualZ.transform.localEulerAngles = new Vector3(0f, 0f, 0f);
+                        DistanceVisualZ.transform.localScale = new Vector3(1f, 1f, 1f);
+                        DistanceVisualZ.transform.GetChild(0).localEulerAngles = new Vector3(0f, 90f, 0f);
+                        DistanceVisualZ.transform.position = lastPositionY;
+
+                        if (bottomFace.center.coordinates.z > transform.InverseTransformPoint(PositionOnMovementStart).z)
+                        {
+                            DistanceVisualZ.transform.localPosition += new Vector3(0f, 0f, i * RasterManager.Instance.rasterLevel);
+                        }
+                        else
+                        {
+                            DistanceVisualZ.transform.localPosition += new Vector3(0f, 0f, i * RasterManager.Instance.rasterLevel * (-1.0f));
+                        }
+                    }
+
+                }
+
+
+            }
+
+    
         }
     }
 
@@ -198,7 +310,7 @@ GetFaceFromCollisionCoordinate
 
 		*/
 
-    }
+        }
 
     public void RecalculateNormals()
     {
@@ -409,13 +521,20 @@ GetFaceFromCollisionCoordinate
         moving = true;
         controllerForMovement = controller;
         lastPositionController = controller.pointOfCollisionGO.transform.position;
-
+        PositionOnMovementStart = transform.TransformPoint(bottomFace.center.coordinates);
     }
 
     public void StopMoving(Selection controller)
     {
+        firstTimeMoving = false;
         moving = false;
         controllerForMovement = null;
+
+        // destroz previous distance vis
+        foreach (Transform visualObject in DistanceVisualisation)
+        {
+            Destroy(visualObject.gameObject);
+        }
     }
 
     
