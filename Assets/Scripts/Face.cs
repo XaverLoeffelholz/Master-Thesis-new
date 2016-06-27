@@ -10,10 +10,14 @@ public class Face : MonoBehaviour {
 		SideFace = 2
 	}
 
+    public ModelingObject parentModelingObject;
+
 	public faceType typeOfFace;
 
     public VertexBundle[] vertexBundles;
     public VertexBundle center;
+    public VertexBundle scaler;
+    public Vector3 scalerPosition;
     public Vector3 centerPosition;
 	public Vector3 normal;
     public handle scaleHandle;
@@ -23,6 +27,8 @@ public class Face : MonoBehaviour {
 	public GameObject VertexBundlePrefab;
 	public GameObject VertexPrefab;
 
+    private Vector3 lastScalerToCenterbottom;
+
     // Use this for initialization
     void Start () {
 		
@@ -30,26 +36,45 @@ public class Face : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-	    if (center != null && centerPosition != center.coordinates)
-        {
-            UpdateFaceFromCenter();
-        }
-	}
+
+    }
 
 	public void InitializeFace(int numberOfVertices) {
 		vertexBundles = new VertexBundle[numberOfVertices];
-	}
+        parentModelingObject = transform.parent.parent.GetComponent<ModelingObject>();
+    }
 
-    public void scaleFace(float amount)
+    public void ScaleFace(float amount, Vector3 relativeTo)
     {
         for (int i = 0; i < vertexBundles.Length; i++)
         {
             if (vertexBundles[i] != null)
             {
-                Vector3 VertexToCenter = vertexBundles[i].coordinates - centerPosition;
-                vertexBundles[i].coordinates = vertexBundles[i].coordinates + VertexToCenter * amount;
+                Vector3 VertexToPoint = vertexBundles[i].coordinates - relativeTo;
+                vertexBundles[i].coordinates = RasterManager.Instance.Raster(vertexBundles[i].coordinates + VertexToPoint * amount);
+                vertexBundles[i].coordinates = vertexBundles[i].coordinates + VertexToPoint * amount;
+            }
 
-                vertexBundles[i].coordinates = RasterManager.Instance.Raster(vertexBundles[i].coordinates);
+        }
+    }
+
+    public void UpdateScaleFromCorner()
+    {
+        float lengthScalerToCenter = (scaler.coordinates - centerPosition).magnitude;
+
+        if (Vector3.Dot((scalerPosition - centerPosition), (scaler.coordinates - centerPosition)) < 0f)
+        {
+            lengthScalerToCenter = (-1f) * lengthScalerToCenter;
+        }
+
+        scalerPosition = scaler.coordinates;
+
+        for (int i = 0; i < vertexBundles.Length; i++)
+        {
+            if (vertexBundles[i] != null && (vertexBundles[i] != scaler) && (vertexBundles[i] != center))
+            {
+                Vector3 VertexToCenter = vertexBundles[i].coordinates - centerPosition;
+                vertexBundles[i].coordinates = centerPosition + VertexToCenter.normalized * lengthScalerToCenter;
             }
 
         }
@@ -69,12 +94,15 @@ public class Face : MonoBehaviour {
             }
         }
 
-        scaleHandle.transform.localPosition = centerPosition;
+        scaleHandle.transform.localPosition += difference;
+
         centerHandle.transform.localPosition = centerPosition;
         if (heightHandle!= null)
         {
             heightHandle.transform.localPosition = centerPosition;
         }
+
+        scalerPosition = scaler.coordinates;
 
     }
 
@@ -87,6 +115,17 @@ public class Face : MonoBehaviour {
 		}
 
 	}
+
+    public void SetScaler()
+    {
+        scaler = vertexBundles[0];
+        scalerPosition = scaler.coordinates;
+
+        if (typeOfFace == faceType.TopFace)
+        {
+            parentModelingObject.scalerObject = vertexBundles[0];
+        }
+    }
 
 	public void CalculateCenter(){
 		
@@ -125,13 +164,20 @@ public class Face : MonoBehaviour {
 
 		if (typeOfFace == faceType.TopFace) {
 			center.name = "Center Top";
+            center.centerVertex = true;
 			OrderVertexBundlesClockwise ();
-		} else if (typeOfFace == faceType.BottomFace) {
+            SetScaler();
+
+        } else if (typeOfFace == faceType.BottomFace) {
 			center.name = "Center Bottom";
-			OrderVertexBundlesClockwise ();
-		} else {
+            center.centerVertex = true;
+            OrderVertexBundlesClockwise ();
+            SetScaler();
+
+        } else {
 			center.name = "Center Side";
-		}
+            center.centerVertex = true;
+        }
 
 		center.Initialize ();
 	}
@@ -255,4 +301,19 @@ public class Face : MonoBehaviour {
         }
     }
 
+    public void ReplaceFacefromObjectScaler(Vector3 relativeTo, float amount)
+    {
+
+        for (int i = 0; i < vertexBundles.Length; i++)
+        {
+            if (vertexBundles[i] != null && (vertexBundles[i] != parentModelingObject.scalerObject))
+            {
+                Vector3 VertexToScaleCenter = vertexBundles[i].coordinates - relativeTo;
+                vertexBundles[i].coordinates = relativeTo + VertexToScaleCenter * (amount);
+            }
+
+        }
+
+        UpdateCenter();
+    }
 }

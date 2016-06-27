@@ -150,14 +150,10 @@ public class Selection : MonoBehaviour
 
             if (triggerPressed && currentFocus.CompareTag("ModelingObject") && Time.time - temps > 0.4f && !movingObject && !faceSelection)
             {
-                // moving object nochmal verbessern
                 CreatePointOfCollisionPrefab();
                 movingObject = true;
                 currentFocus.GetComponent<ModelingObject>().StartMoving(this);
                 UiCanvasGroup.Instance.Hide();
-
-                // old method
-                //  currentFocus.transform.SetParent(LaserPointer.transform);
             }
             else if (triggerPressed && (movingHandle || currentFocus.CompareTag("Handle")))
             {
@@ -215,7 +211,6 @@ public class Selection : MonoBehaviour
 
                 } else if (currentFocus.CompareTag("Handle"))
                 {
-                    //currentFocus.GetComponent<handle>().updateHandlePosition();
                     currentFocus.GetComponent<handle>().ResetLastPosition();
                     currentFocus.GetComponent<handle>().UnFocus(this); 
 

@@ -46,16 +46,18 @@ public class BiManualOperations : Singleton<BiManualOperations> {
         scalingStarted = true;
 
         initialscale = controller1.currentFocus.transform.localScale;
+        controller1.currentFocus.GetComponent<ModelingObject>().StartScaling();
+
         initialDistance = controller1.pointOfCollisionGO.transform.position - controller2.pointOfCollisionGO.transform.position;
+
+
     }
 
     public void ScaleObject()
     {
+        // move scaler of object
         float newScale = (controller1.pointOfCollisionGO.transform.position - controller2.pointOfCollisionGO.transform.position).magnitude / initialDistance.magnitude;
-
-        Vector3 newScalevector = initialscale * newScale;
-        controller1.currentFocus.transform.localScale = RasterManager.Instance.Raster(newScalevector);
-
+        controller1.currentFocus.GetComponent<ModelingObject>().ScaleBy(newScale*0.4f);
     }
 
     public bool IsScalingStarted()

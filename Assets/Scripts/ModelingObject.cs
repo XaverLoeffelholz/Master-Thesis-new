@@ -28,7 +28,6 @@ public class ModelingObject : MonoBehaviour
 
 	public Vertex[] vertices;
 	public Face[] faces;
-    public GameObject[] vertexBundles;
     public Face topFace;
     public Face bottomFace;
     public Color color;
@@ -49,11 +48,19 @@ public class ModelingObject : MonoBehaviour
     private Vector3 PositionOnMovementStart;
 
     public GameObject DistanceVisualPrefab;
+    public GameObject CenterVisualPrefab;
+    public GameObject GroundVisualPrefab;
+    private GameObject GroundVisualOnStartMoving;
     private Transform DistanceVisualisation;
 
     private Vector3 lastPositionX;
     private Vector3 lastPositionY;
     private bool firstTimeMoving = true;
+
+    private bool snapped = false;
+    private Vector3 initialDistancceCenterBottomScaler;
+
+    public VertexBundle scalerObject;
 
     // Use this for initialization
     void Start()
@@ -70,7 +77,10 @@ public class ModelingObject : MonoBehaviour
             // destroz previous distance vis
             foreach (Transform visualObject in DistanceVisualisation)
             {
-                Destroy(visualObject.gameObject);
+                if (visualObject.gameObject != GroundVisualOnStartMoving)
+                {
+                    Destroy(visualObject.gameObject);
+                }
             }
 
             if (!transform.parent.CompareTag("Objects"))
@@ -82,12 +92,35 @@ public class ModelingObject : MonoBehaviour
 
             Vector3 newPositionCollider = transform.TransformPoint(RasterManager.Instance.Raster(transform.InverseTransformPoint(controllerForMovement.pointOfCollisionGO.transform.position)));
 
-
             Vector3 newPositionWorld = this.transform.position + (newPositionCollider - lastPositionController);
             this.transform.position = newPositionWorld;
             this.transform.localPosition = RasterManager.Instance.Raster(this.transform.localPosition);
 
-            lastPositionController = newPositionCollider;
+            // here check for possible snappings
+            if (bottomFace.center.possibleSnappingVertexBundle != null)
+            {
+                if (!snapped || snapped && (newPositionCollider - lastPositionController).sqrMagnitude < 0.05f * transform.lossyScale.x){
+                    snapped = true;
+                    Vector3 distanceCurrentBottomSnap = bottomFace.center.possibleSnappingVertexBundle.transform.GetChild(0).position - bottomFace.center.transform.GetChild(0).position;
+                    this.transform.position = this.transform.position + distanceCurrentBottomSnap;
+                }
+
+
+            } else if (topFace.center.possibleSnappingVertexBundle != null)
+            {
+                if (!snapped || snapped && (newPositionCollider - lastPositionController).sqrMagnitude < 0.05f * transform.lossyScale.x)
+                {
+                    snapped = true;
+                    Vector3 distanceCurrentTopSnap = topFace.center.possibleSnappingVertexBundle.transform.GetChild(0).position - topFace.center.transform.GetChild(0).position;
+                    this.transform.position = this.transform.position + distanceCurrentTopSnap;
+                }
+            } else 
+            {
+                snapped = false;
+                lastPositionController = newPositionCollider;
+            }
+
+
 
             lastPositionX = PositionOnMovementStart;
             lastPositionY = PositionOnMovementStart;
@@ -102,6 +135,44 @@ public class ModelingObject : MonoBehaviour
 
                     for (int i = 0; i <= Mathf.Abs(count); i++)
                     {
+                        if (i == 0)
+                        {
+                            // Display center of object before moving
+                            GameObject CenterVisual = Instantiate(CenterVisualPrefab);
+                            CenterVisual.transform.SetParent(DistanceVisualisation);
+                            CenterVisual.transform.localEulerAngles = new Vector3(0f, 0f, 0f);
+                            CenterVisual.transform.localScale = new Vector3(1f, 1f, 1f);
+                            CenterVisual.transform.position = PositionOnMovementStart;
+
+                            // Display center of object after moving
+                            GameObject CenterVisual2 = Instantiate(CenterVisualPrefab);
+                            CenterVisual2.transform.SetParent(DistanceVisualisation);
+                            CenterVisual2.transform.localEulerAngles = new Vector3(0f, 0f, 0f);
+                            CenterVisual2.transform.localScale = new Vector3(1f, 1f, 1f);
+                            CenterVisual2.transform.position = bottomFace.center.transform.GetChild(0).position;
+
+                            // Display outline of groundface
+                            GameObject GroundVisual = Instantiate(GroundVisualPrefab);
+                            GroundVisual.transform.SetParent(DistanceVisualisation);
+                            LineRenderer lines = GroundVisual.GetComponent<LineRenderer>();
+                            lines.SetVertexCount(bottomFace.vertexBundles.Length+1);
+         
+                            for (int j = 0; j <= bottomFace.vertexBundles.Length; j++)
+                            {
+                                if (j == bottomFace.vertexBundles.Length)
+                                {
+                                    Vector3 pos = bottomFace.vertexBundles[0].transform.GetChild(0).position;
+                                    lines.SetPosition(j, pos);
+                                } else
+                                {
+                                    Vector3 pos = bottomFace.vertexBundles[j].transform.GetChild(0).position;
+                                    lines.SetPosition(j, pos);
+                                }
+
+                            }
+
+                        }
+
                         GameObject DistanceVisualX = Instantiate(DistanceVisualPrefab);
                         DistanceVisualX.transform.SetParent(DistanceVisualisation);
                         DistanceVisualX.transform.localEulerAngles = new Vector3(0f, 0f, 0f);
@@ -118,6 +189,7 @@ public class ModelingObject : MonoBehaviour
                         }
 
                         lastPositionX = DistanceVisualX.transform.position;
+                        lastPositionY = DistanceVisualX.transform.position;
                     }
 
                 }
@@ -186,6 +258,8 @@ public class ModelingObject : MonoBehaviour
     
         }
     }
+
+
 
     public void Initiate(Mesh initialShape)
     {
@@ -429,20 +503,6 @@ GetFaceFromCollisionCoordinate
         handles.CenterBottomPosition.transform.localRotation = Quaternion.FromToRotation(handles.CenterBottomPosition.transform.up, bottomFace.normal);
         handles.HeightBottom.transform.localRotation = Quaternion.FromToRotation(handles.HeightBottom.transform.up, bottomFace.normal);
 
-        /*
-       Vector3 NormalTopFaceWorldSpace = topFace.transform.TransformDirection(topFace.normal);
-       Vector3 NormalBottomFaceWorldSpace = bottomFace.transform.TransformDirection(bottomFace.normal);
-
-       handles.faceTopScale.transform.localRotation = Quaternion.FromToRotation(handles.faceTopScale.transform.TransformDirection(handles.faceTopScale.transform.up), NormalTopFaceWorldSpace);
-       handles.CenterTopPosition.transform.localRotation = Quaternion.FromToRotation(handles.CenterTopPosition.transform.TransformDirection(handles.CenterTopPosition.transform.up), NormalTopFaceWorldSpace);
-       handles.HeightTop.transform.localRotation = Quaternion.FromToRotation(handles.HeightTop.transform.TransformDirection(handles.HeightTop.transform.up), NormalTopFaceWorldSpace);
-
-       handles.faceBottomScale.transform.localRotation = Quaternion.FromToRotation(handles.faceBottomScale.transform.TransformDirection(handles.faceBottomScale.transform.up), NormalBottomFaceWorldSpace);
-       handles.CenterBottomPosition.transform.localRotation = Quaternion.FromToRotation(handles.CenterBottomPosition.transform.TransformDirection(handles.CenterBottomPosition.transform.up), NormalBottomFaceWorldSpace);
-       handles.HeightBottom.transform.localRotation = Quaternion.FromToRotation(handles.HeightBottom.transform.TransformDirection(handles.HeightBottom.transform.up), NormalBottomFaceWorldSpace);
-
-      */
-
         handles.faceTopScale.GetComponent<handle> ().face = topFace;
 		handles.faceBottomScale.GetComponent<handle> ().face = bottomFace;
 
@@ -484,7 +544,6 @@ GetFaceFromCollisionCoordinate
         handles.gameObject.transform.GetChild(0).gameObject.SetActive(true);
 
         Vector3 uiPosition = transform.position;
-        uiPosition.y += 2.3f;
         UiCanvasGroup.Instance.transform.position = uiPosition;
         UiCanvasGroup.Instance.OpenMainMenu(this);
 
@@ -522,6 +581,28 @@ GetFaceFromCollisionCoordinate
         controllerForMovement = controller;
         lastPositionController = controller.pointOfCollisionGO.transform.position;
         PositionOnMovementStart = transform.TransformPoint(bottomFace.center.coordinates);
+
+        // Display outline of groundface
+        GroundVisualOnStartMoving = Instantiate(GroundVisualPrefab);
+        GroundVisualOnStartMoving.transform.SetParent(DistanceVisualisation);
+        LineRenderer lines = GroundVisualOnStartMoving.GetComponent<LineRenderer>();
+        lines.SetVertexCount(bottomFace.vertexBundles.Length + 1);
+
+        for (int j = 0; j <= bottomFace.vertexBundles.Length; j++)
+        {
+            if (j == bottomFace.vertexBundles.Length)
+            {
+                Vector3 pos = bottomFace.vertexBundles[0].transform.GetChild(0).position;
+                lines.SetPosition(j, pos);
+            }
+            else
+            {
+                Vector3 pos = bottomFace.vertexBundles[j].transform.GetChild(0).position;
+                lines.SetPosition(j, pos);
+            }
+
+        }
+
     }
 
     public void StopMoving(Selection controller)
@@ -654,7 +735,46 @@ GetFaceFromCollisionCoordinate
         }
 
 	}
-		
+
+    public void StartScaling()
+    {
+        initialDistancceCenterBottomScaler = scalerObject.coordinates - bottomFace.centerPosition;
+    }
+
+    public void ScaleBy(float newScale)
+    {
+        Vector3 positionScalerObject = RasterManager.Instance.Raster(bottomFace.centerPosition + ((1f+newScale) * initialDistancceCenterBottomScaler));
+        Vector3 newDistanceCenterBottomScaler = positionScalerObject - bottomFace.centerPosition;
+
+        // Go through all Vertex Bundles
+
+        float amount = (positionScalerObject - bottomFace.centerPosition).magnitude / (scalerObject.coordinates - bottomFace.centerPosition).magnitude;
+
+        // get difference to last state to adjust other vertexbundles accordingly
+        scalerObject.coordinates = positionScalerObject;
+
+        bottomFace.ReplaceFacefromObjectScaler(bottomFace.centerPosition, amount);
+        topFace.ReplaceFacefromObjectScaler(bottomFace.centerPosition, amount);
+ 
+    }
+
+    public void UpDateObjectFromCorner()
+    { 
+        
+        // Get distance from scaler to  ground
+        float lengthScalerToCenterBottomFace = (scalerObject.coordinates - bottomFace.centerPosition).magnitude / initialDistancceCenterBottomScaler.magnitude;
+
+        if (Vector3.Dot((scalerObject.coordinates - bottomFace.centerPosition), (scalerObject.coordinates - bottomFace.centerPosition)) < 0f)
+        {
+            lengthScalerToCenterBottomFace = (-1f) * lengthScalerToCenterBottomFace;
+        }
+
+
+    }
+
+
 }
+		
+
  
  

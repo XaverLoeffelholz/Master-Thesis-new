@@ -13,6 +13,7 @@ public class UiCanvasGroup : Singleton<UiCanvasGroup>{
     public ModelingObject currentModelingObject;
 
     public GameObject MainMenu;
+    private float distanceUserObject;
 
     // Use this for initialization
     void Start () {
@@ -29,9 +30,23 @@ public class UiCanvasGroup : Singleton<UiCanvasGroup>{
 
     }
 
+    public void PositionUI()
+    {
+        if (currentModelingObject)
+        {
+            Vector3 pos = transform.position;
+            distanceUserObject = Vector3.Distance(pos, player.transform.position);
+            transform.localScale = new Vector3(Mathf.Max(distanceUserObject / 6f, 0.2f), Mathf.Max(distanceUserObject / 6f, 0.2f), Mathf.Max(distanceUserObject / 6f, 0.2f));
+
+            pos = new Vector3(pos.x, pos.y + 0.8f + (distanceUserObject * 0.1f), pos.z);
+            transform.position = pos;
+        }
+    }
+
     public void OpenMainMenu(ModelingObject modelingObject)
     {
         currentModelingObject = modelingObject;
+        PositionUI();
         MainMenu.GetComponent<UIMenu>().ActivateMenu();
     }
 
@@ -66,7 +81,7 @@ public class UiCanvasGroup : Singleton<UiCanvasGroup>{
             float x = (i * positioningWidth) - width / 2;
 
             float y = ((Mathf.Sin((float) i / (float) elements.Count * Mathf.PI)) * positioningHeight) - height / 2;
-            elements[i].GetComponent<RectTransform>().anchoredPosition3D = new Vector3(x, y, 0f);
+            elements[i].GetComponent<RectTransform>().anchoredPosition3D = new Vector3(x, 1f + y, 0f);
         }
     }
 }

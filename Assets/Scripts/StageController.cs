@@ -63,7 +63,7 @@ public class StageController : MonoBehaviour {
                 Vector3 libraryStage = library.localScale;
                 libraryStage = libraryStage + (libraryStage * amountY * 2);
 
-                if (scaleStage.x >= 0.2f && scaleStage.x <= 3f)
+                if (scaleStage.x >= 0.1f && scaleStage.x <= 4f)
                 {
                     stage.parent.localScale = scaleStage; 
                     library.localScale = libraryStage; 

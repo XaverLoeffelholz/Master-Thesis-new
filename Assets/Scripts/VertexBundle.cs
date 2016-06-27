@@ -4,10 +4,11 @@ using System.Collections;
 public class VertexBundle : MonoBehaviour {
 
     public Vector3 coordinates;
-	public VertexBundle nextBundle;
+    public bool centerVertex = false;
+	public VertexBundle possibleSnappingVertexBundle;
 
-	// Use this for initialization
-	void Start () {
+    // Use this for initialization
+    void Start () {
 	
 	}
 	
@@ -22,6 +23,15 @@ public class VertexBundle : MonoBehaviour {
 
 		foreach (Vertex vert in vertices) {
 			vert.Initialize ();
+
+            if (!centerVertex)
+            {
+                Collider col = vert.GetComponent<SphereCollider>();
+                col.enabled = false;
+
+                Rigidbody rig = vert.GetComponent<Rigidbody>();
+                rig.detectCollisions = false;
+            }
 		}
 	}
 

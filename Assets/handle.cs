@@ -24,11 +24,16 @@ public class handle : MonoBehaviour {
     private bool clicked;
 	public bool focused = false;
     private Vector3 lastPosition;
+    private Vector3 initialLocalPositionFace;
+    private Vector3 initialLocalPositionHandle;
+    private Vector3 initialDistancceCenterScaler;
     private bool resetLastPosition = true;
 
+    private Vector3 directionHandle;
+    private float lastInput = 0f;
 
-	// Use this for initialization
-	void Start () {
+    // Use this for initialization
+    void Start () {
     }
 	
 	// Update is called once per frame
@@ -36,32 +41,40 @@ public class handle : MonoBehaviour {
      
     }
 
-    private float CalculateInputFromPoint(GameObject pointOfCollision)
+    private float CalculateInputFromPoint(Vector3 pointOfCollision)
     {
-        Vector3 u = p2.transform.position - p1.transform.position;
-        Vector3 pq = pointOfCollision.transform.position - p1.transform.position;
-  
-        Vector3 newPoint = p1.transform.position + (u * (Vector3.Dot(pq, u) / u.sqrMagnitude));
 
         if (resetLastPosition)
         {
-            lastPosition = newPoint;
+            directionHandle = Vector3.Normalize(p2.transform.position - p1.transform.position);
+
+            initialLocalPositionFace = face.center.coordinates;
+            initialLocalPositionHandle = transform.localPosition;
+            initialDistancceCenterScaler = face.scalerPosition - face.centerPosition;
+        }
+
+        Vector3 pq = pointOfCollision - p1.transform.position;
+        Vector3 newPoint = p1.transform.position + (directionHandle * (Vector3.Dot(pq, directionHandle) / directionHandle.sqrMagnitude));
+
+        if (resetLastPosition)
+        {
             resetLastPosition = false;
+            lastPosition = newPoint;
         }
 
         float input = (newPoint - lastPosition).magnitude;
 
         // check direction of vector:
-        if ((newPoint - lastPosition).x / u.x < 0 || (newPoint - lastPosition).y / u.y < 0 || (newPoint - lastPosition).z / u.z < 0)
+        if (Vector3.Dot((newPoint - lastPosition), directionHandle) < 0f)
         {
             input = input * (-1f);
-        }
-
-        lastPosition = newPoint;
+        } 
 
         return input;
 
     }
+
+
 
     private Vector3 ProjectPointOnPlane(GameObject pointOfCollision)
     {
@@ -120,14 +133,20 @@ public class handle : MonoBehaviour {
 
     private void ScaleFace(GameObject pointOfCollision)
     {
-        float input = CalculateInputFromPoint(pointOfCollision);
+        float input = CalculateInputFromPoint(pointOfCollision.transform.position);
 
-        Vector3 position = colliderHandle.transform.localPosition;
-        position.x += input * 0.5f;
+        Vector3 positionScaler = initialLocalPositionFace + ((1f + input) * initialDistancceCenterScaler);
+        Vector3 newDistanceCenterScaler = positionScaler - face.centerPosition;
 
-        colliderHandle.transform.localPosition = position;
+        if (newDistanceCenterScaler.magnitude >= 0.1f && Vector3.Dot(initialDistancceCenterScaler, newDistanceCenterScaler)>0)
+        {
+            Vector3 position = initialLocalPositionHandle + (input * new Vector3(1f, 0f, 0f));
+            transform.localPosition = RasterManager.Instance.Raster(position);
 
-        face.scaleFace(input * 0.5f);
+            face.scaler.coordinates = RasterManager.Instance.Raster(positionScaler);
+        }
+
+        face.UpdateScaleFromCorner();
     }
 
     private void MoveCenterPosition(GameObject pointOfCollision)
@@ -141,27 +160,29 @@ public class handle : MonoBehaviour {
     public void ResetLastPosition()
     {
         resetLastPosition = true;
+        lastInput = 0f;
     }
 
     private void ChangeHeight(GameObject pointOfCollision)
     {
-        // move in direction of normals
+         float input = CalculateInputFromPoint(pointOfCollision.transform.position);
 
-        float input = CalculateInputFromPoint(pointOfCollision);
-        Vector3 position = transform.localPosition;
-        position += input * (-0.2f) * face.normal;
+         Vector3 position = initialLocalPositionHandle + ((-input * 1.4f) * face.normal);
+         Vector3 positionFace = initialLocalPositionFace + ((-input * 1.4f) * face.normal);
+    
+        // check that center does not get below other center
 
-        transform.localPosition = RasterManager.Instance.Raster(position);
-
-        Vector3 positionFace = face.center.coordinates;
-        positionFace += input * (-0.2f) * face.normal;
-        face.center.coordinates = RasterManager.Instance.Raster(positionFace);
-
+        if ((face.typeOfFace == Face.faceType.TopFace && positionFace.y > face.parentModelingObject.bottomFace.centerPosition.y) || (face.typeOfFace == Face.faceType.BottomFace && positionFace.y < face.parentModelingObject.topFace.centerPosition.y))
+        {
+            transform.localPosition = RasterManager.Instance.Raster(position);
+            face.center.coordinates = RasterManager.Instance.Raster(positionFace);
+            face.UpdateFaceFromCenter();
+        }
     }
 
     private void RotateX(GameObject pointOfCollision)
     {
-        float input = CalculateInputFromPoint(pointOfCollision);
+        float input = CalculateInputFromPoint(pointOfCollision.transform.position);
 
         // rotate
         Vector3 rotation = new Vector3(0,0,0);
@@ -177,7 +198,7 @@ public class handle : MonoBehaviour {
 
     private void RotateY(GameObject pointOfCollision)
     {
-        float input = CalculateInputFromPoint(pointOfCollision);
+        float input = CalculateInputFromPoint(pointOfCollision.transform.position);
 
         // rotate
         Vector3 rotation = new Vector3(0, 0, 0);
@@ -194,7 +215,7 @@ public class handle : MonoBehaviour {
 
     private void RotateZ(GameObject pointOfCollision)
     {
-        float input = CalculateInputFromPoint(pointOfCollision);
+        float input = CalculateInputFromPoint(pointOfCollision.transform.position);
         
         // rotate
         Vector3 rotation = new Vector3(0, 0, 0);

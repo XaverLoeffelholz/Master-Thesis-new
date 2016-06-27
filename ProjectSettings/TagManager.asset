@@ -13,6 +13,8 @@ TagManager:
   - Mesh
   - ModelingObject
   - Objects
+  - Vertex
+  - Ground
   layers:
   - Default
   - TransparentFX

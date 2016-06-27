@@ -47,37 +47,6 @@ public class RasterManager : Singleton<RasterManager> {
 
         Vector3 rasteredVector = new Vector3(countx * rasterLevel, county * rasterLevel, countz * rasterLevel);
 
-        /*
-
-        if (input.x > max_X)
-        {
-            input.x = max_X;
-        }
-        else if (input.x < min_X)
-        {
-            input.x = min_X;
-        }
-
-        if (input.y > max_Y)
-        {
-            input.y = max_Y;
-        }
-        else if (input.y < min_Y)
-        {
-            input.y = min_Y;
-        }
-
-        if (input.z > max_Z)
-        {
-            input.z = max_Z;
-        }
-        else if (input.z < min_Z)
-        {
-            input.z = min_Z;
-        }
-
-        */
-
         return rasteredVector;
     }
 }

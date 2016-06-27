@@ -17,7 +17,7 @@ public class ObjectCreator : Singleton<ObjectCreator> {
 
     // Use this for initialization
     void Start () {
-        createNewObject(ModelingObject.ObjectType.octagon, null, new Vector3(0, 0.5f, 0f), true);
+        createNewObject(ModelingObject.ObjectType.square, null, new Vector3(0, 0.5f, 0f), true);
     }
 
     // Update is called once per frame
