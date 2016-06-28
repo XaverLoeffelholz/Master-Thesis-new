@@ -7,6 +7,8 @@ public class UiElement : MonoBehaviour {
     public RectTransform title;
     public UIMenu goal;
 	public bool focused;
+    public UIMenu.buttonType typeOfButton;
+
 
 	// Use this for initialization
 	void Start () {
@@ -46,6 +48,11 @@ public class UiElement : MonoBehaviour {
 			LeanTween.scale(this.gameObject, new Vector3(1.0f, 1.0f, 1.0f), 0.3f);
 			focused = false;
 		}
+    }
+
+    public void PerformAction()
+    {
+        transform.parent.GetComponent<UIMenu>().PerformAction(this);
     }
 
 }

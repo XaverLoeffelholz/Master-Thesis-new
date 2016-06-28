@@ -174,6 +174,10 @@ public class Selection : MonoBehaviour
             if (movingObject)
             {
                 currentFocus.GetComponent<ModelingObject>().StopMoving(this);
+                if (currentFocus.GetComponent<ModelingObject>().inTrashArea)
+                {
+                    currentFocus.GetComponent<ModelingObject>().Trash();
+                }
             }
 
             Destroy(pointOfCollisionGO);
@@ -217,7 +221,8 @@ public class Selection : MonoBehaviour
                 } else if (currentFocus.CompareTag("UiElement"))
                 {
                     currentFocus.GetComponent<UiElement>().goal.ActivateMenu();
-				} 
+                    currentFocus.GetComponent<UiElement>().PerformAction();
+                } 
 
             } else
             {

@@ -5,6 +5,7 @@ public class StageController : MonoBehaviour {
 
     public Transform stage;
     public Transform library;
+    public Transform trash;
     private float lastY;
     private float lastX;
     private bool touchDown;
@@ -63,10 +64,14 @@ public class StageController : MonoBehaviour {
                 Vector3 libraryStage = library.localScale;
                 libraryStage = libraryStage + (libraryStage * amountY * 2);
 
+                Vector3 trashScale = trash.localScale;
+                trashScale = trashScale + (trashScale * amountY * 2);
+
                 if (scaleStage.x >= 0.1f && scaleStage.x <= 4f)
                 {
                     stage.parent.localScale = scaleStage; 
-                    library.localScale = libraryStage; 
+                    library.localScale = libraryStage;
+                    trash.localScale = trashScale;
                 }
 
             }

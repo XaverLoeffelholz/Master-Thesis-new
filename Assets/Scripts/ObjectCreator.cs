@@ -18,6 +18,7 @@ public class ObjectCreator : Singleton<ObjectCreator> {
     // Use this for initialization
     void Start () {
         createNewObject(ModelingObject.ObjectType.square, null, new Vector3(0, 0.5f, 0f), true);
+        ObjectCreator.Instance.createSetofObjects();
     }
 
     // Update is called once per frame
@@ -28,10 +29,10 @@ public class ObjectCreator : Singleton<ObjectCreator> {
 
     public void createSetofObjects()
     {
-        createNewObject(ModelingObject.ObjectType.triangle, null, new Vector3(-4.2f, 4f, 5f), false);
-        createNewObject(ModelingObject.ObjectType.square, null, new Vector3(-1.5f, 4.2f, 5f), false);
-        createNewObject(ModelingObject.ObjectType.octagon, null, new Vector3(1.5f, 4.2f, 5f), false);
-        createNewObject(ModelingObject.ObjectType.octagon, null, new Vector3(4.2f, 4f, 5f), false);
+        createNewObject(ModelingObject.ObjectType.triangle, null, new Vector3(2f, 2.7f, 7.6f), false);
+        createNewObject(ModelingObject.ObjectType.square, null, new Vector3(3.3f, 2.5f, 6.7f), false);
+        createNewObject(ModelingObject.ObjectType.octagon, null, new Vector3(4.4f, 2.1f, 5.3f), false);
+        createNewObject(ModelingObject.ObjectType.octagon, null, new Vector3(4.9f, 1.7f, 3.4f), false);
     }
 
 	public void createNewObject(ModelingObject.ObjectType type, Face groundface, Vector3 offSet, bool insideStage)

@@ -19,5 +19,12 @@ public class library : Singleton<library>{
         {
             Destroy(modelingObject.gameObject);
         }
+
+        Invoke("RefillLibrary", 1f);
+    }
+
+    public void RefillLibrary()
+    {
+        ObjectCreator.Instance.createSetofObjects();
     }
 }

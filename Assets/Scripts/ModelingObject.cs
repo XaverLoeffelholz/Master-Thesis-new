@@ -62,6 +62,8 @@ public class ModelingObject : MonoBehaviour
 
     public VertexBundle scalerObject;
 
+    public bool inTrashArea = false;
+
     // Use this for initialization
     void Start()
     {
@@ -273,9 +275,6 @@ public class ModelingObject : MonoBehaviour
         MeshTriangles = mesh.triangles;
 		mesh.RecalculateNormals ();
 
-		int normalCount = 0;
-		int vertexCount = 0;
-
         MeshUV = mesh.uv;
 
 		vertices = new Vertex[MeshCordinatesVertices.Length];
@@ -318,73 +317,7 @@ public class ModelingObject : MonoBehaviour
 			
 		InitializeVertices ();
 
-		// always group 4 vertexbundles to new faces
-
-		/*
-
-		while(vertexCount<mesh.triangles.Length && normalCount < mesh.normals.Length) {
-			// go through all triangles (for example 12 in cube)
-
-			// check the normal, if there is already a triangle with this normal, don't do anything
-
-			// otherwise create new normal and take the normal of this triangle as the normal of this face
-
-			// compare it to the normals of other triangles, if similar ad its vertices to a face
-
-			// calculate center when we have all vertices
-
-			// when we have all faces we need to check for top and bottom face
-GetFaceFromCollisionCoordinate
-			// if newly created one, just by y-value
-
-			// if it is created on top of another, put the duplicated one in the bottom group and the others in the top group
-
-
-
-			Vector3 point1 = MeshCordinatesVertices[mesh.triangles [vertexCount]];
-			Vector3 point2 = MeshCordinatesVertices[mesh.triangles [vertexCount+1]];
-			Vector3 point3 = MeshCordinatesVertices[mesh.triangles [vertexCount+2]];
-
-			Vector3 center = (point1 + point2 + point3) / 3;
-
-			GameObject normal = Instantiate (NormalPrefab);
-			normal.transform.SetParent (transform.GetChild(0));
-			normal.transform.position = transform.position + mesh.normals[normalCount]*1.2f;
-
-			GameObject normal2 = Instantiate (NormalPrefab);
-			normal2.transform.SetParent (transform.GetChild(0));
-			normal2.transform.position = transform.position + mesh.normals[normalCount]*1.8f;
-
-			GameObject p1 = Instantiate (Vertex2Prefab);
-			p1.transform.SetParent (transform.GetChild(0));
-			p1.transform.position = point1  + mesh.normals[normalCount]*0.08f;
-
-			GameObject p2 = Instantiate (Vertex2Prefab);
-			p2.transform.SetParent (transform.GetChild(0));
-			p2.transform.position = point2 + mesh.normals[normalCount]*0.08f;
-
-			GameObject p3 = Instantiate (Vertex2Prefab);
-			p3.transform.SetParent (transform.GetChild(0));
-			p3.transform.position = point3 + mesh.normals[normalCount]*0.08f;
-
-
-
-			Color randomColor = new Color (Random.value, Random.value, Random.value, 1f);
-			normal.GetComponent<Renderer> ().material.color = randomColor;
-			normal2.GetComponent<Renderer> ().material.color = randomColor;
-
-
-			p1.GetComponent<Renderer> ().material.color = randomColor;
-			p2.GetComponent<Renderer> ().material.color = randomColor;
-			p3.GetComponent<Renderer> ().material.color = randomColor;
-
-			normalCount += 2;
-			vertexCount += 3;
-		}
-
-		*/
-
-        }
+    }
 
     public void RecalculateNormals()
     {
@@ -527,6 +460,8 @@ GetFaceFromCollisionCoordinate
 		if (!focused) {
             controller.AssignCurrentFocus(transform.gameObject);
 			focused = true;
+            Color newColor = transform.GetChild(0).GetComponent<Renderer>().material.color;
+            transform.GetChild(0).GetComponent<Renderer>().material.color = new Color(newColor.r + 0.2f, newColor.g + 0.2f, newColor.b + 0.2f, 1f);
 		}
     }
 
@@ -535,7 +470,11 @@ GetFaceFromCollisionCoordinate
 		if (focused) {
             controller.DeAssignCurrentFocus(transform.gameObject);
 			focused = false;
-		}
+
+            Color newColor = transform.GetChild(0).GetComponent<Renderer>().material.color;
+            transform.GetChild(0).GetComponent<Renderer>().material.color = new Color(newColor.r - 0.2f, newColor.g - 0.2f, newColor.b - 0.2f, 1f);
+
+        }
     }
 
     public void Select(Selection controller)
@@ -739,14 +678,14 @@ GetFaceFromCollisionCoordinate
     public void StartScaling()
     {
         initialDistancceCenterBottomScaler = scalerObject.coordinates - bottomFace.centerPosition;
+
+        Debug.Log("initialDistancceCenterBottomScaler: " + initialDistancceCenterBottomScaler);
     }
 
     public void ScaleBy(float newScale)
     {
-        Vector3 positionScalerObject = RasterManager.Instance.Raster(bottomFace.centerPosition + ((1f+newScale) * initialDistancceCenterBottomScaler));
+        Vector3 positionScalerObject = RasterManager.Instance.Raster(bottomFace.centerPosition + ((newScale) * initialDistancceCenterBottomScaler));
         Vector3 newDistanceCenterBottomScaler = positionScalerObject - bottomFace.centerPosition;
-
-        // Go through all Vertex Bundles
 
         float amount = (positionScalerObject - bottomFace.centerPosition).magnitude / (scalerObject.coordinates - bottomFace.centerPosition).magnitude;
 
@@ -755,7 +694,7 @@ GetFaceFromCollisionCoordinate
 
         bottomFace.ReplaceFacefromObjectScaler(bottomFace.centerPosition, amount);
         topFace.ReplaceFacefromObjectScaler(bottomFace.centerPosition, amount);
- 
+
     }
 
     public void UpDateObjectFromCorner()
@@ -772,7 +711,15 @@ GetFaceFromCollisionCoordinate
 
     }
 
+    public void Trash()
+    {
+        transform.gameObject.SetActive(false);
+    }
 
+    public void ChangeColor(Color color)
+    {
+        transform.GetChild(0).GetComponent<Renderer>().material.color = color;
+    }
 }
 		
 

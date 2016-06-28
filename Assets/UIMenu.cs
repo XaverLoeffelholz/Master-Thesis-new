@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -15,13 +16,27 @@ public class UIMenu : MonoBehaviour {
         NewObject
     }
 
+    public enum buttonType
+    {
+        Menu,
+        Delete,
+        Group,
+        Duplicate,
+        Color,
+        ResetFrustum,
+        ResetRotation,
+        ResetColor
+    }
+
     public menuType TypeOfMenu;
     public Selection controller1;
     public Selection controller2;
 
+    private UiCanvasGroup parentCanvas;
+
     // Use this for initialization
     void Start () {
-
+        parentCanvas = transform.parent.GetComponent<UiCanvasGroup>();
     }
 	
 	// Update is called once per frame
@@ -66,28 +81,79 @@ public class UIMenu : MonoBehaviour {
         switch (TypeOfMenu)
         {
             case (menuType.Rotation):
-                transform.parent.GetComponent<UiCanvasGroup>().currentModelingObject.handles.ShowRotationHandles();
+                parentCanvas.currentModelingObject.handles.ShowRotationHandles();
                 break;
             case (menuType.NonUniformScaling):
-                transform.parent.GetComponent<UiCanvasGroup>().currentModelingObject.handles.DisableHandles();
+                parentCanvas.currentModelingObject.handles.DisableHandles();
                 break;
             case (menuType.Color):
-                transform.parent.GetComponent<UiCanvasGroup>().currentModelingObject.handles.DisableHandles();
+                parentCanvas.currentModelingObject.handles.DisableHandles();
                 break;
             case (menuType.Shape):
-                transform.parent.GetComponent<UiCanvasGroup>().currentModelingObject.handles.ShowFrustumHandles();
+                parentCanvas.currentModelingObject.handles.ShowFrustumHandles();
                 break;
             case (menuType.Object):
-                transform.parent.GetComponent<UiCanvasGroup>().currentModelingObject.handles.DisableHandles();
+                parentCanvas.currentModelingObject.handles.DisableHandles();
                 break;
-		case (menuType.NewObject):
-				transform.parent.GetComponent<UiCanvasGroup> ().currentModelingObject.handles.DisableHandles ();
+		    case (menuType.NewObject):
+                parentCanvas.currentModelingObject.handles.DisableHandles ();
 				controller1.enableFaceSelection (true);
                 controller2.enableFaceSelection(true);
                 break;
             case (menuType.MainMenu):
-                transform.parent.GetComponent<UiCanvasGroup>().currentModelingObject.handles.DisableHandles();
+                parentCanvas.currentModelingObject.handles.DisableHandles();
                 break;
         }
+    }
+
+    public void PerformAction(UiElement button)
+    {
+        switch (button.typeOfButton)
+        {
+            case (buttonType.Menu):
+                break;
+            case (buttonType.Color):
+                ChangeColor(button);
+                break;
+            case (buttonType.Delete):
+                Delete();
+                break;
+            case (buttonType.Duplicate):
+                Duplicate();
+                break;
+            case (buttonType.Group):
+                Group();
+                break;
+            case (buttonType.ResetColor):
+                break;
+            case (buttonType.ResetFrustum):
+                break;
+            case (buttonType.ResetRotation):
+                break;
+        }
+    }
+
+
+    // All functions by buttons
+
+    public void Group()
+    {
+
+    }
+
+    public void Delete()
+    {
+        parentCanvas.Hide();
+        UiCanvasGroup.Instance.currentModelingObject.Trash();
+    }
+
+    public void Duplicate()
+    {
+
+    }
+
+    public void ChangeColor(UiElement button)
+    {
+        UiCanvasGroup.Instance.currentModelingObject.ChangeColor(button.gameObject.GetComponent<Image>().color);
     }
 }
