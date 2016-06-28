@@ -74,9 +74,8 @@ public class UiCanvasGroup : Singleton<UiCanvasGroup>{
         // define height based on number of elements
         float height = elements.Count * positioningHeight;
 
-        // go through all elements
-
-        for (int i=0; i< elements.Count; i++)
+        // old
+        for (int i=0; i < elements.Count; i++)
         {
             float x = (i * positioningWidth) - width / 2;
 

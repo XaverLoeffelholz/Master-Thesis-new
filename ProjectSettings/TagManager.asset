@@ -15,6 +15,7 @@ TagManager:
   - Objects
   - Vertex
   - Ground
+  - Colors
   layers:
   - Default
   - TransparentFX
