@@ -316,4 +316,18 @@ public class Face : MonoBehaviour {
 
         UpdateCenter();
     }
+
+    public void UpdateSpecialVertexCoordinates()
+    {
+        if (center != null)
+        {
+            centerPosition = center.coordinates;
+        }
+
+        if (scaler != null)
+        {
+            scalerPosition = scaler.coordinates;
+        }
+
+    }
 }

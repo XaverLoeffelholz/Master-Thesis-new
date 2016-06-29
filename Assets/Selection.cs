@@ -27,6 +27,11 @@ public class Selection : MonoBehaviour
 
     SteamVR_TrackedObject trackedObj;
 
+    private Vector3 uiPositon;
+    private bool objectTooClose = false;
+
+    public GameObject cam;
+
     void Awake()
     {
         trackedObj = GetComponent<SteamVR_TrackedObject>();
@@ -71,8 +76,17 @@ public class Selection : MonoBehaviour
         {
             if (Physics.Raycast(LaserPointer.transform.position, LaserPointer.transform.forward, out hit))
             {
+                uiPositon = cam.transform.position + cam.transform.forward * 1.6f + ((-0.8f) * cam.transform.up);
 
                 AdjustLengthPointer(hit.distance);
+
+                if (hit.distance < 1.0f)
+                {
+                    objectTooClose = true;
+                } else
+                {
+                    objectTooClose = false;
+                }
 
                 if (hit.rigidbody != null)
                 {
@@ -124,6 +138,8 @@ public class Selection : MonoBehaviour
                     if (currentFocus != null)
                     {
                         DeFocusCurrent();
+                        temps = Time.time;
+                        AdjustLengthPointer(50f);
                     }
                 }
             }
@@ -132,6 +148,7 @@ public class Selection : MonoBehaviour
                 if (currentFocus != null)
                 {
                     DeFocusCurrent();
+                    temps = Time.time;
                 }
 
                 AdjustLengthPointer(50f);
@@ -148,7 +165,7 @@ public class Selection : MonoBehaviour
                 temps = Time.time;
             }
 
-            if (triggerPressed && currentFocus.CompareTag("ModelingObject") && Time.time - temps > 0.4f && !movingObject && !faceSelection)
+            if (triggerPressed && currentFocus.CompareTag("ModelingObject") && Time.time - temps > 0.6f && !movingObject && !faceSelection)
             {
                 CreatePointOfCollisionPrefab();
                 movingObject = true;
@@ -176,7 +193,7 @@ public class Selection : MonoBehaviour
                 currentFocus.GetComponent<ModelingObject>().StopMoving(this);
                 if (currentFocus.GetComponent<ModelingObject>().inTrashArea)
                 {
-                    currentFocus.GetComponent<ModelingObject>().Trash();
+                    currentFocus.GetComponent<ModelingObject>().TrashObject();
                 }
             }
 
@@ -185,7 +202,7 @@ public class Selection : MonoBehaviour
 
             if (currentFocus != null)
             {
-                if (currentFocus.CompareTag("ModelingObject") && Time.time - temps <= 0.4f)
+                if (currentFocus.CompareTag("ModelingObject") && Time.time - temps <= 0.6f && !objectTooClose)
                 {
                     if (currentSelection != null)
                     {
@@ -194,7 +211,7 @@ public class Selection : MonoBehaviour
 
                     if (!faceSelection) {
 						UiCanvasGroup.Instance.Show ();
-                        currentFocus.GetComponent<ModelingObject> ().Select (this);
+                        currentFocus.GetComponent<ModelingObject> ().Select (this, uiPositon);
 						collidingFace = null;
 					} else {
                         this.enableFaceSelection(false);
@@ -204,20 +221,17 @@ public class Selection : MonoBehaviour
                             collidingFace.CreateNewModelingObject();
                         }
 
-
                         // directly select new object
                         UiCanvasGroup.Instance.Show();
-                        ObjectsManager.Instance.GetlatestObject().Select (this);
+                        ObjectsManager.Instance.GetlatestObject().Select (this, uiPositon);
                         collidingFace = null;
-
                     }
-
 
                 } else if (currentFocus.CompareTag("Handle"))
                 {
                     currentFocus.GetComponent<handle>().ResetLastPosition();
-                    currentFocus.GetComponent<handle>().UnFocus(this); 
-
+                    currentFocus.GetComponent<handle>().UnLock();
+                    currentFocus.GetComponent<handle>().UnFocus(this);
                 } else if (currentFocus.CompareTag("UiElement"))
                 {
                     currentFocus.GetComponent<UiElement>().goal.ActivateMenu();

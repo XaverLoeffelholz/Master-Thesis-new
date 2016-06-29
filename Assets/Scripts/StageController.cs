@@ -30,6 +30,7 @@ public class StageController : MonoBehaviour {
             touchDown = true;
             lastX = device.GetAxis().x;
             lastY = device.GetAxis().y;
+            UiCanvasGroup.Instance.Hide();
         }
 
         if (device.GetTouchUp(SteamVR_Controller.ButtonMask.Touchpad))

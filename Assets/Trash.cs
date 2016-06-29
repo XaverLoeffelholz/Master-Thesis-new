@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class Trash : MonoBehaviour {
+public class Trash : Singleton<Trash> {
     private Color initialColor;
 
 	// Use this for initialization
@@ -16,21 +16,33 @@ public class Trash : MonoBehaviour {
 
     void OnTriggerEnter(Collider other)
     {
-        transform.GetComponent<Renderer>().material.color = new Color(0.7f, 0.1f, 0.1f, 0.6f);
-
         if (other.gameObject.CompareTag("Mesh"))
         {
+            TrashAreaActive(true);
             other.transform.parent.GetComponent<ModelingObject>().inTrashArea = true;
         }
     }
 
     void OnTriggerExit(Collider other)
     {
-        transform.GetComponent<Renderer>().material.color = initialColor;
+
 
         if (other.gameObject.CompareTag("Mesh"))
         {
+            TrashAreaActive(false);
             other.transform.parent.GetComponent<ModelingObject>().inTrashArea = false;
         }
+    }
+
+    public void TrashAreaActive(bool value)
+    {
+        if (value)
+        {
+            transform.GetComponent<Renderer>().material.color = new Color(0.7f, 0.1f, 0.1f, 0.6f);
+        } else
+        {
+            transform.GetComponent<Renderer>().material.color = initialColor;
+        }
+
     }
 }

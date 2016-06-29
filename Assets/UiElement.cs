@@ -52,14 +52,7 @@ public class UiElement : MonoBehaviour {
 
     public void PerformAction()
     { 
-        if (typeOfButton != UIMenu.buttonType.Color)
-        {
-            transform.parent.GetComponent<UIMenu>().PerformAction(this);
-        } else
-        {
-            transform.parent.parent.parent.GetComponent<UIMenu>().PerformAction(this);
-        }
-
+        transform.parent.GetComponent<UIMenu>().PerformAction(this);
     }
 
 }

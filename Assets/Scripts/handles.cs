@@ -13,6 +13,11 @@ public class handles : MonoBehaviour {
     public GameObject RotationY;
     public GameObject RotationZ;
 
+    public GameObject RotationXStepwise;
+    public GameObject RotationYStepwise;
+    public GameObject RotationZStepwise;
+
+
     public GameObject TopHandles;
     public GameObject BottomHandles;
 
@@ -38,14 +43,25 @@ public class handles : MonoBehaviour {
     public void ShowRotationHandles()
     {
         DisableHandles();
+        RotationX.transform.localPosition = new Vector3(0f, 0f, 0f);
+        RotationY.transform.localPosition = new Vector3(0f, 0f, 0f);
+        RotationZ.transform.localPosition = new Vector3(0f, 0f, 0f);
         RotationX.SetActive(true);
         RotationY.SetActive(true);
         RotationZ.SetActive(true);
+
+        RotationXStepwise.transform.localPosition = new Vector3(0f, 0f, 0f);
+        RotationYStepwise.transform.localPosition = new Vector3(0f, 0f, 0f);
+        RotationZStepwise.transform.localPosition = new Vector3(0f, 0f, 0f);
+        RotationXStepwise.SetActive(true);
+        RotationYStepwise.SetActive(true);
+        RotationZStepwise.SetActive(true);
     }
 
     public void ShowFrustumHandles()
     {
         DisableHandles();
+        transform.parent.GetComponent<ModelingObject>().PositionHandles();
         TopHandles.SetActive(true);
         BottomHandles.SetActive(true);
         faceBottomScale.SetActive(true);
@@ -61,6 +77,7 @@ public class handles : MonoBehaviour {
     public void ShowFrustumCenterHandles()
     {
         DisableHandles();
+        transform.parent.GetComponent<ModelingObject>().PositionHandles();
         CenterBottomPosition.SetActive(true);
         CenterTopPosition.SetActive(true);
     }

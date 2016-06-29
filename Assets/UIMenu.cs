@@ -31,7 +31,6 @@ public class UIMenu : MonoBehaviour {
     public menuType TypeOfMenu;
     public Selection controller1;
     public Selection controller2;
-    public ColorPicker colorPicker;
 
     private UiCanvasGroup parentCanvas;
 
@@ -81,8 +80,6 @@ public class UIMenu : MonoBehaviour {
 
         controller1.enableFaceSelection(false);
         controller2.enableFaceSelection(false);
-        colorPicker.gameObject.SetActive(false);
-
 
         // Show the right handles
         switch (TypeOfMenu)
@@ -95,7 +92,6 @@ public class UIMenu : MonoBehaviour {
                 break;
             case (menuType.Color):
                 parentCanvas.currentModelingObject.handles.DisableHandles();
-                colorPicker.gameObject.SetActive(true);
                 break;
             case (menuType.Shape):
                 parentCanvas.currentModelingObject.handles.ShowFrustumHandles();
@@ -152,7 +148,7 @@ public class UIMenu : MonoBehaviour {
     public void Delete()
     {
         parentCanvas.Hide();
-        UiCanvasGroup.Instance.currentModelingObject.Trash();
+        UiCanvasGroup.Instance.currentModelingObject.TrashObject();
     }
 
     public void Duplicate()

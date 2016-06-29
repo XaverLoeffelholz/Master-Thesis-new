@@ -1,9 +1,11 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System;
 
 public class RasterManager : Singleton<RasterManager> {
 
     public float rasterLevel;
+    public float rasterLevelAngles;
 
     public float max_X;
     public float min_X;
@@ -48,5 +50,11 @@ public class RasterManager : Singleton<RasterManager> {
         Vector3 rasteredVector = new Vector3(countx * rasterLevel, county * rasterLevel, countz * rasterLevel);
 
         return rasteredVector;
+    }
+
+    public float RasterAngle(float input)
+    {
+        float count = Mathf.Round(input / rasterLevelAngles);
+        return count;
     }
 }

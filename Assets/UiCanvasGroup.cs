@@ -46,24 +46,34 @@ public class UiCanvasGroup : Singleton<UiCanvasGroup>{
     public void OpenMainMenu(ModelingObject modelingObject)
     {
         currentModelingObject = modelingObject;
-        PositionUI();
+      //  PositionUI();
         MainMenu.GetComponent<UIMenu>().ActivateMenu();
     }
 
     public void Show()
     {
+        canvGroup.blocksRaycasts = true;
+        canvGroup.interactable = true;
         LeanTween.alphaCanvas(canvGroup, 1f, 0.3f);
         visible = true;
     }
 
     public void Hide()
     {
+        canvGroup.blocksRaycasts = false;
+        canvGroup.interactable = false;
         LeanTween.alphaCanvas(canvGroup, 0f, 0.3f);
-        if(currentModelingObject!= null)
+
+        if (currentModelingObject!= null)
         {
             currentModelingObject.handles.DisableHandles();
         }
         visible = false;
+    }
+
+    private void deactivateCanvGroup()
+    {
+        transform.GetChild(0).gameObject.SetActive(false);
     }
 
     public void ArrangeUIObjects(List<GameObject> elements)
@@ -79,8 +89,8 @@ public class UiCanvasGroup : Singleton<UiCanvasGroup>{
         {
             float x = (i * positioningWidth) - width / 2;
 
-            float y = ((Mathf.Sin((float) i / (float) elements.Count * Mathf.PI)) * positioningHeight) - height / 2;
-            elements[i].GetComponent<RectTransform>().anchoredPosition3D = new Vector3(x, 1f + y, 0f);
+            float y = - (((Mathf.Sin((float) i / (float) elements.Count * Mathf.PI)) * positioningHeight) - height / 2);
+            elements[i].GetComponent<RectTransform>().anchoredPosition3D = new Vector3(x, y, 0f);
         }
     }
 }

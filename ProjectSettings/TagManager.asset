@@ -16,6 +16,7 @@ TagManager:
   - Vertex
   - Ground
   - Colors
+  - RotateButton
   layers:
   - Default
   - TransparentFX

@@ -317,6 +317,8 @@ public class ModelingObject : MonoBehaviour
 			
 		InitializeVertices ();
 
+        // if this is a square, we want to rotate it's coordinate system
+
     }
 
     public void RecalculateNormals()
@@ -415,10 +417,10 @@ public class ModelingObject : MonoBehaviour
         meshCollider.sharedMesh = mesh;
     }
 
-    public void InitiateHandles()
+    public void PositionHandles()
     {
-        handles.faceTopScale.transform.localPosition = topFace.centerPosition;
-        handles.faceBottomScale.transform.localPosition = bottomFace.centerPosition;
+        handles.faceTopScale.transform.localPosition = topFace.scalerPosition;
+        handles.faceBottomScale.transform.localPosition = bottomFace.scalerPosition;
         handles.CenterTopPosition.transform.localPosition = topFace.centerPosition;
         handles.CenterBottomPosition.transform.localPosition = bottomFace.centerPosition;
         handles.HeightTop.transform.localPosition = topFace.centerPosition;
@@ -427,14 +429,23 @@ public class ModelingObject : MonoBehaviour
         handles.RotationX.transform.localPosition = this.transform.localPosition;
         handles.RotationY.transform.localPosition = this.transform.localPosition;
         handles.RotationZ.transform.localPosition = this.transform.localPosition;
-       
-        handles.faceTopScale.transform.localRotation = Quaternion.FromToRotation(handles.faceTopScale.transform.up, topFace.normal);
+    }
+
+    public void RotateHandles()
+    {
+        handles.faceTopScale.transform.localRotation = Quaternion.FromToRotation(handles.faceTopScale.transform.up, (topFace.scalerPosition - topFace.centerPosition));
         handles.CenterTopPosition.transform.localRotation = Quaternion.FromToRotation(handles.CenterTopPosition.transform.up, topFace.normal);
         handles.HeightTop.transform.localRotation = Quaternion.FromToRotation(handles.HeightTop.transform.up, topFace.normal);
 
-        handles.faceBottomScale.transform.localRotation = Quaternion.FromToRotation(handles.faceBottomScale.transform.up, bottomFace.normal);
+        handles.faceBottomScale.transform.localRotation = Quaternion.FromToRotation(handles.faceBottomScale.transform.up, (bottomFace.scalerPosition - bottomFace.centerPosition));
         handles.CenterBottomPosition.transform.localRotation = Quaternion.FromToRotation(handles.CenterBottomPosition.transform.up, bottomFace.normal);
         handles.HeightBottom.transform.localRotation = Quaternion.FromToRotation(handles.HeightBottom.transform.up, bottomFace.normal);
+    }
+
+    public void InitiateHandles()
+    {
+        PositionHandles();
+        RotateHandles();
 
         handles.faceTopScale.GetComponent<handle> ().face = topFace;
 		handles.faceBottomScale.GetComponent<handle> ().face = bottomFace;
@@ -477,12 +488,11 @@ public class ModelingObject : MonoBehaviour
         }
     }
 
-    public void Select(Selection controller)
+    public void Select(Selection controller, Vector3 uiPosition)
     {
         controller.AssignCurrentSelection(transform.gameObject);
         handles.gameObject.transform.GetChild(0).gameObject.SetActive(true);
 
-        Vector3 uiPosition = transform.position;
         UiCanvasGroup.Instance.transform.position = uiPosition;
         UiCanvasGroup.Instance.OpenMainMenu(this);
 
@@ -678,8 +688,6 @@ public class ModelingObject : MonoBehaviour
     public void StartScaling()
     {
         initialDistancceCenterBottomScaler = scalerObject.coordinates - bottomFace.centerPosition;
-
-        Debug.Log("initialDistancceCenterBottomScaler: " + initialDistancceCenterBottomScaler);
     }
 
     public void ScaleBy(float newScale)
@@ -711,15 +719,51 @@ public class ModelingObject : MonoBehaviour
 
     }
 
-    public void Trash()
+    public void TrashObject()
     {
         transform.gameObject.SetActive(false);
+        Trash.Instance.TrashAreaActive(false);
     }
 
     public void ChangeColor(Color color)
     {
         transform.GetChild(0).GetComponent<Renderer>().material.color = color;
     }
+
+    public void RotateAround(Vector3 angleAxis, float angle)
+    {
+        for(int i=0; i < topFace.vertexBundles.Length; i++)
+        {
+            // rotate coordinates of every vertexbundle
+            topFace.vertexBundles[i].coordinates = Quaternion.AngleAxis(angle, angleAxis) * topFace.vertexBundles[i].coordinates;
+        }
+
+        topFace.center.coordinates = Quaternion.AngleAxis(angle, angleAxis) * topFace.center.coordinates;
+
+        for (int i = 0; i < bottomFace.vertexBundles.Length; i++)
+        {
+            // rotate coordinates of every vertexbundle
+            bottomFace.vertexBundles[i].coordinates = Quaternion.AngleAxis(angle, angleAxis) * bottomFace.vertexBundles[i].coordinates;
+
+        }
+
+        bottomFace.center.coordinates = Quaternion.AngleAxis(angle, angleAxis) * bottomFace.center.coordinates;
+
+        // update centers and recalculate normals of side faces
+
+        for (int i = 0; i<faces.Length; i++)
+        {
+            faces[i].UpdateCenter();
+            faces[i].RecalculateNormal();
+            faces[i].UpdateSpecialVertexCoordinates();
+        }
+
+        handles.HeightTop.transform.RotateAround(new Vector3(0f,0f,0f), angleAxis, angle);
+        handles.HeightBottom.transform.RotateAround(new Vector3(0f, 0f, 0f), angleAxis, angle);
+        handles.faceTopScale.transform.RotateAround(new Vector3(0f, 0f, 0f), angleAxis, angle);
+        handles.faceBottomScale.transform.RotateAround(new Vector3(0f, 0f, 0f), angleAxis, angle);
+    }
+
 }
 		
 

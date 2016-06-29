@@ -31,7 +31,7 @@ public class ObjectCreator : Singleton<ObjectCreator> {
     {
         createNewObject(ModelingObject.ObjectType.triangle, null, new Vector3(2f, 2.7f, 7.6f), false);
         createNewObject(ModelingObject.ObjectType.square, null, new Vector3(3.3f, 2.5f, 6.7f), false);
-        createNewObject(ModelingObject.ObjectType.octagon, null, new Vector3(4.4f, 2.1f, 5.3f), false);
+        createNewObject(ModelingObject.ObjectType.hexagon, null, new Vector3(4.4f, 2.1f, 5.3f), false);
         createNewObject(ModelingObject.ObjectType.octagon, null, new Vector3(4.9f, 1.7f, 3.4f), false);
     }
 

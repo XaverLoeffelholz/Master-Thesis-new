@@ -11,9 +11,13 @@ public class handle : MonoBehaviour {
         RotationX,
         RotationY,
         RotationZ,
+        RotationXstepwise,
+        RotationYstepwise,
+        RotationZstepwise
     };
 
     public GameObject connectedObject;
+    private ModelingObject connectedModelingObject;
 
     public handleType typeOfHandle;
     public GameObject colliderHandle;
@@ -26,19 +30,29 @@ public class handle : MonoBehaviour {
     private Vector3 lastPosition;
     private Vector3 initialLocalPositionFace;
     private Vector3 initialLocalPositionHandle;
+    private Vector3 initialPositionHandle;
     private Vector3 initialDistancceCenterScaler;
     private bool resetLastPosition = true;
+    public Transform RotationAxis;
 
     private Vector3 directionHandle;
     private float lastInput = 0f;
 
+    private bool rotateStep = false;
+    private bool locked = false;
+
     // Use this for initialization
     void Start () {
+        ResetLastPosition();
+        connectedModelingObject = connectedObject.GetComponent<ModelingObject>();
     }
 	
 	// Update is called once per frame
-	void Update () {
-     
+	void FixedUpdate () {
+        if (rotateStep && !locked)
+        {
+            RotateStepwise();
+        }
     }
 
     private float CalculateInputFromPoint(Vector3 pointOfCollision)
@@ -48,9 +62,14 @@ public class handle : MonoBehaviour {
         {
             directionHandle = Vector3.Normalize(p2.transform.position - p1.transform.position);
 
-            initialLocalPositionFace = face.center.coordinates;
+            if (face != null)
+            {
+                initialLocalPositionFace = face.center.coordinates;
+                initialDistancceCenterScaler = face.scalerPosition - face.centerPosition;
+            }
+
             initialLocalPositionHandle = transform.localPosition;
-            initialDistancceCenterScaler = face.scalerPosition - face.centerPosition;
+            initialPositionHandle = transform.position;
         }
 
         Vector3 pq = pointOfCollision - p1.transform.position;
@@ -117,13 +136,22 @@ public class handle : MonoBehaviour {
                 ChangeHeight(pointOfCollision);
                 break;
             case handleType.RotationX:
-                RotateX(pointOfCollision);
+                Rotate(pointOfCollision);
                 break;
             case handleType.RotationY:
-                RotateY(pointOfCollision);
+                Rotate(pointOfCollision);
                 break;
             case handleType.RotationZ:
-                RotateZ(pointOfCollision);
+                Rotate(pointOfCollision);
+                break;
+            case handleType.RotationXstepwise:
+                SetRotateStepTrue();
+                break;
+            case handleType.RotationYstepwise:
+                SetRotateStepTrue();
+                break;
+            case handleType.RotationZstepwise:
+                SetRotateStepTrue();
                 break;
         }
 
@@ -140,8 +168,10 @@ public class handle : MonoBehaviour {
 
         if (newDistanceCenterScaler.magnitude >= 0.1f && Vector3.Dot(initialDistancceCenterScaler, newDistanceCenterScaler)>0)
         {
-            Vector3 position = initialLocalPositionHandle + (input * new Vector3(1f, 0f, 0f));
+            Vector3 position = initialLocalPositionHandle + (-input * (face.scalerPosition-face.centerPosition).normalized);
             transform.localPosition = RasterManager.Instance.Raster(position);
+            //transform.localPosition = position;
+
 
             face.scaler.coordinates = RasterManager.Instance.Raster(positionScaler);
         }
@@ -175,57 +205,35 @@ public class handle : MonoBehaviour {
         if ((face.typeOfFace == Face.faceType.TopFace && positionFace.y > face.parentModelingObject.bottomFace.centerPosition.y) || (face.typeOfFace == Face.faceType.BottomFace && positionFace.y < face.parentModelingObject.topFace.centerPosition.y))
         {
             transform.localPosition = RasterManager.Instance.Raster(position);
+           // transform.localPosition = position;
+
             face.center.coordinates = RasterManager.Instance.Raster(positionFace);
             face.UpdateFaceFromCenter();
         }
     }
 
-    private void RotateX(GameObject pointOfCollision)
+    private void Rotate(GameObject pointOfCollision)
     {
         float input = CalculateInputFromPoint(pointOfCollision.transform.position);
 
-        // rotate
-        Vector3 rotation = new Vector3(0,0,0);
+        // multiply it with stage scale
+        transform.position = initialPositionHandle + (input * 0.5f * directionHandle);
 
+        input = RasterManager.Instance.RasterAngle(input);
+        connectedModelingObject.RotateAround((RotationAxis.transform.position - connectedObject.transform.position), input);
 
-        if (input > 0)
-        {
-            rotation.x += input * (15f);
-        }
-       
-        connectedObject.transform.Rotate(rotation);
     }
 
-    private void RotateY(GameObject pointOfCollision)
+    private void SetRotateStepTrue()
     {
-        float input = CalculateInputFromPoint(pointOfCollision.transform.position);
-
-        // rotate
-        Vector3 rotation = new Vector3(0, 0, 0);
-
-
-        if (input > 0)
-        {
-            rotation.y += input * (15f);
-        }
-       
-
-        connectedObject.transform.Rotate(rotation);
+        rotateStep = true;
     }
 
-    private void RotateZ(GameObject pointOfCollision)
+    private void RotateStepwise()
     {
-        float input = CalculateInputFromPoint(pointOfCollision.transform.position);
-        
-        // rotate
-        Vector3 rotation = new Vector3(0, 0, 0);
-
-        if (input > 0)
-        {
-            rotation.z += input * (-15f);
-        }        
-
-        connectedObject.transform.Rotate(rotation);
+        connectedModelingObject.RotateAround((RotationAxis.transform.position - connectedObject.transform.position), 45);
+        rotateStep = false;
+        locked = true;
     }
 
     public void updateHandlePosition()
@@ -237,6 +245,12 @@ public class handle : MonoBehaviour {
     public void Focus(Selection controller)
     {
 		if (!focused) {
+
+            if (typeOfHandle == handleType.RotationXstepwise)
+            {
+                Debug.Log("hovering arrow");
+            }
+
 			if (!clicked && !handles.objectFocused)	{
 
                 controller.AssignCurrentFocus(transform.gameObject);
@@ -260,5 +274,10 @@ public class handle : MonoBehaviour {
 				focused = false;
 			}
 		}
+    }
+
+    public void UnLock()
+    {
+        locked = false;
     }
 }
