@@ -69,8 +69,16 @@ public class Vertex : MonoBehaviour {
             {
                 parentVertexBundle.possibleSnappingVertexBundle = colliderVertBundle;
             }
-            
         }
+        else if (parentVertexBundle.centerVertex && col.collider.gameObject.CompareTag("Ground"))
+        {
+            parentVertexBundle.possibleGroundSnapping = col.collider.gameObject;
+        }
+        else if (parentVertexBundle.centerVertex && col.collider.gameObject.CompareTag("SnappingLine"))
+        {
+            parentVertexBundle.possibleLineSnapping = col.collider.gameObject;
+        }
+       
 
 
     }
@@ -84,6 +92,14 @@ public class Vertex : MonoBehaviour {
                 parentVertexBundle.possibleSnappingVertexBundle = null;
             }
 
+        }
+        else if (parentVertexBundle.centerVertex && col.collider.gameObject.CompareTag("Ground"))
+        {
+            parentVertexBundle.possibleGroundSnapping = null;
+        }
+        else if (parentVertexBundle.centerVertex && col.collider.gameObject.CompareTag("SnappingLine"))
+        {
+            parentVertexBundle.possibleLineSnapping = null;
         }
 
     }

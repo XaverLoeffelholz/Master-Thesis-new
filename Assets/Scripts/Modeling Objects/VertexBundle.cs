@@ -6,6 +6,8 @@ public class VertexBundle : MonoBehaviour {
     public Vector3 coordinates;
     public bool centerVertex = false;
 	public VertexBundle possibleSnappingVertexBundle;
+    public GameObject possibleLineSnapping;
+    public GameObject possibleGroundSnapping;
 
     // Use this for initialization
     void Start () {

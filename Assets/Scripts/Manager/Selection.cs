@@ -60,6 +60,8 @@ public class Selection : MonoBehaviour
     }
 	
 	// Update is called once per frame
+
+    // maybe also try update?
 	void FixedUpdate () {
 
         var device = SteamVR_Controller.Input((int)trackedObj.index);

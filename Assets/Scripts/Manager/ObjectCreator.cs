@@ -58,7 +58,7 @@ public class ObjectCreator : Singleton<ObjectCreator> {
         switch (type)
         {
 		case ModelingObject.ObjectType.triangle:
-			    newObject.GetComponent<ModelingObject> ().Initiate (triangle);
+			    newObject.GetComponent<ModelingObject> ().Initiate(triangle);
                 break;
             case ModelingObject.ObjectType.square:
                 newObject.GetComponent<ModelingObject>().Initiate(square);
@@ -132,6 +132,19 @@ public class ObjectCreator : Singleton<ObjectCreator> {
 		}
 	}
 
+    public void DuplicateObject(ModelingObject original)
+    {
+        GameObject newObject;
+        ModelingObject newModelingObject;
+
+        newObject = Instantiate(original.gameObject);
+        newObject.transform.SetParent(objects);
+        newModelingObject = newObject.GetComponent<ModelingObject>();
+
+        newObject.name = "Object " + objectIDcount;
+        newModelingObject.ObjectID = objectIDcount;
+        objectIDcount++;
+    }
 
 
 }

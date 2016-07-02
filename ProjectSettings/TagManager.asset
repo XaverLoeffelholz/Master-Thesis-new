@@ -17,6 +17,7 @@ TagManager:
   - Ground
   - Colors
   - RotateButton
+  - SnappingLine
   layers:
   - Default
   - TransparentFX

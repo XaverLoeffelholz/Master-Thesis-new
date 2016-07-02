@@ -28,6 +28,7 @@ public class Face : MonoBehaviour {
 	public GameObject VertexPrefab;
 
     private Vector3 lastScalerToCenterbottom;
+    private GameObject FaceSelectionVisual;
 
     // Use this for initialization
     void Start () {
@@ -165,13 +166,13 @@ public class Face : MonoBehaviour {
 		if (typeOfFace == faceType.TopFace) {
 			center.name = "Center Top";
             center.centerVertex = true;
-			OrderVertexBundlesClockwise ();
+			//OrderVertexBundlesClockwise ();
             SetScaler();
 
         } else if (typeOfFace == faceType.BottomFace) {
 			center.name = "Center Bottom";
             center.centerVertex = true;
-            OrderVertexBundlesClockwise ();
+          //  OrderVertexBundlesClockwise ();
             SetScaler();
 
         } else {
@@ -291,10 +292,32 @@ public class Face : MonoBehaviour {
         {
             vertexBundles[i].Show();
         }
+
+        // Display outline of face
+        FaceSelectionVisual = Instantiate(parentModelingObject.GroundVisualPrefab);
+        LineRenderer lines = FaceSelectionVisual.GetComponent<LineRenderer>();
+        lines.SetVertexCount(this.vertexBundles.Length + 1);
+
+        for (int j = 0; j <= this.vertexBundles.Length; j++)
+        {
+            if (j == this.vertexBundles.Length)
+            {
+                Vector3 pos = this.vertexBundles[0].transform.GetChild(0).position;
+                lines.SetPosition(j, pos);
+            }
+            else
+            {
+                Vector3 pos = this.vertexBundles[j].transform.GetChild(0).position;
+                lines.SetPosition(j, pos);
+            }
+
+        }
     }
 
     public void UnHighlight()
     {
+        Destroy(FaceSelectionVisual);        
+            
         for (int i = 0; i < vertexBundles.Length; i++)
         {
             vertexBundles[i].Hide();

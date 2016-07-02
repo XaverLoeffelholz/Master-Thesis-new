@@ -85,11 +85,16 @@ public class ModelingObject : MonoBehaviour
                 }
             }
 
+
+            // if the user takes an object from the library, delete other objects in the library
+            // we could also just create a new version of the taken object
+
             if (!transform.parent.CompareTag("Objects"))
             {
                 transform.SetParent(ObjectsManager.Instance.transform);
                 library.Instance.ClearLibrary();
                 transform.localEulerAngles = new Vector3(0f, 0f, 0f);
+                this.RotateAround(new Vector3(0f, 1f, 0f), 45f);
             }
 
             Vector3 newPositionCollider = transform.TransformPoint(RasterManager.Instance.Raster(transform.InverseTransformPoint(controllerForMovement.pointOfCollisionGO.transform.position)));
@@ -108,21 +113,30 @@ public class ModelingObject : MonoBehaviour
                 }
 
 
-            } else if (topFace.center.possibleSnappingVertexBundle != null)
+            }
+            else if (bottomFace.center.possibleGroundSnapping != null)
             {
                 if (!snapped || snapped && (newPositionCollider - lastPositionController).sqrMagnitude < 0.05f * transform.lossyScale.x)
                 {
                     snapped = true;
-                    Vector3 distanceCurrentTopSnap = topFace.center.possibleSnappingVertexBundle.transform.GetChild(0).position - topFace.center.transform.GetChild(0).position;
-                    this.transform.position = this.transform.position + distanceCurrentTopSnap;
+                    Vector3 distanceCurrentBottomSnap = bottomFace.center.possibleGroundSnapping.transform.position - bottomFace.center.transform.GetChild(0).position;
+                    this.transform.position = this.transform.position + new Vector3(0, distanceCurrentBottomSnap.y, 0);
                 }
-            } else 
+            }
+            else if (bottomFace.center.possibleLineSnapping != null)
+            {
+                if (!snapped || snapped && (newPositionCollider - lastPositionController).sqrMagnitude < 0.05f * transform.lossyScale.x)
+                {
+                    snapped = true;
+                    Vector3 distanceCurrentBottomSnap = bottomFace.center.possibleLineSnapping.transform.position - bottomFace.center.transform.GetChild(0).position;
+                    this.transform.position = this.transform.position + new Vector3(distanceCurrentBottomSnap.x, 0f, distanceCurrentBottomSnap.x);
+                }
+            }
+            else 
             {
                 snapped = false;
                 lastPositionController = newPositionCollider;
             }
-
-
 
             lastPositionX = PositionOnMovementStart;
             lastPositionY = PositionOnMovementStart;
@@ -143,7 +157,9 @@ public class ModelingObject : MonoBehaviour
                             GameObject CenterVisual = Instantiate(CenterVisualPrefab);
                             CenterVisual.transform.SetParent(DistanceVisualisation);
                             CenterVisual.transform.localEulerAngles = new Vector3(0f, 0f, 0f);
-                            CenterVisual.transform.localScale = new Vector3(1f, 1f, 1f) * (1f + (1f-;
+
+                            // change size depending on scale of stage
+                            CenterVisual.transform.localScale = new Vector3(1f, 1f, 1f);
                             CenterVisual.transform.position = PositionOnMovementStart;
 
                             // Display center of object after moving
@@ -318,6 +334,7 @@ public class ModelingObject : MonoBehaviour
 		InitializeVertices ();
 
         // if this is a square, we want to rotate it's coordinate system
+        RotateAround(new Vector3(0f, 1f, 0f), 45f);
 
     }
 
@@ -670,7 +687,7 @@ public class ModelingObject : MonoBehaviour
 
 		for (int i = 0; i < faces.Length; i++) {
 
-			if (Mathf.Abs(Vector3.Dot((faces[i].center.transform.GetChild(0).transform.position - pointOfCollision), faces[i].normal)) <= 0.1){
+			if (Mathf.Abs(Vector3.Dot((faces[i].center.transform.GetChild(0).transform.position - pointOfCollision), transform.TransformDirection(faces[i].normal))) <= 0.01){
                 idOfSmallest = i;
 			}
 		}
