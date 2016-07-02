@@ -216,11 +216,10 @@ public class handle : MonoBehaviour {
     {
         float input = CalculateInputFromPoint(pointOfCollision.transform.position);
 
-        // multiply it with stage scale
         transform.position = initialPositionHandle + (input * 0.5f * directionHandle);
 
         input = RasterManager.Instance.RasterAngle(input);
-        connectedModelingObject.RotateAround((RotationAxis.transform.position - connectedObject.transform.position), input);
+        connectedModelingObject.RotateAround((RotationAxis.transform.position - connectedObject.transform.position), input*0.5f);
 
     }
 

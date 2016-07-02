@@ -143,7 +143,7 @@ public class ModelingObject : MonoBehaviour
                             GameObject CenterVisual = Instantiate(CenterVisualPrefab);
                             CenterVisual.transform.SetParent(DistanceVisualisation);
                             CenterVisual.transform.localEulerAngles = new Vector3(0f, 0f, 0f);
-                            CenterVisual.transform.localScale = new Vector3(1f, 1f, 1f);
+                            CenterVisual.transform.localScale = new Vector3(1f, 1f, 1f) * (1f + (1f-;
                             CenterVisual.transform.position = PositionOnMovementStart;
 
                             // Display center of object after moving
