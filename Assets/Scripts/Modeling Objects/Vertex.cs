@@ -3,7 +3,7 @@ using System.Collections;
 
 public class Vertex : MonoBehaviour {
 
-    private VertexBundle parentVertexBundle;
+    public VertexBundle parentVertexBundle;
     public ModelingObject parentObject;
 	public Vector3 normal;
     public bool moving;
@@ -61,46 +61,48 @@ public class Vertex : MonoBehaviour {
 
     void OnCollisionEnter(Collision col)
     {
-        if (parentVertexBundle.centerVertex && col.collider.gameObject.CompareTag("Vertex") && col.collider.transform.parent != transform.parent)
+        if (parentObject.moving)
         {
-            VertexBundle colliderVertBundle = col.collider.transform.parent.GetComponent<VertexBundle>();
-
-            if (colliderVertBundle.centerVertex)
+            if (parentVertexBundle.centerVertex && col.collider.gameObject.CompareTag("Vertex") && col.collider.transform.parent != transform.parent)
             {
-                parentVertexBundle.possibleSnappingVertexBundle = colliderVertBundle;
+                VertexBundle colliderVertBundle = col.collider.transform.parent.GetComponent<VertexBundle>();
+
+                if (colliderVertBundle.centerVertex)
+                {
+                    parentVertexBundle.possibleSnappingVertexBundle = colliderVertBundle;
+                }
             }
-        }
-        else if (parentVertexBundle.centerVertex && col.collider.gameObject.CompareTag("Ground"))
-        {
-            parentVertexBundle.possibleGroundSnapping = col.collider.gameObject;
-        }
-        else if (parentVertexBundle.centerVertex && col.collider.gameObject.CompareTag("SnappingLine"))
-        {
-            parentVertexBundle.possibleLineSnapping = col.collider.gameObject;
-        }
-       
-
-
+            else if (parentVertexBundle.centerVertex && col.collider.gameObject.CompareTag("Ground"))
+            {
+                parentVertexBundle.possibleGroundSnapping = col.collider.gameObject;
+            }
+            else if (parentVertexBundle.centerVertex && col.collider.gameObject.CompareTag("SnappingLine"))
+            {
+                parentVertexBundle.possibleLineSnapping = col.collider.gameObject;
+            }
+        }  
     }
 
     void OnCollisionExit(Collision col)
     {
-        if (col.collider.gameObject.CompareTag("Vertex") && col.collider.transform.parent != transform.parent)
+        if (parentObject.moving)
         {
-            if (col.collider.transform.parent.GetComponent<VertexBundle>().centerVertex)
+            if (col.collider.gameObject.CompareTag("Vertex") && col.collider.transform.parent != transform.parent)
             {
-                parentVertexBundle.possibleSnappingVertexBundle = null;
+                if (col.collider.transform.parent.GetComponent<VertexBundle>().centerVertex)
+                {
+                    parentVertexBundle.possibleSnappingVertexBundle = null;
+                }
+
             }
-
+            else if (parentVertexBundle.centerVertex && col.collider.gameObject.CompareTag("Ground"))
+            {
+                parentVertexBundle.possibleGroundSnapping = null;
+            }
+            else if (parentVertexBundle.centerVertex && col.collider.gameObject.CompareTag("SnappingLine"))
+            {
+                parentVertexBundle.possibleLineSnapping = null;
+            }
         }
-        else if (parentVertexBundle.centerVertex && col.collider.gameObject.CompareTag("Ground"))
-        {
-            parentVertexBundle.possibleGroundSnapping = null;
-        }
-        else if (parentVertexBundle.centerVertex && col.collider.gameObject.CompareTag("SnappingLine"))
-        {
-            parentVertexBundle.possibleLineSnapping = null;
-        }
-
     }
 }

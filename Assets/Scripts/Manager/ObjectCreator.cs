@@ -141,6 +141,9 @@ public class ObjectCreator : Singleton<ObjectCreator> {
         newObject.transform.SetParent(objects);
         newModelingObject = newObject.GetComponent<ModelingObject>();
 
+        newObject.transform.position = original.topFace.center.transform.GetChild(0).position;
+        newObject.transform.position = newObject.transform.position + (newObject.transform.position - newModelingObject.bottomFace.center.transform.GetChild(0).position);
+
         newObject.name = "Object " + objectIDcount;
         newModelingObject.ObjectID = objectIDcount;
         objectIDcount++;

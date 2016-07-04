@@ -172,7 +172,7 @@ public class Face : MonoBehaviour {
         } else if (typeOfFace == faceType.BottomFace) {
 			center.name = "Center Bottom";
             center.centerVertex = true;
-          //  OrderVertexBundlesClockwise ();
+           // OrderVertexBundlesClockwise ();
             SetScaler();
 
         } else {
@@ -296,6 +296,7 @@ public class Face : MonoBehaviour {
         // Display outline of face
         FaceSelectionVisual = Instantiate(parentModelingObject.GroundVisualPrefab);
         LineRenderer lines = FaceSelectionVisual.GetComponent<LineRenderer>();
+        lines.SetWidth(0.2f, 0.2f);
         lines.SetVertexCount(this.vertexBundles.Length + 1);
 
         for (int j = 0; j <= this.vertexBundles.Length; j++)

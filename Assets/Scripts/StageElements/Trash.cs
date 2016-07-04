@@ -3,6 +3,8 @@ using System.Collections;
 
 public class Trash : Singleton<Trash> {
     private Color initialColor;
+    public Selection controller1;
+    public Selection controller2;
 
 	// Use this for initialization
 	void Start () {
@@ -20,17 +22,19 @@ public class Trash : Singleton<Trash> {
         {
             TrashAreaActive(true);
             other.transform.parent.GetComponent<ModelingObject>().inTrashArea = true;
+            controller1.TriggerIfPressed(1500);
+            controller2.TriggerIfPressed(1500);
         }
     }
 
     void OnTriggerExit(Collider other)
     {
-
-
         if (other.gameObject.CompareTag("Mesh"))
         {
             TrashAreaActive(false);
             other.transform.parent.GetComponent<ModelingObject>().inTrashArea = false;
+            controller1.TriggerIfPressed(1500);
+            controller2.TriggerIfPressed(1500);
         }
     }
 

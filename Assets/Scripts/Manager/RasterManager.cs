@@ -7,16 +7,6 @@ public class RasterManager : Singleton<RasterManager> {
     public float rasterLevel;
     public float rasterLevelAngles;
 
-    public float max_X;
-    public float min_X;
-
-    public float max_Y;
-    public float min_Y;
-
-    public float max_Z;
-    public float min_Z;
-
-
     // Use this for initialization
     void Start () {
 	
@@ -55,6 +45,7 @@ public class RasterManager : Singleton<RasterManager> {
     public float RasterAngle(float input)
     {
         float count = Mathf.Round(input / rasterLevelAngles);
-        return count;
+        float rasteredFloat = count * rasterLevelAngles;
+        return rasteredFloat;
     }
 }

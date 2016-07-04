@@ -230,7 +230,7 @@ public class handle : MonoBehaviour {
 
     private void RotateStepwise()
     {
-        connectedModelingObject.RotateAround((RotationAxis.transform.position - connectedObject.transform.position), 45);
+        connectedModelingObject.RotateAround((RotationAxis.transform.position - connectedObject.transform.position), 45f);
         rotateStep = false;
         locked = true;
     }

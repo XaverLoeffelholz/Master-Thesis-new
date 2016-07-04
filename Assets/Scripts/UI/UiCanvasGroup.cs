@@ -30,6 +30,18 @@ public class UiCanvasGroup : Singleton<UiCanvasGroup>{
 
     }
 
+    public void DeactivateMenus()
+    {
+        foreach (Transform menu in transform)
+        {
+           // deactivate all buttons in other menus
+           foreach (Transform button in menu)
+           {
+                    button.gameObject.SetActive(false);
+           }
+        }
+    }
+
     public void PositionUI()
     {
         if (currentModelingObject)
@@ -43,26 +55,24 @@ public class UiCanvasGroup : Singleton<UiCanvasGroup>{
         }
     }
 
-    public void OpenMainMenu(ModelingObject modelingObject)
+    public void OpenMainMenu(ModelingObject modelingObject, Selection controller)
     {
         currentModelingObject = modelingObject;
-      //  PositionUI();
+
+        // let menu always face controller that selected object
+     //   player = controller.gameObject;
         MainMenu.GetComponent<UIMenu>().ActivateMenu();
     }
 
     public void Show()
     {
-        canvGroup.blocksRaycasts = true;
-        canvGroup.interactable = true;
         LeanTween.alphaCanvas(canvGroup, 1f, 0.3f);
         visible = true;
     }
 
     public void Hide()
     {
-        canvGroup.blocksRaycasts = false;
-        canvGroup.interactable = false;
-        LeanTween.alphaCanvas(canvGroup, 0f, 0.3f);
+        LeanTween.alphaCanvas(canvGroup, 0f, 0.3f).setOnComplete(DeactivateMenus);
 
         if (currentModelingObject!= null)
         {
@@ -84,12 +94,11 @@ public class UiCanvasGroup : Singleton<UiCanvasGroup>{
         // define height based on number of elements
         float height = elements.Count * positioningHeight;
 
-        // old
         for (int i=0; i < elements.Count; i++)
         {
-            float x = (i * positioningWidth) - width / 2;
+            float x = ((i+1) * positioningWidth) - width / 2;
 
-            float y = - (((Mathf.Sin((float) i / (float) elements.Count * Mathf.PI)) * positioningHeight) - height / 2);
+            float y = - (((Mathf.Sin((float) (i+1) / (float) elements.Count * Mathf.PI)) * positioningHeight) - height / 2);
             elements[i].GetComponent<RectTransform>().anchoredPosition3D = new Vector3(x, y, 0f);
         }
     }

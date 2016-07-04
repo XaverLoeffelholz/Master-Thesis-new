@@ -57,10 +57,19 @@ public class Selection : MonoBehaviour
     public void AdjustLengthPointer(float MaxDistance)
     {
         LaserPointer.transform.localScale = new Vector3 (1,1,Mathf.Clamp(MaxDistance, 0f,50f));
+
+        // add visual for contact
     }
 	
-	// Update is called once per frame
+    public void TriggerIfPressed(ushort duration)
+    {
+        if (triggerPressed)
+        {
+            SteamVR_Controller.Input((int)trackedObj.index).TriggerHapticPulse(duration);
+        }
+    }
 
+	// Update is called once per frame
     // maybe also try update?
 	void FixedUpdate () {
 
@@ -78,7 +87,19 @@ public class Selection : MonoBehaviour
         {
             if (Physics.Raycast(LaserPointer.transform.position, LaserPointer.transform.forward, out hit))
             {
-                uiPositon = cam.transform.position + cam.transform.forward * 1.6f + ((-0.8f) * cam.transform.up);
+                if (currentFocus != null)
+                {
+                    float stagescale = transform.GetComponent<StageController>().stage.parent.localScale.x;
+                    Vector3 directionLaserPointerObject = (currentFocus.transform.position - LaserPointer.transform.position).normalized;
+
+                    if (hit.distance < 1.1)
+                    {
+                        uiPositon = currentFocus.transform.position - (directionLaserPointerObject * hit.distance) * 0.1f + ((-0.7f) * Vector3.up * Mathf.Min(stagescale, 1f));
+                    } else
+                    {
+                        uiPositon = LaserPointer.transform.position + directionLaserPointerObject * 1.6f + ((-0.6f) * Vector3.up);
+                    }
+                }
 
                 AdjustLengthPointer(hit.distance);
 
@@ -106,10 +127,12 @@ public class Selection : MonoBehaviour
                         else if (currentFocus.CompareTag("Handle"))
                         {
                             currentFocus.GetComponent<handle>().Focus(this);
+                            device.TriggerHapticPulse(300);
                         }
                         else if (currentFocus.CompareTag("UiElement"))
                         {
                             currentFocus.GetComponent<UiElement>().Focus(this);
+                            device.TriggerHapticPulse(300);
                         }
                     }
 
@@ -196,6 +219,7 @@ public class Selection : MonoBehaviour
                 if (currentFocus.GetComponent<ModelingObject>().inTrashArea)
                 {
                     currentFocus.GetComponent<ModelingObject>().TrashObject();
+                    device.TriggerHapticPulse(1000);
                 }
             }
 
@@ -204,11 +228,12 @@ public class Selection : MonoBehaviour
 
             if (currentFocus != null)
             {
-                if (currentFocus.CompareTag("ModelingObject") && Time.time - temps <= 0.6f && !objectTooClose)
+                if (currentFocus.CompareTag("ModelingObject") && Time.time - temps <= 0.6f)
                 {
-                    if (currentSelection != null)
+                    if (currentSelection != null && currentSelection != currentFocus)
                     {
                         currentSelection.GetComponent<ModelingObject>().DeSelect(this);
+                        UiCanvasGroup.Instance.Hide();
                     }
 
                     if (!faceSelection) {

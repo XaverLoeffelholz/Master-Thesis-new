@@ -47,7 +47,7 @@ public class UIMenu : MonoBehaviour {
     public void ActivateMenu()
     {
         // Hide the menu
-        transform.parent.GetComponent<UiCanvasGroup>().Hide();
+       // transform.parent.GetComponent<UiCanvasGroup>().Hide();
 
         // get all menus, deactivate them
         List<GameObject> UiMenus = new List<GameObject>();
@@ -153,7 +153,7 @@ public class UIMenu : MonoBehaviour {
 
     public void Duplicate()
     {
-
+        ObjectCreator.Instance.DuplicateObject(parentCanvas.currentModelingObject);
     }
 
     public void ChangeColor(UiElement button)

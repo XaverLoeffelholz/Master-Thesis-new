@@ -9,6 +9,7 @@ public class BiManualOperations : Singleton<BiManualOperations> {
     private bool scalingStarted;
     private Vector3 initialscale;
     private Vector3 initialDistance;
+    private Vector3 lastDistance;
 
     // Use this for initialization
     void Start () {
@@ -48,15 +49,33 @@ public class BiManualOperations : Singleton<BiManualOperations> {
         initialscale = controller1.currentFocus.transform.localScale;
         controller1.currentFocus.GetComponent<ModelingObject>().StartScaling();
 
-        initialDistance = controller1.pointOfCollisionGO.transform.position - controller2.pointOfCollisionGO.transform.position;
+        initialDistance = controller2.pointOfCollisionGO.transform.position - controller1.pointOfCollisionGO.transform.position;
+        lastDistance = initialDistance;
     }
 
     public void ScaleObject()
     {
-        // move scaler of object
-        float newScale = (controller1.pointOfCollisionGO.transform.position - controller2.pointOfCollisionGO.transform.position).magnitude / initialDistance.magnitude;
+        Vector3 newDistance = (controller2.pointOfCollisionGO.transform.position - controller1.pointOfCollisionGO.transform.position);
 
-        controller1.currentFocus.GetComponent<ModelingObject>().ScaleBy(newScale);
+        // move scaler of object
+        float newScale = newDistance.magnitude / initialDistance.magnitude;
+
+        // controller1.currentFocus.GetComponent<ModelingObject>().ScaleBy(newScale);
+
+        // get Rotation between new and last rotation
+        Vector3 rotation = Quaternion.FromToRotation((controller2.pointOfCollisionGO.transform.position - controller1.pointOfCollisionGO.transform.position), lastDistance).eulerAngles;
+
+        rotation = new Vector3(RasterManager.Instance.RasterAngle(rotation.x), RasterManager.Instance.RasterAngle(rotation.y), RasterManager.Instance.RasterAngle(rotation.z));
+
+        // check that they are not 360
+        if (!((rotation.x == 0f || rotation.x == 360f) && (rotation.y == 0f || rotation.y == 360f) && (rotation.z == 0f || rotation.z == 360f)))
+        {
+            lastDistance = newDistance;
+        }
+
+        controller1.currentFocus.GetComponent<ModelingObject>().RotateAround(new Vector3(1f, 0f, 0f), -rotation.x);
+        controller1.currentFocus.GetComponent<ModelingObject>().RotateAround(new Vector3(0f, 1f, 0f), -rotation.y);
+        controller1.currentFocus.GetComponent<ModelingObject>().RotateAround(new Vector3(0f, 0f, 1f), -rotation.z);
     }
 
     public bool IsScalingStarted()

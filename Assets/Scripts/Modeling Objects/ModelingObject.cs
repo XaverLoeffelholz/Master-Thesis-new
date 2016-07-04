@@ -20,9 +20,9 @@ public class ModelingObject : MonoBehaviour
     [HideInInspector]
     public bool selected;
 
-    private Mesh mesh;
+    public Mesh mesh;
     private MeshCollider meshCollider;
-    private Vector3[] MeshCordinatesVertices;
+    public Vector3[] MeshCordinatesVertices;
     private Vector2[] MeshUV;
     private int[] MeshTriangles;
 
@@ -42,7 +42,7 @@ public class ModelingObject : MonoBehaviour
     private Selection controllerForMovement;
     private Vector3 lastPositionController;
 
-    private bool moving = false;
+    public bool moving = false;
     bool focused = false;
 
     private Vector3 PositionOnMovementStart;
@@ -63,6 +63,7 @@ public class ModelingObject : MonoBehaviour
     public VertexBundle scalerObject;
 
     public bool inTrashArea = false;
+    public GameObject coordinateSystem;
 
     // Use this for initialization
     void Start()
@@ -94,7 +95,6 @@ public class ModelingObject : MonoBehaviour
                 transform.SetParent(ObjectsManager.Instance.transform);
                 library.Instance.ClearLibrary();
                 transform.localEulerAngles = new Vector3(0f, 0f, 0f);
-                this.RotateAround(new Vector3(0f, 1f, 0f), 45f);
             }
 
             Vector3 newPositionCollider = transform.TransformPoint(RasterManager.Instance.Raster(transform.InverseTransformPoint(controllerForMovement.pointOfCollisionGO.transform.position)));
@@ -106,32 +106,53 @@ public class ModelingObject : MonoBehaviour
             // here check for possible snappings
             if (bottomFace.center.possibleSnappingVertexBundle != null)
             {
-                if (!snapped || snapped && (newPositionCollider - lastPositionController).sqrMagnitude < 0.05f * transform.lossyScale.x){
+                if (!snapped){
+                    controllerForMovement.TriggerIfPressed(1500);
                     snapped = true;
+                }
+
+                if ((snapped && (newPositionCollider - lastPositionController).sqrMagnitude < 0.04f * transform.lossyScale.x))
+                {
                     Vector3 distanceCurrentBottomSnap = bottomFace.center.possibleSnappingVertexBundle.transform.GetChild(0).position - bottomFace.center.transform.GetChild(0).position;
                     this.transform.position = this.transform.position + distanceCurrentBottomSnap;
                 }
-
-
             }
             else if (bottomFace.center.possibleGroundSnapping != null)
             {
-                if (!snapped || snapped && (newPositionCollider - lastPositionController).sqrMagnitude < 0.05f * transform.lossyScale.x)
+                if (!snapped)
                 {
+                    controllerForMovement.TriggerIfPressed(800);
                     snapped = true;
-                    Vector3 distanceCurrentBottomSnap = bottomFace.center.possibleGroundSnapping.transform.position - bottomFace.center.transform.GetChild(0).position;
-                    this.transform.position = this.transform.position + new Vector3(0, distanceCurrentBottomSnap.y, 0);
                 }
-            }
+
+                if ((snapped && (newPositionCollider - lastPositionController).sqrMagnitude < 0.02f * transform.lossyScale.x))
+                {                    
+                    Vector3 newPos = this.transform.position;
+                    newPos.y = bottomFace.center.possibleGroundSnapping.transform.position.y + (transform.position.y - bottomFace.center.transform.GetChild(0).position.y);
+                    this.transform.position = newPos;
+
+                    lastPositionController = new Vector3(newPositionCollider.x, lastPositionController.y, newPositionCollider.z);
+                }
+
+            } /*
             else if (bottomFace.center.possibleLineSnapping != null)
             {
-                if (!snapped || snapped && (newPositionCollider - lastPositionController).sqrMagnitude < 0.05f * transform.lossyScale.x)
+                if (!snapped)
                 {
+                    controllerForMovement.TriggerIfPressed(800);
                     snapped = true;
-                    Vector3 distanceCurrentBottomSnap = bottomFace.center.possibleLineSnapping.transform.position - bottomFace.center.transform.GetChild(0).position;
-                    this.transform.position = this.transform.position + new Vector3(distanceCurrentBottomSnap.x, 0f, distanceCurrentBottomSnap.x);
                 }
-            }
+
+                if ((snapped && (newPositionCollider - lastPositionController).sqrMagnitude < 0.02f * transform.lossyScale.x))
+                {
+                    Vector3 newPos = this.transform.position;
+                    newPos.x = bottomFace.center.possibleLineSnapping.transform.position.x + (transform.position.x - bottomFace.center.transform.GetChild(0).position.x);
+                    newPos.z = bottomFace.center.possibleLineSnapping.transform.position.z + (transform.position.z - bottomFace.center.transform.GetChild(0).position.z);
+                    this.transform.position = newPos;
+
+                    lastPositionController = new Vector3(lastPositionController.x, newPositionCollider.y, lastPositionController.z);
+                }
+            } */
             else 
             {
                 snapped = false;
@@ -276,7 +297,6 @@ public class ModelingObject : MonoBehaviour
     
         }
     }
-
 
 
     public void Initiate(Mesh initialShape)
@@ -450,13 +470,13 @@ public class ModelingObject : MonoBehaviour
 
     public void RotateHandles()
     {
-        handles.faceTopScale.transform.localRotation = Quaternion.FromToRotation(handles.faceTopScale.transform.up, (topFace.scalerPosition - topFace.centerPosition));
-        handles.CenterTopPosition.transform.localRotation = Quaternion.FromToRotation(handles.CenterTopPosition.transform.up, topFace.normal);
-        handles.HeightTop.transform.localRotation = Quaternion.FromToRotation(handles.HeightTop.transform.up, topFace.normal);
+        handles.faceTopScale.transform.localRotation = Quaternion.FromToRotation(handles.faceTopScale.transform.up, transform.TransformDirection(topFace.scalerPosition - topFace.centerPosition));
+        handles.CenterTopPosition.transform.localRotation = Quaternion.FromToRotation(handles.CenterTopPosition.transform.up, transform.TransformDirection(topFace.normal));
+        handles.HeightTop.transform.localRotation = Quaternion.FromToRotation(handles.HeightTop.transform.up, transform.TransformDirection(topFace.normal));
 
-        handles.faceBottomScale.transform.localRotation = Quaternion.FromToRotation(handles.faceBottomScale.transform.up, (bottomFace.scalerPosition - bottomFace.centerPosition));
-        handles.CenterBottomPosition.transform.localRotation = Quaternion.FromToRotation(handles.CenterBottomPosition.transform.up, bottomFace.normal);
-        handles.HeightBottom.transform.localRotation = Quaternion.FromToRotation(handles.HeightBottom.transform.up, bottomFace.normal);
+        handles.faceBottomScale.transform.localRotation = Quaternion.FromToRotation(handles.faceBottomScale.transform.up, transform.TransformDirection(bottomFace.scalerPosition - bottomFace.centerPosition));
+        handles.CenterBottomPosition.transform.localRotation = Quaternion.FromToRotation(handles.CenterBottomPosition.transform.up, transform.TransformDirection(bottomFace.normal));
+        handles.HeightBottom.transform.localRotation = Quaternion.FromToRotation(handles.HeightBottom.transform.up, transform.TransformDirection(bottomFace.normal));
     }
 
     public void InitiateHandles()
@@ -511,7 +531,7 @@ public class ModelingObject : MonoBehaviour
         handles.gameObject.transform.GetChild(0).gameObject.SetActive(true);
 
         UiCanvasGroup.Instance.transform.position = uiPosition;
-        UiCanvasGroup.Instance.OpenMainMenu(this);
+        UiCanvasGroup.Instance.OpenMainMenu(this, controller);
 
     }
 
@@ -747,6 +767,22 @@ public class ModelingObject : MonoBehaviour
         transform.GetChild(0).GetComponent<Renderer>().material.color = color;
     }
 
+    public void RotateAroundX(float angle)
+    {
+        RotateAround((coordinateSystem.transform.GetChild(0).position - transform.position).normalized, angle);
+    }
+
+    public void RotateAroundY(float angle)
+    {
+        RotateAround((coordinateSystem.transform.GetChild(1).position - transform.position).normalized, angle);
+    }
+
+    public void RotateAroundZ(float angle)
+    {
+        RotateAround((coordinateSystem.transform.GetChild(2).position - transform.position).normalized, angle);
+    }
+
+
     public void RotateAround(Vector3 angleAxis, float angle)
     {
         for(int i=0; i < topFace.vertexBundles.Length; i++)
@@ -779,6 +815,9 @@ public class ModelingObject : MonoBehaviour
         handles.HeightBottom.transform.RotateAround(new Vector3(0f, 0f, 0f), angleAxis, angle);
         handles.faceTopScale.transform.RotateAround(new Vector3(0f, 0f, 0f), angleAxis, angle);
         handles.faceBottomScale.transform.RotateAround(new Vector3(0f, 0f, 0f), angleAxis, angle);
+
+        // update inner coordinate system
+        coordinateSystem.transform.RotateAround(new Vector3(0f, 0f, 0f), angleAxis, angle);
     }
 
 }
