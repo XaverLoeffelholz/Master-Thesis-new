@@ -17,7 +17,7 @@ public class ObjectCreator : Singleton<ObjectCreator> {
 
     // Use this for initialization
     void Start () {
-        createNewObject(ModelingObject.ObjectType.square, null, new Vector3(0, 0.5f, 0f), true);
+        createNewObject(square, ModelingObject.ObjectType.square, null, new Vector3(0, 0.5f, 0f), true);
         ObjectCreator.Instance.createSetofObjects();
     }
 
@@ -29,13 +29,13 @@ public class ObjectCreator : Singleton<ObjectCreator> {
 
     public void createSetofObjects()
     {
-        createNewObject(ModelingObject.ObjectType.triangle, null, new Vector3(2f, 2.7f, 7.6f), false);
-        createNewObject(ModelingObject.ObjectType.square, null, new Vector3(3.3f, 2.5f, 6.7f), false);
-        createNewObject(ModelingObject.ObjectType.hexagon, null, new Vector3(4.4f, 2.1f, 5.3f), false);
-        createNewObject(ModelingObject.ObjectType.octagon, null, new Vector3(4.9f, 1.7f, 3.4f), false);
+        createNewObject(triangle, ModelingObject.ObjectType.triangle, null, new Vector3(2f, 2.7f, 7.6f), false);
+        createNewObject(square, ModelingObject.ObjectType.square, null, new Vector3(3.3f, 2.5f, 6.7f), false);
+        createNewObject(hexagon, ModelingObject.ObjectType.hexagon, null, new Vector3(4.4f, 2.1f, 5.3f), false);
+        createNewObject(octagon, ModelingObject.ObjectType.octagon, null, new Vector3(4.9f, 1.7f, 3.4f), false);
     }
 
-	public void createNewObject(ModelingObject.ObjectType type, Face groundface, Vector3 offSet, bool insideStage)
+	public void createNewObject(Mesh mesh, ModelingObject.ObjectType type, Face groundface, Vector3 offSet, bool insideStage)
     {
         GameObject newObject = new GameObject();
         newObject = Instantiate(modelingObject);
@@ -55,23 +55,7 @@ public class ObjectCreator : Singleton<ObjectCreator> {
 
         newModelingObject.typeOfObject = type;
 
-        switch (type)
-        {
-		case ModelingObject.ObjectType.triangle:
-			    newObject.GetComponent<ModelingObject> ().Initiate(triangle);
-                break;
-            case ModelingObject.ObjectType.square:
-                newObject.GetComponent<ModelingObject>().Initiate(square);
-                break;
-            case ModelingObject.ObjectType.hexagon:
-                newObject.GetComponent<ModelingObject>().Initiate(hexagon);
-                break;
-            case ModelingObject.ObjectType.octagon:
-                newObject.GetComponent<ModelingObject>().Initiate(octagon);
-                break;
-        }
-
-
+        newObject.GetComponent<ModelingObject>().Initiate(mesh);
 
         if (groundface != null) {
 
@@ -118,35 +102,26 @@ public class ObjectCreator : Singleton<ObjectCreator> {
 		switch (numberOfVertices) 
 		{
 		case 3:
-			createNewObject (ModelingObject.ObjectType.triangle, groundface, offset, true);
+			createNewObject (triangle, ModelingObject.ObjectType.triangle, groundface, offset, true);
             break;
 		case 4:
-			createNewObject (ModelingObject.ObjectType.square, groundface, offset, true);
+			createNewObject (square, ModelingObject.ObjectType.square, groundface, offset, true);
             break;
 		case 6:
-			createNewObject (ModelingObject.ObjectType.hexagon, groundface, offset, true);
+			createNewObject (hexagon, ModelingObject.ObjectType.hexagon, groundface, offset, true);
             break;
 		case 8:
-			createNewObject (ModelingObject.ObjectType.octagon, groundface, offset, true);
+			createNewObject (octagon, ModelingObject.ObjectType.octagon, groundface, offset, true);
             break;
 		}
 	}
 
     public void DuplicateObject(ModelingObject original)
     {
-        GameObject newObject;
-        ModelingObject newModelingObject;
+        Vector3 position = original.topFace.center.transform.GetChild(0).position;
+        position = position + (position - original.bottomFace.center.transform.GetChild(0).position);
 
-        newObject = Instantiate(original.gameObject);
-        newObject.transform.SetParent(objects);
-        newModelingObject = newObject.GetComponent<ModelingObject>();
-
-        newObject.transform.position = original.topFace.center.transform.GetChild(0).position;
-        newObject.transform.position = newObject.transform.position + (newObject.transform.position - newModelingObject.bottomFace.center.transform.GetChild(0).position);
-
-        newObject.name = "Object " + objectIDcount;
-        newModelingObject.ObjectID = objectIDcount;
-        objectIDcount++;
+        createNewObject(original.mesh, original.typeOfObject, null, position, true);
     }
 
 
