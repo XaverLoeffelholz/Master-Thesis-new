@@ -25,7 +25,6 @@ public class VertexBundle : MonoBehaviour {
 
 		foreach (Vertex vert in vertices) {
 			vert.Initialize ();
-
             if (!centerVertex)
             {
                 Collider col = vert.GetComponent<SphereCollider>();

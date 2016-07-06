@@ -17,10 +17,10 @@ public class Vertex : MonoBehaviour {
     }
 
 	public void Initialize() {
+        parentVertexBundle = transform.parent.GetComponent<VertexBundle>();
+        parentObject = transform.parent.parent.parent.parent.GetComponent<ModelingObject>();
+        initialized = true;
 
-		parentVertexBundle = transform.parent.GetComponent<VertexBundle>();
-		parentObject = transform.parent.parent.parent.parent.GetComponent<ModelingObject>();
-		initialized = true;
 	}
 	
 	// Update is called once per frame

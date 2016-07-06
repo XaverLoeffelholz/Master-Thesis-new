@@ -18,6 +18,9 @@ TagManager:
   - Colors
   - RotateButton
   - SnappingLine
+  - Group
+  - TeleportTrigger
+  - SelectionButton
   layers:
   - Default
   - TransparentFX

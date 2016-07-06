@@ -6,6 +6,8 @@ public class ObjectsManager : Singleton<ObjectsManager>
     // restructure, create List of Objects
 
     public Transform DistanceVisualisation;
+    public GameObject groupPrefab;
+    public Group currentGroup;
 
     // Use this for initialization
     void Start () {
@@ -47,5 +49,37 @@ public class ObjectsManager : Singleton<ObjectsManager>
         ModelingObject m = GameObject.Find("Object " + i).GetComponent<ModelingObject>();
 
         return m;
+    }
+
+    public Group CreateGroup()
+    {
+        GameObject newgroup = Instantiate(groupPrefab);
+        newgroup.transform.SetParent(transform);
+
+        newgroup.transform.localPosition = Vector3.zero;
+        newgroup.transform.localEulerAngles = Vector3.zero;
+        newgroup.transform.localScale = Vector3.one;
+
+        currentGroup = newgroup.GetComponent<Group>();
+        return currentGroup;
+    }
+
+    public void AddObjectToGroup(Group group, ModelingObject modelingObject)
+    {
+        modelingObject.transform.SetParent(group.transform);
+        modelingObject.group = group;
+        group.objectList.Add(modelingObject);
+    }
+
+    public void TakeObjectOutOfGroup(Group group, ModelingObject modelingObject)
+    {
+        modelingObject.transform.SetParent(group.transform.parent);
+        modelingObject.group = null;
+        group.objectList.Remove(modelingObject);
+    }
+
+    public void ReOpenGroup(Group group)
+    {
+        currentGroup = group.GetComponent<Group>();
     }
 }

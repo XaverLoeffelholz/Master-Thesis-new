@@ -166,13 +166,13 @@ public class Face : MonoBehaviour {
 		if (typeOfFace == faceType.TopFace) {
 			center.name = "Center Top";
             center.centerVertex = true;
-			//OrderVertexBundlesClockwise ();
+			OrderVertexBundlesClockwise ();
             SetScaler();
 
         } else if (typeOfFace == faceType.BottomFace) {
 			center.name = "Center Bottom";
             center.centerVertex = true;
-           // OrderVertexBundlesClockwise ();
+            OrderVertexBundlesClockwise ();
             SetScaler();
 
         } else {
@@ -202,7 +202,6 @@ public class Face : MonoBehaviour {
 					if (newDistance > distance) {
 						distance = newDistance;
 						idOfnextBundle = j;
-
 					}
 				}
 
@@ -210,7 +209,6 @@ public class Face : MonoBehaviour {
 
 			distance = 0f;
 			OrderedVertexBundles [i] = LeftVertexBundles [idOfnextBundle];
-			//Debug.Log ("next point: " + OrderedVertexBundles [i].coordinates);
 			LeftVertexBundles [idOfnextBundle] = null;
 
 		}
@@ -296,7 +294,8 @@ public class Face : MonoBehaviour {
         // Display outline of face
         FaceSelectionVisual = Instantiate(parentModelingObject.GroundVisualPrefab);
         LineRenderer lines = FaceSelectionVisual.GetComponent<LineRenderer>();
-        lines.SetWidth(0.2f, 0.2f);
+        lines.SetWidth(0.02f, 0.02f);
+        lines.SetColors(Color.white, Color.white);
         lines.SetVertexCount(this.vertexBundles.Length + 1);
 
         for (int j = 0; j <= this.vertexBundles.Length; j++)

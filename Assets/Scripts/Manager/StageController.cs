@@ -49,9 +49,20 @@ public class StageController : MonoBehaviour {
                 // get vector between controller and current object
                 Vector3 ObjectToController = selection.currentFocus.transform.position - transform.position;
 
+                //maybe move this part into modelingobject
+                Vector3 prevPosition = selection.currentFocus.transform.position;
+
                 // move object on line when using touchpad
                 selection.currentFocus.transform.position = selection.currentFocus.transform.position + ObjectToController * amountY;
                 selection.currentFocus.transform.localPosition = RasterManager.Instance.Raster(selection.currentFocus.transform.localPosition);
+
+                Group objectgroup = selection.currentFocus.GetComponent<ModelingObject>().group;
+
+                // if object is grouped, add movement to group
+                if (objectgroup != null)
+                {
+                    objectgroup.Move(selection.currentFocus.transform.position - prevPosition, selection.currentFocus.GetComponent<ModelingObject>());
+                }
             }
             else if (scaleMode)
             {

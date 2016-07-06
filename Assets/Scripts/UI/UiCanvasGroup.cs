@@ -15,6 +15,13 @@ public class UiCanvasGroup : Singleton<UiCanvasGroup>{
     public GameObject MainMenu;
     private float distanceUserObject;
 
+    public UIMenu mainMenu;
+    public UIMenu rotationMenu;
+    public UIMenu colorMenu;
+    public UIMenu shapeMenu;
+    public UIMenu objectMenu;
+    public UIMenu newObjectMenu;
+
     // Use this for initialization
     void Start () {
         visible = false;
@@ -60,7 +67,7 @@ public class UiCanvasGroup : Singleton<UiCanvasGroup>{
         currentModelingObject = modelingObject;
 
         // let menu always face controller that selected object
-     //   player = controller.gameObject;
+        // player = controller.gameObject;
         MainMenu.GetComponent<UIMenu>().ActivateMenu();
     }
 

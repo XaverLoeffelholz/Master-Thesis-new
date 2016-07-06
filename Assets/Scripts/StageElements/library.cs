@@ -3,6 +3,11 @@ using System.Collections;
 
 public class library : Singleton<library>{
 
+    public Transform pos1;
+    public Transform pos2;
+    public Transform pos3;
+    public Transform pos4;
+
     // Use this for initialization
     void Start () {
 	
@@ -17,10 +22,12 @@ public class library : Singleton<library>{
     {
         foreach(Transform modelingObject in transform)
         {
-            Destroy(modelingObject.gameObject);
+            if(modelingObject.CompareTag("ModelingObject")){
+                Destroy(modelingObject.gameObject);
+            }
         }
 
-        Invoke("RefillLibrary", 1f);
+        Invoke("RefillLibrary", 1.3f);
     }
 
     public void RefillLibrary()

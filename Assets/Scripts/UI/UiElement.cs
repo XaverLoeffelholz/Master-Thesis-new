@@ -50,9 +50,9 @@ public class UiElement : MonoBehaviour {
 		}
     }
 
-    public void PerformAction()
+    public void PerformAction(Selection controller)
     { 
-        transform.parent.GetComponent<UIMenu>().PerformAction(this);
+        transform.parent.GetComponent<UIMenu>().PerformAction(this, controller);
     }
 
 }

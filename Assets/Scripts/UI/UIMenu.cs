@@ -13,6 +13,7 @@ public class UIMenu : MonoBehaviour {
         Color,
         Shape,
         Object,
+        Group,
         NewObject
     }
 
@@ -20,12 +21,14 @@ public class UIMenu : MonoBehaviour {
     {
         Menu,
         Delete,
-        Group,
+        GroupStart,
+        GroupEnd,
         Duplicate,
         Color,
         ResetFrustum,
         ResetRotation,
-        ResetColor
+        ResetColor,
+        Extrude
     }
 
     public menuType TypeOfMenu;
@@ -99,10 +102,11 @@ public class UIMenu : MonoBehaviour {
             case (menuType.Object):
                 parentCanvas.currentModelingObject.handles.DisableHandles();
                 break;
-		    case (menuType.NewObject):
+            case (menuType.Group):
+                parentCanvas.currentModelingObject.handles.DisableHandles();
+                break;
+            case (menuType.NewObject):
                 parentCanvas.currentModelingObject.handles.DisableHandles ();
-				controller1.enableFaceSelection (true);
-                controller2.enableFaceSelection(true);
                 break;
             case (menuType.MainMenu):
                 parentCanvas.currentModelingObject.handles.DisableHandles();
@@ -110,7 +114,7 @@ public class UIMenu : MonoBehaviour {
         }
     }
 
-    public void PerformAction(UiElement button)
+    public void PerformAction(UiElement button, Selection controller)
     {
         switch (button.typeOfButton)
         {
@@ -124,9 +128,14 @@ public class UIMenu : MonoBehaviour {
                 break;
             case (buttonType.Duplicate):
                 Duplicate();
+                controller.SelectLatestObject();
+                parentCanvas.objectMenu.ActivateMenu();
                 break;
-            case (buttonType.Group):
-                Group();
+            case (buttonType.GroupStart):
+                StartGroup();
+                break;
+            case (buttonType.GroupEnd):
+                EndGroup();
                 break;
             case (buttonType.ResetColor):
                 break;
@@ -134,15 +143,43 @@ public class UIMenu : MonoBehaviour {
                 break;
             case (buttonType.ResetRotation):
                 break;
+            case (buttonType.Extrude):
+                Extrude();
+                break;
         }
+
     }
 
 
     // All functions by buttons
-
-    public void Group()
+    public void Extrude()
     {
+        controller1.enableFaceSelection(true);
+        controller2.enableFaceSelection(true);
+    }
 
+
+    public void StartGroup()
+    {
+        Debug.Log("Start group");
+
+        // create group
+        Group newGroup;
+        newGroup = ObjectsManager.Instance.CreateGroup();
+
+        // add first element to group
+        ObjectsManager.Instance.AddObjectToGroup(newGroup, parentCanvas.currentModelingObject);
+
+        // activate selection of item for group
+        controller1.groupItemSelection = true;
+        controller2.groupItemSelection = true;
+    }
+
+    public void EndGroup()
+    {
+        // deactivate selection of item for group
+        controller1.groupItemSelection = false;
+        controller2.groupItemSelection = false;
     }
 
     public void Delete()

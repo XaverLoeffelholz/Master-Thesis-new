@@ -55,13 +55,15 @@ public class BiManualOperations : Singleton<BiManualOperations> {
 
     public void ScaleObject()
     {
-        Vector3 newDistance = (controller2.pointOfCollisionGO.transform.position - controller1.pointOfCollisionGO.transform.position);
+        Vector3 newDistance = controller2.pointOfCollisionGO.transform.position - controller1.pointOfCollisionGO.transform.position;
 
         // move scaler of object
         float newScale = newDistance.magnitude / initialDistance.magnitude;
 
-        // get Rotation between new and last rotation
-        // old:
+        controller1.currentFocus.GetComponent<ModelingObject>().ScaleBy(newScale);
+
+
+        // old Rotation:
         /*
         Vector3 rotation = Quaternion.FromToRotation((controller2.pointOfCollisionGO.transform.position - controller1.pointOfCollisionGO.transform.position), lastDistance).eulerAngles;
 
@@ -78,26 +80,22 @@ public class BiManualOperations : Singleton<BiManualOperations> {
         controller1.currentFocus.GetComponent<ModelingObject>().RotateAround(new Vector3(0f, 0f, 1f), -rotation.z);
         */
 
-        if (newScale < 0.9f || newScale > 1.1f)
-        {
-            controller1.currentFocus.GetComponent<ModelingObject>().ScaleBy(newScale);
-        } else
-        {
-            // test new rotation from Focal Point
-            Vector3 direction1 = lastDistance;
-            Vector3 direction2 = controller2.pointOfCollisionGO.transform.position - controller1.pointOfCollisionGO.transform.position;
-            Vector3 cross = Vector3.Cross(direction1, direction2);
-            float amountToRot = RasterManager.Instance.RasterAngle(Vector3.Angle(direction1, direction2));
 
-            if (amountToRot != 0f && amountToRot != 360f)
-            {
-                lastDistance = newDistance;
-            }
 
-            controller1.currentFocus.GetComponent<ModelingObject>().RotateAround(cross.normalized, amountToRot);
+        //  new Rotation:
+        /*
+        Vector3 cross = Vector3.Cross(lastDistance, newDistance);
+        float amountToRot = RasterManager.Instance.RasterAngle(Vector3.Angle(lastDistance, newDistance));
+
+
+        if (amountToRot != 0f && amountToRot != 360f)
+        {
+           lastDistance = newDistance;
         }
 
-            
+            controller1.currentFocus.GetComponent<ModelingObject>().RotateAround(cross.normalized, amountToRot);
+
+        */
 
 
     }

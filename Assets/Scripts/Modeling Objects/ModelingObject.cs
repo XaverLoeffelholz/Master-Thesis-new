@@ -64,6 +64,7 @@ public class ModelingObject : MonoBehaviour
 
     public bool inTrashArea = false;
     public GameObject coordinateSystem;
+    public Group group;
 
     // Use this for initialization
     void Start()
@@ -77,6 +78,8 @@ public class ModelingObject : MonoBehaviour
     {
         if (moving && !BiManualOperations.Instance.IsScalingStarted())
         {
+            Vector3 prevPosition = transform.position;
+
             // destroz previous distance vis
             foreach (Transform visualObject in DistanceVisualisation)
             {
@@ -90,11 +93,12 @@ public class ModelingObject : MonoBehaviour
             // if the user takes an object from the library, delete other objects in the library
             // we could also just create a new version of the taken object
 
-            if (!transform.parent.CompareTag("Objects"))
+            if (!transform.parent.CompareTag("Objects") && !transform.parent.CompareTag("Group"))
             {
                 transform.SetParent(ObjectsManager.Instance.transform);
                 library.Instance.ClearLibrary();
                 transform.localEulerAngles = new Vector3(0f, 0f, 0f);
+                transform.localScale = new Vector3(1f, 1f, 1f);
             }
 
             Vector3 newPositionCollider = transform.TransformPoint(RasterManager.Instance.Raster(transform.InverseTransformPoint(controllerForMovement.pointOfCollisionGO.transform.position)));
@@ -134,29 +138,17 @@ public class ModelingObject : MonoBehaviour
                     lastPositionController = new Vector3(newPositionCollider.x, lastPositionController.y, newPositionCollider.z);
                 }
 
-            } /*
-            else if (bottomFace.center.possibleLineSnapping != null)
-            {
-                if (!snapped)
-                {
-                    controllerForMovement.TriggerIfPressed(800);
-                    snapped = true;
-                }
-
-                if ((snapped && (newPositionCollider - lastPositionController).sqrMagnitude < 0.02f * transform.lossyScale.x))
-                {
-                    Vector3 newPos = this.transform.position;
-                    newPos.x = bottomFace.center.possibleLineSnapping.transform.position.x + (transform.position.x - bottomFace.center.transform.GetChild(0).position.x);
-                    newPos.z = bottomFace.center.possibleLineSnapping.transform.position.z + (transform.position.z - bottomFace.center.transform.GetChild(0).position.z);
-                    this.transform.position = newPos;
-
-                    lastPositionController = new Vector3(lastPositionController.x, newPositionCollider.y, lastPositionController.z);
-                }
-            } */
+            }
             else 
             {
                 snapped = false;
                 lastPositionController = newPositionCollider;
+            }
+
+            if (group != null)
+            {
+                Vector3 distance = transform.position - prevPosition;
+                group.Move(distance, this);
             }
 
             lastPositionX = PositionOnMovementStart;
@@ -194,6 +186,12 @@ public class ModelingObject : MonoBehaviour
                             GameObject GroundVisual = Instantiate(GroundVisualPrefab);
                             GroundVisual.transform.SetParent(DistanceVisualisation);
                             LineRenderer lines = GroundVisual.GetComponent<LineRenderer>();
+
+                            if (snapped)
+                            {
+                                lines.SetColors(Color.green, Color.green);
+                            }
+
                             lines.SetVertexCount(bottomFace.vertexBundles.Length+1);
          
                             for (int j = 0; j <= bottomFace.vertexBundles.Length; j++)
@@ -299,6 +297,12 @@ public class ModelingObject : MonoBehaviour
     }
 
 
+    public void MoveModelingObject(Vector3 distance)
+    {
+        transform.position += distance;
+    }
+
+
     public void Initiate(Mesh initialShape)
     {
         this.transform.GetChild(0).GetComponent<MeshFilter>().mesh = initialShape;
@@ -314,7 +318,6 @@ public class ModelingObject : MonoBehaviour
         MeshUV = mesh.uv;
 
 		vertices = new Vertex[MeshCordinatesVertices.Length];
-
 
 		for (int i=0; i < MeshCordinatesVertices.Length; i++)
         {
@@ -350,12 +353,13 @@ public class ModelingObject : MonoBehaviour
 		for (int j = 0; j < faces.Length; j++) {
 			faces[j].CalculateCenter();
 		}
-			
-		InitializeVertices ();
+
+        InitializeVertexBundles();
+        InitializeVertices ();
 
         // if this is a square, we want to rotate it's coordinate system
         RotateAround(new Vector3(0f, 1f, 0f), 45f);
-
+        StartScaling();
     }
 
     public void RecalculateNormals()
@@ -391,7 +395,21 @@ public class ModelingObject : MonoBehaviour
 		}
 	}
 
-	public void ShowNormals(){
+    public void InitializeVertexBundles()
+    {
+        for (int i = 0; i < topFace.vertexBundles.Length; i++)
+        {
+            topFace.vertexBundles[i].Initialize();
+        }
+
+        for (int i = 0; i < bottomFace.vertexBundles.Length; i++)
+        {
+            bottomFace.vertexBundles[i].Initialize();
+        }
+    }
+
+
+    public void ShowNormals(){
 		for (int i = 0; i < faces.Length; i++) {
 			Debug.DrawLine(faces[i].center.transform.position, faces[i].center.transform.position + faces[i].normal*3.0f, Color.red, 500f);
 		}
@@ -527,6 +545,11 @@ public class ModelingObject : MonoBehaviour
 
     public void Select(Selection controller, Vector3 uiPosition)
     {
+        if (group != null)
+        {
+            group.SelectGroup();
+        }
+
         controller.AssignCurrentSelection(transform.gameObject);
         handles.gameObject.transform.GetChild(0).gameObject.SetActive(true);
 
@@ -537,6 +560,11 @@ public class ModelingObject : MonoBehaviour
 
     public void DeSelect(Selection controller)
     {
+        if (group != null)
+        {
+            group.DeSelectGroup();
+        }
+
         controller.DeAssignCurrentSelection(transform.gameObject);
         handles.DisableHandles();
     }
@@ -561,8 +589,13 @@ public class ModelingObject : MonoBehaviour
 	}
 
 
-    public void StartMoving (Selection controller)
+    public void StartMoving (Selection controller, ModelingObject initiater)
     {
+        if (group != null && initiater == this)
+        {
+            group.StartMoving(controller, initiater);
+        }
+
         moving = true;
         controllerForMovement = controller;
         lastPositionController = controller.pointOfCollisionGO.transform.position;
@@ -591,8 +624,13 @@ public class ModelingObject : MonoBehaviour
 
     }
 
-    public void StopMoving(Selection controller)
+    public void StopMoving(Selection controller, ModelingObject initiater)
     {
+        if (group != null && initiater == this)
+        {
+            group.StopMoving(controller, initiater);
+        }
+
         firstTimeMoving = false;
         moving = false;
         controllerForMovement = null;
@@ -609,7 +647,6 @@ public class ModelingObject : MonoBehaviour
     public void GetFacesBasedOnNormals(){
 
 		//currently we have top and bottom face 2 times
-
 		int arrayLength = 0;
 
 		switch (typeOfObject) {
@@ -724,6 +761,11 @@ public class ModelingObject : MonoBehaviour
 
     public void StartScaling()
     {
+        if(group != null)
+        {
+            group.StartScalingGroup();
+        }
+
         initialDistancceCenterBottomScaler = scalerObject.coordinates - bottomFace.centerPosition;
     }
 
@@ -744,7 +786,6 @@ public class ModelingObject : MonoBehaviour
 
     public void UpDateObjectFromCorner()
     { 
-        
         // Get distance from scaler to  ground
         float lengthScalerToCenterBottomFace = (scalerObject.coordinates - bottomFace.centerPosition).magnitude / initialDistancceCenterBottomScaler.magnitude;
 
@@ -758,6 +799,11 @@ public class ModelingObject : MonoBehaviour
 
     public void TrashObject()
     {
+        if (group != null)
+        {
+            group.TrashGroup();
+        }
+
         transform.gameObject.SetActive(false);
         Trash.Instance.TrashAreaActive(false);
     }
@@ -766,22 +812,6 @@ public class ModelingObject : MonoBehaviour
     {
         transform.GetChild(0).GetComponent<Renderer>().material.color = color;
     }
-
-    public void RotateAroundX(float angle)
-    {
-        RotateAround((coordinateSystem.transform.GetChild(0).position - transform.position).normalized, angle);
-    }
-
-    public void RotateAroundY(float angle)
-    {
-        RotateAround((coordinateSystem.transform.GetChild(1).position - transform.position).normalized, angle);
-    }
-
-    public void RotateAroundZ(float angle)
-    {
-        RotateAround((coordinateSystem.transform.GetChild(2).position - transform.position).normalized, angle);
-    }
-
 
     public void RotateAround(Vector3 angleAxis, float angle)
     {
@@ -818,6 +848,42 @@ public class ModelingObject : MonoBehaviour
 
         // update inner coordinate system
         coordinateSystem.transform.RotateAround(new Vector3(0f, 0f, 0f), angleAxis, angle);
+    }
+
+    public void SetVertexBundlePositions(ModelingObject otherObject)
+    {
+        for (int i = 0; i < topFace.vertexBundles.Length; i++)
+        {
+            topFace.vertexBundles[i].coordinates = otherObject.topFace.vertexBundles[i].coordinates;
+        }
+
+        topFace.center.coordinates = otherObject.topFace.center.coordinates;
+
+        for (int i = 0; i < bottomFace.vertexBundles.Length; i++)
+        {
+            // rotate coordinates of every vertexbundle
+            bottomFace.vertexBundles[i].coordinates = otherObject.bottomFace.vertexBundles[i].coordinates;
+
+        }
+
+        bottomFace.center.coordinates = otherObject.bottomFace.center.coordinates;
+
+        // update centers and recalculate normals of side faces
+
+        for (int i = 0; i < faces.Length; i++)
+        {
+            faces[i].UpdateCenter();
+            faces[i].RecalculateNormal();
+            faces[i].UpdateSpecialVertexCoordinates();
+        }
+
+        handles.HeightTop.transform.localEulerAngles = otherObject.handles.HeightTop.transform.localEulerAngles;
+        handles.HeightBottom.transform.localEulerAngles = otherObject.handles.HeightBottom.transform.localEulerAngles;
+        handles.faceTopScale.transform.localEulerAngles = otherObject.handles.faceTopScale.transform.localEulerAngles;
+        handles.faceBottomScale.transform.localEulerAngles = otherObject.handles.faceBottomScale.transform.localEulerAngles;
+
+        // update inner coordinate system
+        coordinateSystem.transform.localEulerAngles = otherObject.coordinateSystem.transform.localEulerAngles;
     }
 
 }
