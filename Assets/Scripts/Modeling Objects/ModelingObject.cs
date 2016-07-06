@@ -66,6 +66,8 @@ public class ModelingObject : MonoBehaviour
     public GameObject coordinateSystem;
     public Group group;
 
+    public GameObject ObjectSelector;
+
     // Use this for initialization
     void Start()
     {
@@ -524,6 +526,9 @@ public class ModelingObject : MonoBehaviour
     public void Focus(Selection controller)
     {
 		if (!focused) {
+           // ObjectSelector.SetActive(true);
+            ObjectSelector.GetComponent<ObjectSelecter>().ReScale();
+
             controller.AssignCurrentFocus(transform.gameObject);
 			focused = true;
             Color newColor = transform.GetChild(0).GetComponent<Renderer>().material.color;
@@ -534,6 +539,8 @@ public class ModelingObject : MonoBehaviour
     public void UnFocus(Selection controller)
     {
 		if (focused) {
+           // ObjectSelector.SetActive(false);
+
             controller.DeAssignCurrentFocus(transform.gameObject);
 			focused = false;
 

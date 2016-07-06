@@ -8,11 +8,12 @@ public class ObjectsManager : Singleton<ObjectsManager>
     public Transform DistanceVisualisation;
     public GameObject groupPrefab;
     public Group currentGroup;
+    public GameObject user;
 
     // Use this for initialization
     void Start () {
-	
-	}
+        user = ObjectsManager.Instance.user;
+    }
 	
 	// Update is called once per frame
 	void Update () {
