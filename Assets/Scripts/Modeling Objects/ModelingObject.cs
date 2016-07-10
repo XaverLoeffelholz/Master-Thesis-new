@@ -26,8 +26,8 @@ public class ModelingObject : MonoBehaviour
     private Vector2[] MeshUV;
     private int[] MeshTriangles;
 
-	public Vertex[] vertices;
-	public Face[] faces;
+    public Vertex[] vertices;
+    public Face[] faces;
     public Face topFace;
     public Face bottomFace;
     public Color color;
@@ -35,9 +35,9 @@ public class ModelingObject : MonoBehaviour
     public GameObject VertexPrefab;
     public GameObject VertexBundlePrefab;
 
-	public GameObject NormalPrefab;
-	public GameObject Vertex2Prefab;
-	public GameObject FacePrefab;
+    public GameObject NormalPrefab;
+    public GameObject Vertex2Prefab;
+    public GameObject FacePrefab;
 
     private Selection controllerForMovement;
     private Vector3 lastPositionController;
@@ -67,6 +67,9 @@ public class ModelingObject : MonoBehaviour
     public Group group;
 
     public GameObject ObjectSelector;
+
+    private Vector3 relativeTo;
+
 
     // Use this for initialization
     void Start()
@@ -112,7 +115,8 @@ public class ModelingObject : MonoBehaviour
             // here check for possible snappings
             if (bottomFace.center.possibleSnappingVertexBundle != null)
             {
-                if (!snapped){
+                if (!snapped)
+                {
                     controllerForMovement.TriggerIfPressed(1500);
                     snapped = true;
                 }
@@ -132,7 +136,7 @@ public class ModelingObject : MonoBehaviour
                 }
 
                 if ((snapped && (newPositionCollider - lastPositionController).sqrMagnitude < 0.02f * transform.lossyScale.x))
-                {                    
+                {
                     Vector3 newPos = this.transform.position;
                     newPos.y = bottomFace.center.possibleGroundSnapping.transform.position.y + (transform.position.y - bottomFace.center.transform.GetChild(0).position.y);
                     this.transform.position = newPos;
@@ -141,7 +145,7 @@ public class ModelingObject : MonoBehaviour
                 }
 
             }
-            else 
+            else
             {
                 snapped = false;
                 lastPositionController = newPositionCollider;
@@ -194,15 +198,16 @@ public class ModelingObject : MonoBehaviour
                                 lines.SetColors(Color.green, Color.green);
                             }
 
-                            lines.SetVertexCount(bottomFace.vertexBundles.Length+1);
-         
+                            lines.SetVertexCount(bottomFace.vertexBundles.Length + 1);
+
                             for (int j = 0; j <= bottomFace.vertexBundles.Length; j++)
                             {
                                 if (j == bottomFace.vertexBundles.Length)
                                 {
                                     Vector3 pos = bottomFace.vertexBundles[0].transform.GetChild(0).position;
                                     lines.SetPosition(j, pos);
-                                } else
+                                }
+                                else
                                 {
                                     Vector3 pos = bottomFace.vertexBundles[j].transform.GetChild(0).position;
                                     lines.SetPosition(j, pos);
@@ -294,7 +299,7 @@ public class ModelingObject : MonoBehaviour
 
             }
 
-    
+
         }
     }
 
@@ -315,53 +320,55 @@ public class ModelingObject : MonoBehaviour
 
         MeshCordinatesVertices = mesh.vertices;
         MeshTriangles = mesh.triangles;
-		mesh.RecalculateNormals ();
+        mesh.RecalculateNormals();
 
         MeshUV = mesh.uv;
 
-		vertices = new Vertex[MeshCordinatesVertices.Length];
+        vertices = new Vertex[MeshCordinatesVertices.Length];
 
-		for (int i=0; i < MeshCordinatesVertices.Length; i++)
+        for (int i = 0; i < MeshCordinatesVertices.Length; i++)
         {
             GameObject vert = Instantiate(VertexPrefab);
 
             vert.transform.localPosition = MeshCordinatesVertices[i];
             vertices[i] = vert.GetComponent<Vertex>();
 
-			// the normals in the mesh have the same Ids as the vertices, so we can safe a normal for every vertex
-			vertices [i].normal = mesh.normals [i];
+            // the normals in the mesh have the same Ids as the vertices, so we can safe a normal for every vertex
+            vertices[i].normal = mesh.normals[i];
         }
 
-		GetFacesBasedOnNormals ();
+        GetFacesBasedOnNormals();
 
-		for (int i=0; i < MeshCordinatesVertices.Length; i++)
-		{
-			if (MeshCordinatesVertices [i].y > 0.0f) {
-				vertices[i].transform.SetParent (topFace.gameObject.transform);
-			} else {
-				vertices[i].transform.SetParent (bottomFace.gameObject.transform);
-			}
+        for (int i = 0; i < MeshCordinatesVertices.Length; i++)
+        {
+            if (MeshCordinatesVertices[i].y > 0.0f)
+            {
+                vertices[i].transform.SetParent(topFace.gameObject.transform);
+            }
+            else {
+                vertices[i].transform.SetParent(bottomFace.gameObject.transform);
+            }
 
-			vertices [i].Initialize ();
-		}
+            vertices[i].Initialize();
+        }
 
-		mesh.vertices = MeshCordinatesVertices;
+        mesh.vertices = MeshCordinatesVertices;
 
         BundleSimilarVertices(topFace.gameObject.transform);
         BundleSimilarVertices(bottomFace.gameObject.transform);
 
-		AssignVertexBundlesToFaces ();
+        AssignVertexBundlesToFaces();
 
-		for (int j = 0; j < faces.Length; j++) {
-			faces[j].CalculateCenter();
-		}
+        for (int j = 0; j < faces.Length; j++)
+        {
+            faces[j].CalculateCenter();
+        }
 
         InitializeVertexBundles();
-        InitializeVertices ();
+        InitializeVertices();
 
         // if this is a square, we want to rotate it's coordinate system
         RotateAround(new Vector3(0f, 1f, 0f), 45f);
-        StartScaling();
     }
 
     public void RecalculateNormals()
@@ -391,11 +398,13 @@ public class ModelingObject : MonoBehaviour
     }
 
 
-    public void InitializeVertices () {
-		for (int i = 0; i < vertices.Length; i++) {
-			vertices [i].Initialize ();
-		}
-	}
+    public void InitializeVertices()
+    {
+        for (int i = 0; i < vertices.Length; i++)
+        {
+            vertices[i].Initialize();
+        }
+    }
 
     public void InitializeVertexBundles()
     {
@@ -411,11 +420,13 @@ public class ModelingObject : MonoBehaviour
     }
 
 
-    public void ShowNormals(){
-		for (int i = 0; i < faces.Length; i++) {
-			Debug.DrawLine(faces[i].center.transform.position, faces[i].center.transform.position + faces[i].normal*3.0f, Color.red, 500f);
-		}
-	}
+    public void ShowNormals()
+    {
+        for (int i = 0; i < faces.Length; i++)
+        {
+            Debug.DrawLine(faces[i].center.transform.position, faces[i].center.transform.position + faces[i].normal * 3.0f, Color.red, 500f);
+        }
+    }
 
     public void BundleSimilarVertices(Transform face)
     {
@@ -440,7 +451,7 @@ public class ModelingObject : MonoBehaviour
                 }
 
             // if no similar found, create new vertex bundle
-			if (!allChildren[i].parent.gameObject.CompareTag("VertexBundle"))
+            if (!allChildren[i].parent.gameObject.CompareTag("VertexBundle"))
             {
                 GameObject vertexBundle = Instantiate(VertexBundlePrefab);
                 vertexBundle.transform.SetParent(face);
@@ -450,12 +461,14 @@ public class ModelingObject : MonoBehaviour
 
                 allChildren[i].SetParent(vertexBundle.transform);
 
-				if (vertexBundle.transform.childCount == 0) {
-					Destroy (vertexBundle);
-				} else {
-					face.GetComponent<Face> ().AddVertexBundle (vertexBundle.GetComponent<VertexBundle>());
-				}
-	         }
+                if (vertexBundle.transform.childCount == 0)
+                {
+                    Destroy(vertexBundle);
+                }
+                else {
+                    face.GetComponent<Face>().AddVertexBundle(vertexBundle.GetComponent<VertexBundle>());
+                }
+            }
         }
     }
 
@@ -504,57 +517,78 @@ public class ModelingObject : MonoBehaviour
         PositionHandles();
         RotateHandles();
 
-        handles.faceTopScale.GetComponent<handle> ().face = topFace;
-		handles.faceBottomScale.GetComponent<handle> ().face = bottomFace;
+        handles.faceTopScale.GetComponent<handle>().face = topFace;
+        handles.faceBottomScale.GetComponent<handle>().face = bottomFace;
 
-		handles.CenterTopPosition.GetComponent<handle> ().face = topFace;
-		handles.CenterBottomPosition.GetComponent<handle> ().face = bottomFace;
+        handles.CenterTopPosition.GetComponent<handle>().face = topFace;
+        handles.CenterBottomPosition.GetComponent<handle>().face = bottomFace;
 
-		handles.HeightTop.GetComponent<handle> ().face = topFace;
+        handles.HeightTop.GetComponent<handle>().face = topFace;
         handles.HeightBottom.GetComponent<handle>().face = bottomFace;
 
-        topFace.centerHandle = handles.CenterTopPosition.GetComponent<handle> ();
-		topFace.heightHandle = handles.HeightTop.GetComponent<handle> ();
-		topFace.scaleHandle = handles.faceTopScale.GetComponent<handle> ();
+        topFace.centerHandle = handles.CenterTopPosition.GetComponent<handle>();
+        topFace.heightHandle = handles.HeightTop.GetComponent<handle>();
+        topFace.scaleHandle = handles.faceTopScale.GetComponent<handle>();
 
-		bottomFace.centerHandle = handles.CenterBottomPosition.GetComponent<handle> ();
-		bottomFace.heightHandle = handles.HeightBottom.GetComponent<handle> ();
-		bottomFace.scaleHandle = handles.faceBottomScale.GetComponent<handle> ();
+        bottomFace.centerHandle = handles.CenterBottomPosition.GetComponent<handle>();
+        bottomFace.heightHandle = handles.HeightBottom.GetComponent<handle>();
+        bottomFace.scaleHandle = handles.faceBottomScale.GetComponent<handle>();
 
     }
 
     public void Focus(Selection controller)
     {
-		if (!focused) {
-           // ObjectSelector.SetActive(true);
+        if (!focused)
+        {
+            Highlight();
+
+            if (group != null)
+            {
+                group.FocusGroup(this);
+            }
+
+            // ObjectSelector.SetActive(true);
             ObjectSelector.GetComponent<ObjectSelecter>().ReScale();
 
             controller.AssignCurrentFocus(transform.gameObject);
-			focused = true;
-            Color newColor = transform.GetChild(0).GetComponent<Renderer>().material.color;
-            transform.GetChild(0).GetComponent<Renderer>().material.color = new Color(newColor.r + 0.2f, newColor.g + 0.2f, newColor.b + 0.2f, 1f);
-		}
+            focused = true;
+        }
     }
 
     public void UnFocus(Selection controller)
     {
-		if (focused) {
-           // ObjectSelector.SetActive(false);
+        if (focused)
+        {
+            // ObjectSelector.SetActive(false);
+
+            if (group != null)
+            {
+                group.UnFocusGroup(this);
+            }
 
             controller.DeAssignCurrentFocus(transform.gameObject);
-			focused = false;
-
-            Color newColor = transform.GetChild(0).GetComponent<Renderer>().material.color;
-            transform.GetChild(0).GetComponent<Renderer>().material.color = new Color(newColor.r - 0.2f, newColor.g - 0.2f, newColor.b - 0.2f, 1f);
-
+            focused = false;
         }
+    }
+
+    public void Highlight()
+    {
+        Color newColor = transform.GetChild(0).GetComponent<Renderer>().material.color;
+        transform.GetChild(0).GetComponent<Renderer>().material.color = new Color(newColor.r + 0.2f, newColor.g + 0.2f, newColor.b + 0.2f, 1f);
+    }
+
+    public void UnHighlight()
+    {
+
+        Color newColor = transform.GetChild(0).GetComponent<Renderer>().material.color;
+        transform.GetChild(0).GetComponent<Renderer>().material.color = new Color(newColor.r - 0.2f, newColor.g - 0.2f, newColor.b - 0.2f, 1f);
     }
 
     public void Select(Selection controller, Vector3 uiPosition)
     {
         if (group != null)
         {
-            group.SelectGroup();
+            group.SelectGroup(this);
         }
 
         controller.AssignCurrentSelection(transform.gameObject);
@@ -563,46 +597,62 @@ public class ModelingObject : MonoBehaviour
         UiCanvasGroup.Instance.transform.position = uiPosition;
         UiCanvasGroup.Instance.OpenMainMenu(this, controller);
 
+        ShowOutline(true);
     }
 
     public void DeSelect(Selection controller)
     {
         if (group != null)
         {
-            group.DeSelectGroup();
+            group.DeSelectGroup(this);
         }
 
         controller.DeAssignCurrentSelection(transform.gameObject);
         handles.DisableHandles();
+
+        ShowOutline(false);
     }
 
-	public void AssignVertexBundlesToFaces(){
-		
-		// go through all vertices
-		for (int i = 0; i < vertices.Length; i++) {
+    public void ShowOutline(bool value)
+    {
+        if (value)
+        {
+            // change layer to display outline
+            transform.GetChild(0).gameObject.layer = 8;
+        }
+        else
+        {
+            // change layer to hide outline
+            transform.GetChild(0).gameObject.layer = 0;
+        }
+    }
 
-			// check normal of vertice and compare with normal of face
-			for (int j = 0; j < faces.Length; j++) {
+    public void AssignVertexBundlesToFaces()
+    {
 
-				// if normals are similar, linke parent vertex bundle to face
-				if (vertices [i].normal == faces [j].normal) {
+        // go through all vertices
+        for (int i = 0; i < vertices.Length; i++)
+        {
+
+            // check normal of vertice and compare with normal of face
+            for (int j = 0; j < faces.Length; j++)
+            {
+
+                // if normals are similar, linke parent vertex bundle to face
+                if (vertices[i].normal == faces[j].normal)
+                {
                     if (faces[j].typeOfFace == Face.faceType.SideFace)
                     {
                         faces[j].AddVertexBundle(vertices[i].transform.GetComponentInParent<VertexBundle>());
                     }
-				} 
-			}
-		}
-	}
-
-
-    public void StartMoving (Selection controller, ModelingObject initiater)
-    {
-        if (group != null && initiater == this)
-        {
-            group.StartMoving(controller, initiater);
+                }
+            }
         }
+    }
 
+
+    public void StartMoving(Selection controller, ModelingObject initiater)
+    {
         moving = true;
         controllerForMovement = controller;
         lastPositionController = controller.pointOfCollisionGO.transform.position;
@@ -649,92 +699,103 @@ public class ModelingObject : MonoBehaviour
         }
     }
 
-    
 
-    public void GetFacesBasedOnNormals(){
 
-		//currently we have top and bottom face 2 times
-		int arrayLength = 0;
+    public void GetFacesBasedOnNormals()
+    {
 
-		switch (typeOfObject) {
-			case ObjectType.triangle:
-				arrayLength = 5;
-				break;
-			case ObjectType.square:
-				arrayLength = 6;
-				break;
-			case ObjectType.hexagon:
-				arrayLength = 8;
-				break;
-			case ObjectType.octagon:
-				arrayLength = 10;
-				break;
-		}
+        //currently we have top and bottom face 2 times
+        int arrayLength = 0;
 
-		faces = new Face[arrayLength];
+        switch (typeOfObject)
+        {
+            case ObjectType.triangle:
+                arrayLength = 5;
+                break;
+            case ObjectType.square:
+                arrayLength = 6;
+                break;
+            case ObjectType.hexagon:
+                arrayLength = 8;
+                break;
+            case ObjectType.octagon:
+                arrayLength = 10;
+                break;
+        }
 
-		int faceCount = 0;
-		Face faceFound;
+        faces = new Face[arrayLength];
 
-		// go trough all vertices
-		for (int i = 0; i < vertices.Length; i++) {
-			faceFound = null;
+        int faceCount = 0;
+        Face faceFound;
 
-			// check for each vertex every face and 
-			for (int j = 0; j < faces.Length; j++) {
-				
-				if (faces [j] != null && vertices [i].normal == faces [j].normal) {
-					faceFound = faces [j];
-				} 
+        // go trough all vertices
+        for (int i = 0; i < vertices.Length; i++)
+        {
+            faceFound = null;
 
-			}
+            // check for each vertex every face and 
+            for (int j = 0; j < faces.Length; j++)
+            {
 
-			if (faceFound == null) {
-				GameObject newFace = Instantiate (FacePrefab);
-				newFace.transform.SetParent (transform.GetChild(0));
-				faces [faceCount] = newFace.GetComponent<Face> ();
+                if (faces[j] != null && vertices[i].normal == faces[j].normal)
+                {
+                    faceFound = faces[j];
+                }
 
-				// Check if it is top face? Or not create new face if it is the top/bottom face
-				if (vertices [i].normal.x == 0 && vertices [i].normal.z == 0) {
+            }
 
-					switch (typeOfObject) {
-					case ObjectType.triangle:
-						faces [faceCount].InitializeFace (3);
-						break;
-					case ObjectType.square:
-						faces [faceCount].InitializeFace (4);
-						break;
-					case ObjectType.hexagon:
-						faces [faceCount].InitializeFace (6);
-						break;
-					case ObjectType.octagon:
-						faces [faceCount].InitializeFace (8);
-						break;
-					}
-						
-					//if direction is up, it is the top face (number of vertices depends on type)
-					if (vertices [i].normal.y > 0) {
-						faces [faceCount].SetType (Face.faceType.TopFace);
-						topFace = newFace.GetComponent<Face>();
+            if (faceFound == null)
+            {
+                GameObject newFace = Instantiate(FacePrefab);
+                newFace.transform.SetParent(transform.GetChild(0));
+                faces[faceCount] = newFace.GetComponent<Face>();
 
-					//if direction is down, it is the bottom face (number of vertices depends on type)
-					} else {
-						faces [faceCount].SetType (Face.faceType.BottomFace);
-						bottomFace = newFace.GetComponent<Face>();
-					}
+                // Check if it is top face? Or not create new face if it is the top/bottom face
+                if (vertices[i].normal.x == 0 && vertices[i].normal.z == 0)
+                {
 
-				// others are side faces (4 vertices)
-				}  else {
-					faces [faceCount].InitializeFace (4);
-					faces [faceCount].SetType (Face.faceType.SideFace);
-				}
+                    switch (typeOfObject)
+                    {
+                        case ObjectType.triangle:
+                            faces[faceCount].InitializeFace(3);
+                            break;
+                        case ObjectType.square:
+                            faces[faceCount].InitializeFace(4);
+                            break;
+                        case ObjectType.hexagon:
+                            faces[faceCount].InitializeFace(6);
+                            break;
+                        case ObjectType.octagon:
+                            faces[faceCount].InitializeFace(8);
+                            break;
+                    }
 
-				faces [faceCount].normal = vertices [i].normal;
+                    //if direction is up, it is the top face (number of vertices depends on type)
+                    if (vertices[i].normal.y > 0)
+                    {
+                        faces[faceCount].SetType(Face.faceType.TopFace);
+                        topFace = newFace.GetComponent<Face>();
+
+                        //if direction is down, it is the bottom face (number of vertices depends on type)
+                    }
+                    else {
+                        faces[faceCount].SetType(Face.faceType.BottomFace);
+                        bottomFace = newFace.GetComponent<Face>();
+                    }
+
+                    // others are side faces (4 vertices)
+                }
+                else {
+                    faces[faceCount].InitializeFace(4);
+                    faces[faceCount].SetType(Face.faceType.SideFace);
+                }
+
+                faces[faceCount].normal = vertices[i].normal;
 
                 faceCount++;
-			}
-		}
-	}
+            }
+        }
+    }
 
     public void CorrectOffset()
     {
@@ -744,55 +805,73 @@ public class ModelingObject : MonoBehaviour
         }
     }
 
-	public Face GetFaceFromCollisionCoordinate(Vector3 pointOfCollision) {
+    public Face GetFaceFromCollisionCoordinate(Vector3 pointOfCollision)
+    {
 
         // use dot product to check if point lies on a face
         int idOfSmallest = -1;
 
-		for (int i = 0; i < faces.Length; i++) {
+        for (int i = 0; i < faces.Length; i++)
+        {
 
-			if (Mathf.Abs(Vector3.Dot((faces[i].center.transform.GetChild(0).transform.position - pointOfCollision), transform.TransformDirection(faces[i].normal))) <= 0.01){
+            if (Mathf.Abs(Vector3.Dot((faces[i].center.transform.GetChild(0).transform.position - pointOfCollision), transform.TransformDirection(faces[i].normal))) <= 0.01)
+            {
                 idOfSmallest = i;
-			}
-		}
+            }
+        }
 
         if (idOfSmallest != -1)
         {
             return faces[idOfSmallest];
-        } else
+        }
+        else
         {
             return null;
         }
 
-	}
-
-    public void StartScaling()
-    {
-        if(group != null)
-        {
-            group.StartScalingGroup();
-        }
-
-        initialDistancceCenterBottomScaler = scalerObject.coordinates - bottomFace.centerPosition;
     }
 
-    public void ScaleBy(float newScale)
+    public void StartScaling(bool initiater)
     {
-        Vector3 positionScalerObject = RasterManager.Instance.Raster(bottomFace.centerPosition + ((newScale) * initialDistancceCenterBottomScaler));
-        Vector3 newDistanceCenterBottomScaler = positionScalerObject - bottomFace.centerPosition;
+        if (group == null)
+        {
+            relativeTo = GetBoundingBoxBottomCenter();
+            initialDistancceCenterBottomScaler = scalerObject.coordinates - relativeTo;
+        } else
+        {
+            if (initiater)
+            {
+                group.StartScalingGroup(this);
+            }
 
-        float amount = (positionScalerObject - bottomFace.centerPosition).magnitude / (scalerObject.coordinates - bottomFace.centerPosition).magnitude;
+            relativeTo = group.GetBoundingBoxBottomCenter();
+            initialDistancceCenterBottomScaler = scalerObject.coordinates - relativeTo;
+        }
+    }
+
+
+
+    public void ScaleBy(float newScale, bool initiater)
+    {      
+        if (group != null && initiater)
+        { 
+            group.ScaleBy(newScale, this);
+        }
+
+        Vector3 positionScalerObject = RasterManager.Instance.Raster(relativeTo + ((newScale) * initialDistancceCenterBottomScaler));
+        Vector3 newDistanceCenterBottomScaler = positionScalerObject - relativeTo;
+
+        float amount = (positionScalerObject - relativeTo).magnitude / (scalerObject.coordinates - relativeTo).magnitude;
 
         // get difference to last state to adjust other vertexbundles accordingly
         scalerObject.coordinates = positionScalerObject;
 
-        bottomFace.ReplaceFacefromObjectScaler(bottomFace.centerPosition, amount);
-        topFace.ReplaceFacefromObjectScaler(bottomFace.centerPosition, amount);
-
+        bottomFace.ReplaceFacefromObjectScaler(relativeTo, amount);
+        topFace.ReplaceFacefromObjectScaler(relativeTo, amount);
     }
 
     public void UpDateObjectFromCorner()
-    { 
+    {
         // Get distance from scaler to  ground
         float lengthScalerToCenterBottomFace = (scalerObject.coordinates - bottomFace.centerPosition).magnitude / initialDistancceCenterBottomScaler.magnitude;
 
@@ -804,11 +883,11 @@ public class ModelingObject : MonoBehaviour
 
     }
 
-    public void TrashObject()
+    public void TrashObject(bool initiator)
     {
-        if (group != null)
+        if (group != null && initiator)
         {
-            group.TrashGroup();
+            group.TrashGroup(this);
         }
 
         transform.gameObject.SetActive(false);
@@ -822,7 +901,7 @@ public class ModelingObject : MonoBehaviour
 
     public void RotateAround(Vector3 angleAxis, float angle)
     {
-        for(int i=0; i < topFace.vertexBundles.Length; i++)
+        for (int i = 0; i < topFace.vertexBundles.Length; i++)
         {
             // rotate coordinates of every vertexbundle
             topFace.vertexBundles[i].coordinates = Quaternion.AngleAxis(angle, angleAxis) * topFace.vertexBundles[i].coordinates;
@@ -841,14 +920,14 @@ public class ModelingObject : MonoBehaviour
 
         // update centers and recalculate normals of side faces
 
-        for (int i = 0; i<faces.Length; i++)
+        for (int i = 0; i < faces.Length; i++)
         {
             faces[i].UpdateCenter();
             faces[i].RecalculateNormal();
             faces[i].UpdateSpecialVertexCoordinates();
         }
 
-        handles.HeightTop.transform.RotateAround(new Vector3(0f,0f,0f), angleAxis, angle);
+        handles.HeightTop.transform.RotateAround(new Vector3(0f, 0f, 0f), angleAxis, angle);
         handles.HeightBottom.transform.RotateAround(new Vector3(0f, 0f, 0f), angleAxis, angle);
         handles.faceTopScale.transform.RotateAround(new Vector3(0f, 0f, 0f), angleAxis, angle);
         handles.faceBottomScale.transform.RotateAround(new Vector3(0f, 0f, 0f), angleAxis, angle);
@@ -891,6 +970,86 @@ public class ModelingObject : MonoBehaviour
 
         // update inner coordinate system
         coordinateSystem.transform.localEulerAngles = otherObject.coordinateSystem.transform.localEulerAngles;
+    }
+
+    public Vector3 GetBoundingBoxTopCenter()
+    {
+        Vector3 boundingBoxTopCenter = Vector3.zero;
+        float highestYvalue = -9999f;
+
+        // Calculate Center of Vertices
+        Vector3 center = GetBoundingBoxCenter();
+
+        // find Vertex with highest y value
+        for (int i = 0; i < topFace.vertexBundles.Length; i++)
+        {
+            if (topFace.vertexBundles[i].coordinates.y > highestYvalue)
+            {
+                highestYvalue = topFace.vertexBundles[i].coordinates.y;
+            }
+        }
+
+        for (int i = 0; i < bottomFace.vertexBundles.Length; i++)
+        {
+            if (bottomFace.vertexBundles[i].coordinates.y > highestYvalue)
+            {
+                highestYvalue = bottomFace.vertexBundles[i].coordinates.y;
+            }
+        }
+
+        // return point with highest y value and x/z of center
+        Vector3 boundingBoxBottomCenter = new Vector3(center.x, highestYvalue, center.z);
+
+        return boundingBoxTopCenter;
+    }
+
+    public Vector3 GetBoundingBoxBottomCenter()
+    {        
+        float lowestYvalue = 9999f;
+
+        // Calculate Center of Vertices
+        Vector3 center = GetBoundingBoxCenter();
+
+        // find Vertex with lowest y value
+        for (int i = 0; i < topFace.vertexBundles.Length; i++)
+        {
+            if (topFace.vertexBundles[i].coordinates.y < lowestYvalue)
+            {
+                lowestYvalue = topFace.vertexBundles[i].coordinates.y;
+            }
+        }
+
+        for (int i = 0; i < bottomFace.vertexBundles.Length; i++)
+        {
+            if (bottomFace.vertexBundles[i].coordinates.y < lowestYvalue)
+            {
+                lowestYvalue = bottomFace.vertexBundles[i].coordinates.y;
+            }
+        }
+
+        // return point with lowest y value and x/z of center
+        Vector3 boundingBoxBottomCenter = new Vector3(center.x, lowestYvalue, center.z);
+
+        return boundingBoxBottomCenter;
+    }
+
+    public Vector3 GetBoundingBoxCenter()
+    {
+        Vector3 boundingBoxCenter = Vector3.zero;
+
+        for (int i = 0; i < topFace.vertexBundles.Length; i++)
+        {
+            boundingBoxCenter += topFace.vertexBundles[i].coordinates;
+        }
+
+        for (int i = 0; i < bottomFace.vertexBundles.Length; i++)
+        {
+            boundingBoxCenter += bottomFace.vertexBundles[i].coordinates;
+        }
+
+        boundingBoxCenter = boundingBoxCenter / (topFace.vertexBundles.Length + bottomFace.vertexBundles.Length);
+
+        return boundingBoxCenter;
     }
 
 }

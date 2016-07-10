@@ -47,8 +47,11 @@ public class BiManualOperations : Singleton<BiManualOperations> {
         scalingStarted = true;
 
         initialscale = controller1.currentFocus.transform.localScale;
-        controller1.currentFocus.GetComponent<ModelingObject>().StartScaling();
 
+        ModelingObject modObject = controller1.currentFocus.GetComponent<ModelingObject>();
+
+        modObject.StartScaling(true);
+       
         initialDistance = controller2.pointOfCollisionGO.transform.position - controller1.pointOfCollisionGO.transform.position;
         lastDistance = initialDistance;
     }
@@ -60,9 +63,11 @@ public class BiManualOperations : Singleton<BiManualOperations> {
         // move scaler of object
         float newScale = newDistance.magnitude / initialDistance.magnitude;
 
-        controller1.currentFocus.GetComponent<ModelingObject>().ScaleBy(newScale);
-
-
+        ModelingObject modObject = controller1.currentFocus.GetComponent<ModelingObject>();
+       
+        modObject.ScaleBy(newScale, true);
+        
+   
         // old Rotation:
         /*
         Vector3 rotation = Quaternion.FromToRotation((controller2.pointOfCollisionGO.transform.position - controller1.pointOfCollisionGO.transform.position), lastDistance).eulerAngles;

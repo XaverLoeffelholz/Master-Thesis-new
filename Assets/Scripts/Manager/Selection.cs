@@ -217,7 +217,7 @@ public class Selection : MonoBehaviour
                 currentFocus.GetComponent<ModelingObject>().StopMoving(this, currentFocus.GetComponent<ModelingObject>());
                 if (currentFocus.GetComponent<ModelingObject>().inTrashArea)
                 {
-                    currentFocus.GetComponent<ModelingObject>().TrashObject();
+                    currentFocus.GetComponent<ModelingObject>().TrashObject(true);
                     device.TriggerHapticPulse(1000);
                 }
             }

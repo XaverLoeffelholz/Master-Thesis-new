@@ -17,7 +17,7 @@ public class ObjectCreator : Singleton<ObjectCreator> {
 
     // Use this for initialization
     void Start () {
-        createNewObject(square, ModelingObject.ObjectType.square, null, null, new Vector3(0, 0.5f, 0f), true);
+        createNewObject(square, ModelingObject.ObjectType.square, null, null, new Vector3(0, 0.5f, 0f), true, null);
         ObjectCreator.Instance.createSetofObjects();
     }
 
@@ -29,20 +29,13 @@ public class ObjectCreator : Singleton<ObjectCreator> {
 
     public void createSetofObjects()
     {
-        /*
-        createNewObject(triangle, ModelingObject.ObjectType.triangle, null, null, new Vector3(2.4f, 5f, 7.8f), false);
-        createNewObject(square, ModelingObject.ObjectType.square, null, null, new Vector3(3.7f, 4.8f, 7.0f), false);
-        createNewObject(hexagon, ModelingObject.ObjectType.hexagon, null, null, new Vector3(4.8f, 4.4f, 5.5f), false);
-        createNewObject(octagon, ModelingObject.ObjectType.octagon, null, null, new Vector3(5.3f, 4.1f, 3.6f), false);
-        */
-
-        createNewObject(triangle, ModelingObject.ObjectType.triangle, null, null, library.GetComponent<library>().pos1.localPosition, false);
-        createNewObject(square, ModelingObject.ObjectType.square, null, null, library.GetComponent<library>().pos2.localPosition, false);
-        createNewObject(hexagon, ModelingObject.ObjectType.hexagon, null, null, library.GetComponent<library>().pos3.localPosition, false);
-        createNewObject(octagon, ModelingObject.ObjectType.octagon, null, null, library.GetComponent<library>().pos4.localPosition, false);
+        createNewObject(triangle, ModelingObject.ObjectType.triangle, null, null, library.GetComponent<library>().pos1.localPosition, false, null);
+        createNewObject(square, ModelingObject.ObjectType.square, null, null, library.GetComponent<library>().pos2.localPosition, false, null);
+        createNewObject(hexagon, ModelingObject.ObjectType.hexagon, null, null, library.GetComponent<library>().pos3.localPosition, false, null);
+        createNewObject(octagon, ModelingObject.ObjectType.octagon, null, null, library.GetComponent<library>().pos4.localPosition, false, null);
     }
 
-	public void createNewObject(Mesh mesh, ModelingObject.ObjectType type, Face groundface, ModelingObject original, Vector3 offSet, bool insideStage)
+	public void createNewObject(Mesh mesh, ModelingObject.ObjectType type, Face groundface, ModelingObject original, Vector3 offSet, bool insideStage, Group group)
     {
         GameObject newObject = new GameObject();
         newObject = Instantiate(modelingObject);
@@ -101,6 +94,10 @@ public class ObjectCreator : Singleton<ObjectCreator> {
         {
             newModelingObject.SetVertexBundlePositions(original);
         }
+
+        if (group != null) {
+            ObjectsManager.Instance.AddObjectToGroup(group, newModelingObject);
+        }
     }
 
 
@@ -113,39 +110,39 @@ public class ObjectCreator : Singleton<ObjectCreator> {
 		switch (numberOfVertices) 
 		{
 		case 3:
-			createNewObject (triangle, ModelingObject.ObjectType.triangle, groundface, null, offset, true);
-            break;
+			createNewObject (triangle, ModelingObject.ObjectType.triangle, groundface, null, offset, true, null);
+                break;
 		case 4:
-			createNewObject (square, ModelingObject.ObjectType.square, groundface, null, offset, true);
-            break;
+			createNewObject (square, ModelingObject.ObjectType.square, groundface, null, offset, true, null);
+                break;
 		case 6:
-			createNewObject (hexagon, ModelingObject.ObjectType.hexagon, groundface, null, offset, true);
-            break;
+			createNewObject (hexagon, ModelingObject.ObjectType.hexagon, groundface, null, offset, true, null);
+                break;
 		case 8:
-			createNewObject (octagon, ModelingObject.ObjectType.octagon, groundface, null, offset, true);
-            break;
+			createNewObject (octagon, ModelingObject.ObjectType.octagon, groundface, null, offset, true, null);
+                break;
 		}
 	}
 
-    public void DuplicateObject(ModelingObject original)
+    public void DuplicateObject(ModelingObject original, Group group)
     {
         Vector3 localPosition = original.topFace.centerPosition;
         localPosition = localPosition + (original.transform.localPosition - original.bottomFace.centerPosition);
 
         if (original.typeOfObject == ModelingObject.ObjectType.triangle)
         {
-            createNewObject(triangle, original.typeOfObject, null, original, localPosition, true);
+            createNewObject(triangle, original.typeOfObject, null, original, localPosition, true, group);
         } else if (original.typeOfObject == ModelingObject.ObjectType.square)
         {
-            createNewObject(square, original.typeOfObject, null, original, localPosition, true);
+            createNewObject(square, original.typeOfObject, null, original, localPosition, true, group);
         }
         else if (original.typeOfObject == ModelingObject.ObjectType.hexagon)
         {
-            createNewObject(hexagon, original.typeOfObject, null, original, localPosition, true);
+            createNewObject(hexagon, original.typeOfObject, null, original, localPosition, true, group);
         }
         else if (original.typeOfObject == ModelingObject.ObjectType.octagon)
         {
-            createNewObject(octagon, original.typeOfObject, null, original, localPosition, true);
+            createNewObject(octagon, original.typeOfObject, null, original, localPosition, true, group);
         }
 
 

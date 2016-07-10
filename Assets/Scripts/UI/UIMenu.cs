@@ -161,8 +161,6 @@ public class UIMenu : MonoBehaviour {
 
     public void StartGroup()
     {
-        Debug.Log("Start group");
-
         // create group
         Group newGroup;
         newGroup = ObjectsManager.Instance.CreateGroup();
@@ -175,6 +173,8 @@ public class UIMenu : MonoBehaviour {
         controller2.groupItemSelection = true;
     }
 
+
+
     public void EndGroup()
     {
         // deactivate selection of item for group
@@ -185,12 +185,12 @@ public class UIMenu : MonoBehaviour {
     public void Delete()
     {
         parentCanvas.Hide();
-        UiCanvasGroup.Instance.currentModelingObject.TrashObject();
+        UiCanvasGroup.Instance.currentModelingObject.TrashObject(true);
     }
 
     public void Duplicate()
     {
-        ObjectCreator.Instance.DuplicateObject(parentCanvas.currentModelingObject);
+        ObjectCreator.Instance.DuplicateObject(parentCanvas.currentModelingObject, null);
     }
 
     public void ChangeColor(UiElement button)
