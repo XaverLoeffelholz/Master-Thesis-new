@@ -21,6 +21,8 @@ TagManager:
   - Group
   - TeleportTrigger
   - SelectionButton
+  - TeleportPosition
+  - Library
   layers:
   - Default
   - TransparentFX

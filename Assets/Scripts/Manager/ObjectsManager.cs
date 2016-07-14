@@ -9,6 +9,8 @@ public class ObjectsManager : Singleton<ObjectsManager>
     public GameObject groupPrefab;
     public Group currentGroup;
     public GameObject user;
+	public Transform stage;
+	public Transform stageScaler;
 
     // Use this for initialization
     void Start () {

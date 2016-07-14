@@ -1,27 +1,19 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class library : Singleton<library>{
-
+public class TeleportationPosition : MonoBehaviour {
 	private Vector3 initialPosition;
 
 	private Selection controllerForMovement;
 	private Vector3 lastPositionController;
 	private bool moving = false;
 
-    public Transform pos1;
-    public Transform pos2;
-    public Transform pos3;
-    public Transform pos4;
+	public Transform center;
+	public Transform cameraRig;
 
-    // Use this for initialization
-    void Start () {
+	// Use this for initialization
+	void Start () {
 		initialPosition = transform.position;
-	}
-	
-	// Update is called once per frame
-	void Update () {
-	
 	}
 
 	public void Focus(Selection controller){
@@ -30,27 +22,6 @@ public class library : Singleton<library>{
 	public void UnFocus(Selection controller){
 
 	}
-
-    public void ClearLibrary()
-    {
-        foreach(Transform modelingObject in transform)
-        {
-            if(modelingObject.CompareTag("ModelingObject")){
-                Destroy(modelingObject.gameObject);
-            }
-        }
-
-        Invoke("RefillLibrary", 1.3f);
-    }
-
-    public void RefillLibrary()
-    {
-        ObjectCreator.Instance.createSetofObjects();
-    }
-
-	// library should be movable as objects
-
-	// what if object intersects with object
 
 
 	public void StartMoving(Selection controller)
@@ -67,21 +38,26 @@ public class library : Singleton<library>{
 
 		// trigger teleportation here:
 		Teleportation.Instance.JumpToPos(5);
-		//	ResetPosition ();
+	//	ResetPosition ();
 	}
 
-
+	
 	// Update is called once per frame
 	void FixedUpdate () {
 		if (moving) {
+			transform.LookAt (center);
+			transform.localRotation = Quaternion.Euler (new Vector3 (0f, transform.localRotation.eulerAngles.y, 0f));
+
 			Vector3 prevPosition = transform.position;
 			Vector3 newPositionController = controllerForMovement.pointOfCollisionGO.transform.position;
 
 			Vector3 newPositionWorld = prevPosition + (newPositionController - lastPositionController);
 			lastPositionController = newPositionController;
-			this.transform.position = new Vector3(newPositionWorld.x, newPositionWorld.y, newPositionWorld.z);
+			this.transform.position = new Vector3(newPositionWorld.x, 0f, newPositionWorld.z);
 		}
 	}
 
-
+	public void ResetPosition(){
+		this.transform.position = initialPosition;
+	}
 }

@@ -29,10 +29,10 @@ public class ObjectCreator : Singleton<ObjectCreator> {
 
     public void createSetofObjects()
     {
-        createNewObject(triangle, ModelingObject.ObjectType.triangle, null, null, library.GetComponent<library>().pos1.localPosition, false, null);
-        createNewObject(square, ModelingObject.ObjectType.square, null, null, library.GetComponent<library>().pos2.localPosition, false, null);
-        createNewObject(hexagon, ModelingObject.ObjectType.hexagon, null, null, library.GetComponent<library>().pos3.localPosition, false, null);
-        createNewObject(octagon, ModelingObject.ObjectType.octagon, null, null, library.GetComponent<library>().pos4.localPosition, false, null);
+		createNewObject(triangle, ModelingObject.ObjectType.triangle, null, null, library.GetComponent<library>().pos1.position, false, null);
+		createNewObject(square, ModelingObject.ObjectType.square, null, null, library.GetComponent<library>().pos2.position, false, null);
+      //  createNewObject(hexagon, ModelingObject.ObjectType.hexagon, null, null, library.GetComponent<library>().pos3.localPosition, false, null);
+		createNewObject(octagon, ModelingObject.ObjectType.octagon, null, null, library.GetComponent<library>().pos3.position, false, null);
     }
 
 	public void createNewObject(Mesh mesh, ModelingObject.ObjectType type, Face groundface, ModelingObject original, Vector3 offSet, bool insideStage, Group group)
@@ -81,8 +81,8 @@ public class ObjectCreator : Singleton<ObjectCreator> {
                 newObject.transform.localPosition = newObject.transform.localPosition + offSet;
             } else
             {
-                newObject.transform.position = library.transform.position + (offSet * library.localScale.x);
-                newObject.transform.localScale = new Vector3(0.6f, 0.6f, 0.6f);
+				newObject.transform.position = offSet;
+                newObject.transform.localScale = new Vector3(0.35f, 0.35f, 0.35f);
             }
 
         }

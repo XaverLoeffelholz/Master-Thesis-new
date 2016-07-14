@@ -39,15 +39,37 @@ public class Selection : MonoBehaviour
     }
 
 
-    void DeFocusCurrent(){
-
+	void DeFocusCurrent(GameObject newObject){
 		if (currentFocus != null) {
-			if (currentFocus.CompareTag ("ModelingObject")) {
-				currentFocus.GetComponent<ModelingObject> ().UnFocus (this);
+			if (currentFocus.CompareTag ("ModelingObject")) {				
+				// compare selection button and object
+				if (newObject.CompareTag ("SelectionButton")) {
+					if (newObject.GetComponent<ObjectSelecter> ().connectedObject != currentFocus.GetComponent<ModelingObject> ()) {
+						currentFocus.GetComponent<ModelingObject> ().UnFocus (this);
+					}
+				} else {
+					currentFocus.GetComponent<ModelingObject> ().UnFocus (this);
+				}
 			} else if (currentFocus.CompareTag ("Handle")) {
 				currentFocus.GetComponent<handle> ().UnFocus (this);
 			} else if (currentFocus.CompareTag ("UiElement")) {
 				currentFocus.GetComponent<UiElement> ().UnFocus (this);
+			} else if (currentFocus.CompareTag ("TeleportPosition")) {
+				currentFocus.GetComponent<TeleportationPosition> ().UnFocus (this);
+			} else if (currentFocus.CompareTag ("Library")) {
+				library.Instance.UnFocus (this);
+			} else if (currentFocus.CompareTag ("SelectionButton")) {
+				
+				// compare selection button and object
+				if (newObject.CompareTag ("ModelingObject")) {
+					if (currentFocus.GetComponent<ObjectSelecter> ().connectedObject != newObject.GetComponent<ModelingObject> ()) {
+						currentFocus.GetComponent<ObjectSelecter> ().UnFocus (this);
+						currentFocus.GetComponent<ObjectSelecter> ().connectedObject.UnFocus (this);
+					}	
+				} else {
+					currentFocus.GetComponent<ObjectSelecter> ().UnFocus (this);
+					currentFocus.GetComponent<ObjectSelecter> ().connectedObject.UnFocus (this);
+				}
 			}
 
 			currentFocus = null;
@@ -84,102 +106,88 @@ public class Selection : MonoBehaviour
         RaycastHit hit;
 
         // only change focus is the object is not moved at the moment
-        if (!movingObject && !movingHandle && !scalingObject)
-        {
-            if (Physics.Raycast(LaserPointer.transform.position, LaserPointer.transform.forward, out hit))
-            {
-                if (currentFocus != null)
-                {
-                    Vector3 directionLaserPointerObject = (currentFocus.transform.position - LaserPointer.transform.position).normalized;
-                    uiPositon = LaserPointer.transform.position + directionLaserPointerObject * 0.6f + Vector3.down*0.25f;
-                }
+		if (!movingObject && !movingHandle && !scalingObject && !triggerPressed) {
+			if (Physics.Raycast (LaserPointer.transform.position, LaserPointer.transform.forward, out hit)) {
+				if (currentFocus != null) {
+					Vector3 directionLaserPointerObject = (currentFocus.transform.position - LaserPointer.transform.position).normalized;
+					uiPositon = LaserPointer.transform.position + directionLaserPointerObject * 0.6f + Vector3.down * 0.25f;
+				}
 
-                AdjustLengthPointer(hit.distance);
+				AdjustLengthPointer (hit.distance);
 
-                if (hit.rigidbody != null)
-                {
-                    if (currentFocus != hit.rigidbody.transform.parent.gameObject)
-                    {
-                        // focus of Object
-                        if (hit.rigidbody.transform.parent.gameObject.CompareTag("ModelingObject"))
-                        {
-                            DeFocusCurrent();
-                            currentFocus = hit.rigidbody.transform.parent.gameObject;
-                            currentFocus.GetComponent<ModelingObject>().Focus(this);
-                        }
-                        else if (hit.rigidbody.transform.parent.gameObject.CompareTag("Handle"))
-                        {
-                            DeFocusCurrent();
-                            currentFocus = hit.rigidbody.transform.parent.gameObject;
-                            currentFocus.GetComponent<handle>().Focus(this);
-                            device.TriggerHapticPulse(300);
-                        }
-                        else if (hit.rigidbody.transform.parent.gameObject.CompareTag("UiElement"))
-                        {
-                            DeFocusCurrent();
-                            currentFocus = hit.rigidbody.transform.parent.gameObject;
-                            currentFocus.GetComponent<UiElement>().Focus(this);
-                            device.TriggerHapticPulse(300);
-                        }
-                        else if (hit.rigidbody.transform.parent.gameObject.CompareTag("TeleportTrigger"))
-                        {
-                            DeFocusCurrent();
-                            currentFocus = hit.rigidbody.transform.parent.gameObject;
-                            currentFocus.GetComponent<TeleportationTrigger>().Focus(this);
-                            device.TriggerHapticPulse(300);
-                        } else if (hit.rigidbody.transform.parent.gameObject.CompareTag("SelectionButton"))
-                        {
-                            currentFocus = hit.rigidbody.transform.parent.gameObject;
-                            currentFocus.GetComponent<ObjectSelecter>().Focus(this);
-                            device.TriggerHapticPulse(300);
-                        }
-                    }
+				if (hit.rigidbody != null) {
+					if (currentFocus != hit.rigidbody.transform.parent.gameObject) {
+						// focus of Object
+						if (hit.rigidbody.transform.parent.gameObject.CompareTag ("ModelingObject")) {
+							DeFocusCurrent (hit.rigidbody.transform.parent.gameObject);
+							currentFocus = hit.rigidbody.transform.parent.gameObject;
+							currentFocus.GetComponent<ModelingObject> ().Focus (this);
+						} else if (hit.rigidbody.transform.parent.gameObject.CompareTag ("Handle")) {
+							DeFocusCurrent (hit.rigidbody.transform.parent.gameObject);
+							currentFocus = hit.rigidbody.transform.parent.gameObject;
+							currentFocus.GetComponent<handle> ().Focus (this);
+							device.TriggerHapticPulse (300);
+						} else if (hit.rigidbody.transform.parent.gameObject.CompareTag ("UiElement")) {
+							DeFocusCurrent (hit.rigidbody.transform.parent.gameObject);
+							currentFocus = hit.rigidbody.transform.parent.gameObject;
+							currentFocus.GetComponent<UiElement> ().Focus (this);
+							device.TriggerHapticPulse (300);
+						} else if (hit.rigidbody.transform.parent.gameObject.CompareTag ("TeleportTrigger")) {
+							DeFocusCurrent (hit.rigidbody.transform.parent.gameObject);
+							currentFocus = hit.rigidbody.transform.parent.gameObject;
+							currentFocus.GetComponent<TeleportationTrigger> ().Focus (this);
+							device.TriggerHapticPulse (300);
+						} else if (hit.rigidbody.transform.parent.gameObject.CompareTag ("SelectionButton")) {
+							DeFocusCurrent (hit.rigidbody.transform.parent.gameObject);
+							currentFocus = hit.rigidbody.transform.parent.gameObject;
+							currentFocus.GetComponent<ObjectSelecter> ().connectedObject.Focus (this);
+							device.TriggerHapticPulse (300);
+						} else if (hit.rigidbody.transform.parent.gameObject.CompareTag ("TeleportPosition")) {
+							DeFocusCurrent (hit.rigidbody.transform.parent.gameObject);
+							currentFocus = hit.rigidbody.transform.parent.gameObject;
+							currentFocus.GetComponent<TeleportationPosition> ().Focus (this);
+							device.TriggerHapticPulse (300);
+						} else if (hit.rigidbody.transform.parent.gameObject.CompareTag ("Library")) {
+							DeFocusCurrent (hit.rigidbody.transform.parent.gameObject);
+							currentFocus = hit.rigidbody.transform.parent.gameObject;
+							library.Instance.Focus (this);
+							device.TriggerHapticPulse (300);
+						}
+					}
 
-                    // Set position of collision
-                    pointOfCollision = hit.point;
+					// Set position of collision
+					pointOfCollision = hit.point;
 
-                    if (faceSelection)
-                    {
-                        // highlight face that is selected
-                        if (collidingFace != null)
-                        {
-                            collidingFace.UnHighlight();
-                        }
+					if (faceSelection) {
+						// highlight face that is selected
+						if (collidingFace != null) {
+							collidingFace.UnHighlight ();
+						}
                         
-                        FindCollidingFace(pointOfCollision);
+						FindCollidingFace (pointOfCollision);
 
-                        if (collidingFace != null)
-                        {
-                            collidingFace.Highlight();
-                        }
+						if (collidingFace != null) {
+							collidingFace.Highlight ();
+						}
 
-                    }
+					}
 
-                }
-                else
-                {
+				} else {
+					if (currentFocus != null) {
+						DeFocusCurrent (currentFocus.gameObject);
+						temps = Time.time;
+						AdjustLengthPointer (50f);
+					}
+				}
+			} else {
+				if (currentFocus != null) {
+					DeFocusCurrent (currentFocus.gameObject);
+					temps = Time.time;
+				}
 
-                    if (currentFocus != null)
-                    {
-                        DeFocusCurrent();
-                        temps = Time.time;
-                        AdjustLengthPointer(50f);
-                    }
-                }
-            }
-            else
-            {
-                if (currentFocus != null)
-                {
-                    DeFocusCurrent();
-                    temps = Time.time;
-                }
-
-                AdjustLengthPointer(50f);
-            }
-        }
-		
-			
+				AdjustLengthPointer (50f);
+			}
+		} 
 
         if (currentFocus != null)
         {
@@ -189,13 +197,23 @@ public class Selection : MonoBehaviour
                 temps = Time.time;
             }
 
-            if (triggerPressed && currentFocus.CompareTag("ModelingObject") && !movingObject && !faceSelection)
+			if (triggerPressed && (currentFocus.CompareTag("ModelingObject") || currentFocus.CompareTag("TeleportPosition") || currentFocus.CompareTag("Library") )  && !movingObject && !faceSelection)
             {
-                CreatePointOfCollisionPrefab();
-                movingObject = true;
-                currentFocus.GetComponent<ModelingObject>().StartMoving(this, currentFocus.GetComponent<ModelingObject>());
-                UiCanvasGroup.Instance.Hide();
-            }
+				CreatePointOfCollisionPrefab();
+				movingObject = true;
+				UiCanvasGroup.Instance.Hide();
+
+				if (currentFocus.CompareTag ("ModelingObject")) {	
+					currentFocus.GetComponent<ModelingObject>().StartMoving(this, currentFocus.GetComponent<ModelingObject>());
+					//currentFocus.GetComponent<ModelingObject> ().DeSelect (this);
+
+				} else if (currentFocus.CompareTag ("TeleportPosition")) {
+					currentFocus.GetComponent<TeleportationPosition>().StartMoving(this);
+				} else if (currentFocus.CompareTag ("Library")) {
+					library.Instance.StartMoving(this);
+				}
+
+			} 
             else if (triggerPressed && (movingHandle || currentFocus.CompareTag("Handle")))
             {
                 if (pointOfCollisionGO == null)
@@ -213,13 +231,31 @@ public class Selection : MonoBehaviour
             movingHandle = false;
 
             if (movingObject)
-            {
-                currentFocus.GetComponent<ModelingObject>().StopMoving(this, currentFocus.GetComponent<ModelingObject>());
-                if (currentFocus.GetComponent<ModelingObject>().inTrashArea)
-                {
-                    currentFocus.GetComponent<ModelingObject>().TrashObject(true);
-                    device.TriggerHapticPulse(1000);
-                }
+			{
+				if (currentFocus.CompareTag ("ModelingObject")) {	
+					currentFocus.GetComponent<ModelingObject>().StopMoving(this, currentFocus.GetComponent<ModelingObject>());
+
+					if (currentFocus.GetComponent<ModelingObject>().inTrashArea)
+					{
+						currentFocus.GetComponent<ModelingObject>().TrashObject(true);
+						device.TriggerHapticPulse(1000);
+					}
+
+					if (new Vector2(currentFocus.transform.localPosition.x, currentFocus.transform.localPosition.z).magnitude > 3.6f)
+					{
+						currentFocus.GetComponent<ModelingObject>().TrashObject(true);
+						device.TriggerHapticPulse(1000);
+					}
+				}
+
+				if (currentFocus.CompareTag ("TeleportPosition")) {
+					currentFocus.GetComponent<TeleportationPosition>().StopMoving(this);
+				}
+
+				if (currentFocus.CompareTag ("Library")) {
+					library.Instance.StopMoving(this);
+				}
+
             }
 
             Destroy(pointOfCollisionGO);
@@ -276,15 +312,16 @@ public class Selection : MonoBehaviour
             } else
             {
                 UiCanvasGroup.Instance.Hide();
+
+				if (currentSelection != null)
+				{
+					currentSelection.GetComponent<ModelingObject>().DeSelect(this);
+				}
+
                 DeAssignCurrentSelection(currentSelection);
                 this.enableFaceSelection(false);
                 otherController.enableFaceSelection(false);
                 ObjectsManager.Instance.HideAllHandles();
-
-                if (currentSelection != null)
-                {
-                    currentSelection.GetComponent<ModelingObject>().DeSelect(this);
-                }
             }
 
             temps = 0;

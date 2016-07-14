@@ -47,22 +47,27 @@ public class StageController : MonoBehaviour {
                 lastY = device.GetAxis().y;
 
                 // get vector between controller and current object
-                Vector3 ObjectToController = selection.currentFocus.transform.position - transform.position;
+				Vector3 ObjectToController = selection.pointOfCollisionGO.transform.position - transform.position;
 
                 //maybe move this part into modelingobject
-                Vector3 prevPosition = selection.currentFocus.transform.position;
+				Vector3 prevPosition = selection.pointOfCollisionGO.transform.position;
 
                 // move object on line when using touchpad
-                selection.currentFocus.transform.position = selection.currentFocus.transform.position + ObjectToController * amountY;
-                selection.currentFocus.transform.localPosition = RasterManager.Instance.Raster(selection.currentFocus.transform.localPosition);
+				selection.pointOfCollisionGO.transform.position = selection.pointOfCollisionGO.transform.position + ObjectToController * amountY;
 
-                Group objectgroup = selection.currentFocus.GetComponent<ModelingObject>().group;
+				if (selection.currentFocus.CompareTag ("ModelingObject")) {
+					
+					selection.pointOfCollisionGO.transform.position = RasterManager.Instance.Raster(selection.pointOfCollisionGO.transform.position);
 
-                // if object is grouped, add movement to group
-                if (objectgroup != null)
-                {
-                    objectgroup.Move(selection.currentFocus.transform.position - prevPosition, selection.currentFocus.GetComponent<ModelingObject>());
-                }
+					Group objectgroup = selection.currentFocus.GetComponent<ModelingObject>().group;
+
+					// if object is grouped, add movement to group
+					if (objectgroup != null)
+					{
+						objectgroup.Move(selection.pointOfCollisionGO.transform.position - prevPosition, selection.currentFocus.GetComponent<ModelingObject>());
+					}
+				}
+ 
             }
             else if (scaleMode)
             {
@@ -70,22 +75,7 @@ public class StageController : MonoBehaviour {
                 float amountY = device.GetAxis().y - lastY;
                 lastY = device.GetAxis().y;
 
-                Vector3 scaleStage = stage.parent.localScale;
-                scaleStage = scaleStage + (scaleStage * amountY * 2);
-
-                Vector3 libraryStage = library.localScale;
-                libraryStage = libraryStage + (libraryStage * amountY * 2);
-
-                Vector3 trashScale = trash.localScale;
-                trashScale = trashScale + (trashScale * amountY * 2);
-
-                if (scaleStage.x >= 0.1f && scaleStage.x <= 4f)
-                {
-                    stage.parent.localScale = scaleStage; 
-                    library.localScale = libraryStage;
-                    trash.localScale = trashScale;
-                }
-
+				ScaleStage (amountY);
             }
             else
             {
@@ -103,4 +93,24 @@ public class StageController : MonoBehaviour {
     {
 
     }
+
+	public void ScaleStage(float amountY){
+		
+		Vector3 scaleStage = stage.parent.localScale;
+		scaleStage = scaleStage + (scaleStage * amountY * 2);
+
+		Vector3 libraryStage = library.localScale;
+		libraryStage = libraryStage + (libraryStage * amountY * 2);
+
+		Vector3 trashScale = trash.localScale;
+		trashScale = trashScale + (trashScale * amountY * 2);
+
+		if (scaleStage.x >= 0.1f && scaleStage.x <= 4f)
+		{
+			stage.parent.localScale = scaleStage; 
+			library.localScale = libraryStage;
+			trash.localScale = trashScale;
+		}
+
+	}
 }

@@ -18,7 +18,7 @@ public class ModelingObject : MonoBehaviour
 
     public handles handles;
     [HideInInspector]
-    public bool selected;
+    public bool selected = false;
 
     public Mesh mesh;
     private MeshCollider meshCollider;
@@ -66,7 +66,7 @@ public class ModelingObject : MonoBehaviour
     public GameObject coordinateSystem;
     public Group group;
 
-    public GameObject ObjectSelector;
+    public ObjectSelecter objectSelector;
 
     private Vector3 relativeTo;
 
@@ -100,17 +100,51 @@ public class ModelingObject : MonoBehaviour
 
             if (!transform.parent.CompareTag("Objects") && !transform.parent.CompareTag("Group"))
             {
+				// here we need to check somehow if we leave the library area
+
+
                 transform.SetParent(ObjectsManager.Instance.transform);
-                library.Instance.ClearLibrary();
-                transform.localEulerAngles = new Vector3(0f, 0f, 0f);
-                transform.localScale = new Vector3(1f, 1f, 1f);
+                library.Instance.ClearLibrary();                
+
+				LeanTween.scale (this.gameObject, Vector3.one, 0.3f).setEase(LeanTweenType.easeInOutExpo);
+				LeanTween.rotateLocal (this.gameObject, Vector3.zero, 0.3f).setEase(LeanTweenType.easeInOutExpo);
+			   // transform.localEulerAngles = new Vector3(0f, 0f, 0f);
+               // transform.localScale = new Vector3(1f, 1f, 1f);
             }
 
             Vector3 newPositionCollider = transform.TransformPoint(RasterManager.Instance.Raster(transform.InverseTransformPoint(controllerForMovement.pointOfCollisionGO.transform.position)));
+			Vector3 newPositionWorld = this.transform.position + (newPositionCollider - lastPositionController);
+			this.transform.position = newPositionWorld;
 
-            Vector3 newPositionWorld = this.transform.position + (newPositionCollider - lastPositionController);
-            this.transform.position = newPositionWorld;
-            this.transform.localPosition = RasterManager.Instance.Raster(this.transform.localPosition);
+			Vector3 boundingBoxBottomCenter = transform.TransformPoint(GetBoundingBoxBottomCenter ());
+
+
+			/*
+
+			// Work on this later, block movement below 0, currently not working
+
+			// check if lowest point of object touches the ground
+			if (boundingBoxBottomCenter.y <= ObjectsManager.Instance.stageScaler.transform.position.y) {
+
+				// check how far it is below
+				float belowZero = ObjectsManager.Instance.stageScaler.transform.position.y - boundingBoxBottomCenter.y;
+				Vector3 bottomPointOnGround = boundingBoxBottomCenter + new Vector3 (0f, belowZero, 0f);
+				float distancePointToCollisionGO = Vector3.Distance (newPositionCollider, bottomPointOnGround);
+
+				// get Vector between center bottom and collider
+				Vector3 CenterBottomToCollisionGO = (newPositionCollider - boundingBoxBottomCenter).normalized;
+
+				// move on vector until 
+				float movedistance = Mathf.Sqrt(Mathf.Pow(belowZero,2f) + Mathf.Pow(distancePointToCollisionGO,2f));
+
+				newPositionWorld = newPositionWorld + (movedistance * CenterBottomToCollisionGO);
+
+				this.transform.position = newPositionWorld;
+			}
+
+			*/
+
+			this.transform.localPosition = RasterManager.Instance.Raster(this.transform.localPosition);
 
             // here check for possible snappings
             if (bottomFace.center.possibleSnappingVertexBundle != null)
@@ -127,6 +161,7 @@ public class ModelingObject : MonoBehaviour
                     this.transform.position = this.transform.position + distanceCurrentBottomSnap;
                 }
             }
+			/*
             else if (bottomFace.center.possibleGroundSnapping != null)
             {
                 if (!snapped)
@@ -144,7 +179,7 @@ public class ModelingObject : MonoBehaviour
                     lastPositionController = new Vector3(newPositionCollider.x, lastPositionController.y, newPositionCollider.z);
                 }
 
-            }
+            }*/
             else
             {
                 snapped = false;
@@ -547,8 +582,9 @@ public class ModelingObject : MonoBehaviour
                 group.FocusGroup(this);
             }
 
-            // ObjectSelector.SetActive(true);
-            ObjectSelector.GetComponent<ObjectSelecter>().ReScale();
+			if (!transform.parent.CompareTag("Library")){
+				objectSelector.ShowSelectionButton (controller);
+			}
 
             controller.AssignCurrentFocus(transform.gameObject);
             focused = true;
@@ -557,14 +593,17 @@ public class ModelingObject : MonoBehaviour
 
     public void UnFocus(Selection controller)
     {
-        if (focused)
+		if (focused && !selected)
         {
             // ObjectSelector.SetActive(false);
+			UnHighlight();
 
             if (group != null)
             {
                 group.UnFocusGroup(this);
             }
+
+			objectSelector.HideSelectionButton ();
 
             controller.DeAssignCurrentFocus(transform.gameObject);
             focused = false;
@@ -585,11 +624,13 @@ public class ModelingObject : MonoBehaviour
     }
 
     public void Select(Selection controller, Vector3 uiPosition)
-    {
+    {		
         if (group != null)
         {
             group.SelectGroup(this);
         }
+
+		selected = true;
 
         controller.AssignCurrentSelection(transform.gameObject);
         handles.gameObject.transform.GetChild(0).gameObject.SetActive(true);
@@ -597,7 +638,7 @@ public class ModelingObject : MonoBehaviour
         UiCanvasGroup.Instance.transform.position = uiPosition;
         UiCanvasGroup.Instance.OpenMainMenu(this, controller);
 
-        ShowOutline(true);
+
     }
 
     public void DeSelect(Selection controller)
@@ -607,8 +648,13 @@ public class ModelingObject : MonoBehaviour
             group.DeSelectGroup(this);
         }
 
+		selected = false;
+
+		objectSelector.DeSelect (controller);
         controller.DeAssignCurrentSelection(transform.gameObject);
         handles.DisableHandles();
+
+		UnFocus (controller);
 
         ShowOutline(false);
     }
@@ -1051,6 +1097,22 @@ public class ModelingObject : MonoBehaviour
 
         return boundingBoxCenter;
     }
+
+	public Vector3 GetPosOfClosestVertex(Vector3 position){
+		Vector3 closestVertex = topFace.vertexBundles[0].coordinates;
+		float shortestDistance = 999999f;
+
+		for (int i = 0; i < bottomFace.vertexBundles.Length; i++)
+		{
+			if (Vector3.Distance (position, transform.TransformPoint(bottomFace.vertexBundles [i].coordinates)) < shortestDistance) {
+				closestVertex =  transform.TransformPoint(bottomFace.vertexBundles [i].coordinates);
+				shortestDistance = Vector3.Distance (position,  transform.TransformPoint(bottomFace.vertexBundles [i].coordinates));
+			}
+		}		
+
+		return closestVertex;
+
+	}
 
 }
 		

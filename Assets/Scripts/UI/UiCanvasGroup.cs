@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 public class UiCanvasGroup : Singleton<UiCanvasGroup>{
     public bool visible;
-    public GameObject player;
+    public Transform player;
     private CanvasGroup canvGroup;
 
     public float positioningWidth;
@@ -44,7 +44,7 @@ public class UiCanvasGroup : Singleton<UiCanvasGroup>{
            // deactivate all buttons in other menus
            foreach (Transform button in menu)
            {
-                    button.gameObject.SetActive(false);
+               button.gameObject.SetActive(false);
            }
         }
     }
@@ -67,7 +67,7 @@ public class UiCanvasGroup : Singleton<UiCanvasGroup>{
         currentModelingObject = modelingObject;
 
         // let menu always face controller that selected object
-        // player = controller.gameObject;
+		player = controller.transform;
         MainMenu.GetComponent<UIMenu>().ActivateMenu();
     }
 

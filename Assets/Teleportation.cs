@@ -7,6 +7,7 @@ public class Teleportation : Singleton<Teleportation> {
     public Transform View2;
     public Transform View3;
     public Transform View4;
+	public Transform MovingObject;
 
     int i = 1;
 
@@ -49,6 +50,10 @@ public class Teleportation : Singleton<Teleportation> {
                 transform.position = View4.position;
                 transform.localRotation = Quaternion.Euler(new Vector3(0f, 270f, 0f));
                 break;
+			case 5:
+				transform.position = MovingObject.position ;
+				transform.rotation = MovingObject.rotation;
+				break;
         }
     }
 }
