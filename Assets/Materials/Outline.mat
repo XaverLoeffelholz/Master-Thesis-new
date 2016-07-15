@@ -6,14 +6,12 @@ Material:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
-  m_Name: NavyGrid
-  m_Shader: {fileID: 46, guid: 0000000000000000f000000000000000, type: 0}
-  m_ShaderKeywords: _ALPHABLEND_ON _EMISSIONMAP _LIGHTMAPPING_DYNAMIC_LIGHTMAPS _LIGHTMAPPING_REALTIME
-    _UVSEC_UV1
+  m_Name: Outline
+  m_Shader: {fileID: 4800000, guid: e12722cd014b0cf458918f2bdc8d7461, type: 3}
+  m_ShaderKeywords: 
   m_LightmapFlags: 5
-  m_CustomRenderQueue: 3000
-  stringTagMap:
-    RenderType: Transparent
+  m_CustomRenderQueue: 2000
+  stringTagMap: {}
   m_SavedProperties:
     serializedVersion: 2
     m_TexEnvs:
@@ -21,7 +19,7 @@ Material:
         first:
           name: _MainTex
         second:
-          m_Texture: {fileID: 0}
+          m_Texture: {fileID: 2800000, guid: c6e0767b1f8c34890ac245217f4b9731, type: 3}
           m_Scale: {x: 1, y: 1}
           m_Offset: {x: 0, y: 0}
       data:
@@ -63,7 +61,7 @@ Material:
         first:
           name: _EmissionMap
         second:
-          m_Texture: {fileID: 2800000, guid: a196fd6788131ec459bfb26012466fc1, type: 3}
+          m_Texture: {fileID: 0}
           m_Scale: {x: 1, y: 1}
           m_Offset: {x: 0, y: 0}
       data:
@@ -82,14 +80,35 @@ Material:
           m_Offset: {x: 0, y: 0}
       data:
         first:
-          name: _Occlusion
+          name: _Fresnel
         second:
           m_Texture: {fileID: 0}
           m_Scale: {x: 1, y: 1}
           m_Offset: {x: 0, y: 0}
       data:
         first:
-          name: _SpecGlossMap
+          name: _ReflectiveColor
+        second:
+          m_Texture: {fileID: 0}
+          m_Scale: {x: 1, y: 1}
+          m_Offset: {x: 0, y: 0}
+      data:
+        first:
+          name: _ReflectionTex
+        second:
+          m_Texture: {fileID: 0}
+          m_Scale: {x: 1, y: 1}
+          m_Offset: {x: 0, y: 0}
+      data:
+        first:
+          name: _RefractionTex
+        second:
+          m_Texture: {fileID: 0}
+          m_Scale: {x: 1, y: 1}
+          m_Offset: {x: 0, y: 0}
+      data:
+        first:
+          name: _SceneTex
         second:
           m_Texture: {fileID: 0}
           m_Scale: {x: 1, y: 1}
@@ -98,31 +117,31 @@ Material:
       data:
         first:
           name: _SrcBlend
-        second: 5
+        second: 1
       data:
         first:
           name: _DstBlend
-        second: 10
+        second: 0
       data:
         first:
           name: _Cutoff
         second: 0.5
       data:
         first:
-          name: _AlphaTestRef
-        second: 0.5
+          name: _Shininess
+        second: 0.026
       data:
         first:
           name: _ZWrite
-        second: 0
+        second: 1
       data:
         first:
           name: _Glossiness
-        second: 0.4
+        second: 0.5
       data:
         first:
           name: _Metallic
-        second: 0.199
+        second: 0
       data:
         first:
           name: _BumpScale
@@ -146,15 +165,51 @@ Material:
       data:
         first:
           name: _Mode
-        second: 2
+        second: 0
       data:
         first:
-          name: _Lightmapping
+          name: _Phi0
+        second: 0
+      data:
+        first:
+          name: _Phi1
         second: 1
       data:
         first:
-          name: _EmissionScaleUI
-        second: 2
+          name: _Theta0
+        second: 0
+      data:
+        first:
+          name: _Theta1
+        second: 1
+      data:
+        first:
+          name: _UScale
+        second: 1
+      data:
+        first:
+          name: _VScale
+        second: 1
+      data:
+        first:
+          name: _Outline
+        second: 0.0056
+      data:
+        first:
+          name: _WaveScale
+        second: 0.063
+      data:
+        first:
+          name: _ReflDistort
+        second: 0.44
+      data:
+        first:
+          name: _RefrDistort
+        second: 0.4
+      data:
+        first:
+          name: _RimPower
+        second: 3.67
     m_Colors:
       data:
         first:
@@ -163,20 +218,48 @@ Material:
       data:
         first:
           name: _Color
-        second: {r: 0.403, g: 0.403, b: 0.397, a: 0.303}
-      data:
-        first:
-          name: _SpecColor
-        second: {r: 0.39705884, g: 0.39705884, b: 0.39705884, a: 1}
-      data:
-        first:
-          name: _EmissionColorUI
-        second: {r: 0, g: 0, b: 0, a: 1}
-      data:
-        first:
-          name: _EmissionColorWithMapUI
         second: {r: 1, g: 1, b: 1, a: 1}
       data:
         first:
-          name: _SpecularColor
-        second: {r: 0.15686275, g: 0.15686275, b: 0.15686275, a: 1}
+          name: _SpecColor
+        second: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+      data:
+        first:
+          name: _N
+        second: {r: 0, g: 0, b: 0, a: 0}
+      data:
+        first:
+          name: _UAxis
+        second: {r: 0, g: 0, b: 0, a: 0}
+      data:
+        first:
+          name: _VAxis
+        second: {r: 0, g: 0, b: 0, a: 0}
+      data:
+        first:
+          name: _UOrigin
+        second: {r: 0, g: 0, b: 0, a: 0}
+      data:
+        first:
+          name: _VOrigin
+        second: {r: 0, g: 0, b: 0, a: 0}
+      data:
+        first:
+          name: _OutlineColor
+        second: {r: 1, g: 1, b: 1, a: 1}
+      data:
+        first:
+          name: _RefrColor
+        second: {r: 0.33999997, g: 0.85, b: 0.92, a: 1}
+      data:
+        first:
+          name: WaveSpeed
+        second: {r: 19, g: 9, b: -16, a: -7}
+      data:
+        first:
+          name: _HorizonColor
+        second: {r: 0.17199996, g: 0.46299994, b: 0.43499997, a: 1}
+      data:
+        first:
+          name: _RimColor
+        second: {r: 1, g: 0.9845588, b: 0.97794116, a: 1}

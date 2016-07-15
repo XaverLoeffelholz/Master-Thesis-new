@@ -31,6 +31,15 @@ public class StageController : MonoBehaviour {
             lastX = device.GetAxis().x;
             lastY = device.GetAxis().y;
             UiCanvasGroup.Instance.Hide();
+
+			if (selection.currentSelection != null) {
+				selection.GetComponent<ModelingObject> ().DeSelect (selection);
+			}
+
+			if (selection.otherController.currentSelection != null) {
+				selection.otherController.currentSelection.GetComponent<ModelingObject> ().DeSelect (selection.otherController);
+			}
+
         }
 
         if (device.GetTouchUp(SteamVR_Controller.ButtonMask.Touchpad))
@@ -111,6 +120,7 @@ public class StageController : MonoBehaviour {
 			library.localScale = libraryStage;
 			trash.localScale = trashScale;
 		}
+
 
 	}
 }

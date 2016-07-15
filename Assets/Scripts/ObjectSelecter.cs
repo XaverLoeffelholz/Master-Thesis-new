@@ -10,6 +10,7 @@ public class ObjectSelecter : MonoBehaviour {
     private float objectScale = 0.25f;
 	public GameObject Highlighter;
 	public GameObject buttonGameObject;
+	private Transform stageScaler;
 
     public bool active;
 
@@ -21,6 +22,8 @@ public class ObjectSelecter : MonoBehaviour {
 
         if (userCamera == null)
             userCamera = Camera.main;
+
+		stageScaler = GameObject.Find ("StageScaler").transform;
     }
 	
 	// Update is called once per frame
@@ -28,8 +31,12 @@ public class ObjectSelecter : MonoBehaviour {
         if (active)
         {
             Plane plane = new Plane(userCamera.transform.forward, userCamera.transform.position);
-            float dist = plane.GetDistanceToPoint(transform.position);
-            transform.localScale = initialScale * dist * objectScale;
+			float dist = Mathf.Abs(plane.GetDistanceToPoint(transform.position));
+			transform.localScale = initialScale * (Mathf.Sqrt(dist) / stageScaler.localScale.x);
+
+			if (stageScaler.localScale.x < 0.5f) {
+				transform.localScale = transform.localScale * 0.5f;
+			}
 
 			transform.LookAt (userCamera.transform);
         }
@@ -48,18 +55,21 @@ public class ObjectSelecter : MonoBehaviour {
 		buttonGameObject.SetActive (false);
     }
 
-	public void Focus(Selection controller){
-		
+	public void Focus(Selection controller){		
 		// use for hover effects
 
 	}
 
 	public void UnFocus(Selection controller){
-
+		// 
 	}
 
     public void Select(Selection controller, Vector3 uiPosition)
     {
+		if (controller.currentSelection != null) {
+			controller.currentSelection.GetComponent<ModelingObject> ().DeSelect (controller);
+		}
+
         connectedObject.Select(controller, uiPosition);
 		Highlighter.SetActive (true);
     }

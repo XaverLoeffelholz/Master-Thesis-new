@@ -51,6 +51,8 @@ public class ModelingObject : MonoBehaviour
     public GameObject CenterVisualPrefab;
     public GameObject GroundVisualPrefab;
     private GameObject GroundVisualOnStartMoving;
+	private GameObject GroundVisualOnStartMovingTop;
+	private GameObject GroundVisualOnStartMovingBottom;
     private Transform DistanceVisualisation;
 
     private Vector3 lastPositionX;
@@ -69,13 +71,20 @@ public class ModelingObject : MonoBehaviour
     public ObjectSelecter objectSelector;
 
     private Vector3 relativeTo;
+	private Vector3 initialPosition;
 
+	private Transform player;
+
+	public GameObject trashIcon;
+
+	private Color currentColor;
 
     // Use this for initialization
     void Start()
     {
         handles.gameObject.transform.GetChild(0).gameObject.SetActive(false);
         DistanceVisualisation = ObjectsManager.Instance.DistanceVisualisation;
+		player = Camera.main.transform;
     }
 
     // Update is called once per frame
@@ -83,6 +92,10 @@ public class ModelingObject : MonoBehaviour
     {
         if (moving && !BiManualOperations.Instance.IsScalingStarted())
         {
+			if (inTrashArea) {
+				trashIcon.transform.parent.transform.LookAt (player);
+			}
+
             Vector3 prevPosition = transform.position;
 
             // destroz previous distance vis
@@ -98,18 +111,18 @@ public class ModelingObject : MonoBehaviour
             // if the user takes an object from the library, delete other objects in the library
             // we could also just create a new version of the taken object
 
-            if (!transform.parent.CompareTag("Objects") && !transform.parent.CompareTag("Group"))
+            if (transform.parent.CompareTag("Library"))
             {
-				// here we need to check somehow if we leave the library area
+				//Vector2 distanceToInitialPosition = new Vector2 (initialPosition.x - transform.position.x, initialPosition.z - transform.position.z);
 
+				//if (distanceToInitialPosition.magnitude > transform.lossyScale.x*5f) {
+					transform.SetParent(ObjectsManager.Instance.transform);
+					library.Instance.ClearLibrary();                
 
-                transform.SetParent(ObjectsManager.Instance.transform);
-                library.Instance.ClearLibrary();                
+					LeanTween.scale (this.gameObject, Vector3.one, 0.3f).setEase(LeanTweenType.easeInOutExpo);
+					LeanTween.rotateLocal (this.gameObject, Vector3.zero, 0.3f).setEase(LeanTweenType.easeInOutExpo);
+				//}
 
-				LeanTween.scale (this.gameObject, Vector3.one, 0.3f).setEase(LeanTweenType.easeInOutExpo);
-				LeanTween.rotateLocal (this.gameObject, Vector3.zero, 0.3f).setEase(LeanTweenType.easeInOutExpo);
-			   // transform.localEulerAngles = new Vector3(0f, 0f, 0f);
-               // transform.localScale = new Vector3(1f, 1f, 1f);
             }
 
             Vector3 newPositionCollider = transform.TransformPoint(RasterManager.Instance.Raster(transform.InverseTransformPoint(controllerForMovement.pointOfCollisionGO.transform.position)));
@@ -227,6 +240,7 @@ public class ModelingObject : MonoBehaviour
                             GameObject GroundVisual = Instantiate(GroundVisualPrefab);
                             GroundVisual.transform.SetParent(DistanceVisualisation);
                             LineRenderer lines = GroundVisual.GetComponent<LineRenderer>();
+							lines.SetWidth (Mathf.Min(0.025f * transform.lossyScale.x, 0.03f), Mathf.Min(0.025f * transform.lossyScale.x, 0.03f));
 
                             if (snapped)
                             {
@@ -335,6 +349,15 @@ public class ModelingObject : MonoBehaviour
             }
 
 
+			if (new Vector2 (transform.localPosition.x, transform.localPosition.z).magnitude > 3.6f) {
+				if (!inTrashArea) {
+					EnterTrashArea ();
+				}
+			} else {
+				if (inTrashArea) {
+					ExitTrashArea ();
+				}
+			}
         }
     }
 
@@ -404,6 +427,8 @@ public class ModelingObject : MonoBehaviour
 
         // if this is a square, we want to rotate it's coordinate system
         RotateAround(new Vector3(0f, 1f, 0f), 45f);
+		initialPosition = transform.position;
+		ShowOutline (false);
     }
 
     public void RecalculateNormals()
@@ -421,6 +446,7 @@ public class ModelingObject : MonoBehaviour
             faces[i].UpdateCenter();
         }
     }
+
     public void RecalculateSideCenters()
     {
         for (int i = 0; i < faces.Length; i++)
@@ -618,7 +644,6 @@ public class ModelingObject : MonoBehaviour
 
     public void UnHighlight()
     {
-
         Color newColor = transform.GetChild(0).GetComponent<Renderer>().material.color;
         transform.GetChild(0).GetComponent<Renderer>().material.color = new Color(newColor.r - 0.2f, newColor.g - 0.2f, newColor.b - 0.2f, 1f);
     }
@@ -638,9 +663,9 @@ public class ModelingObject : MonoBehaviour
         UiCanvasGroup.Instance.transform.position = uiPosition;
         UiCanvasGroup.Instance.OpenMainMenu(this, controller);
 
-
+		ShowOutline(true);
     }
-
+		
     public void DeSelect(Selection controller)
     {
         if (group != null)
@@ -663,13 +688,24 @@ public class ModelingObject : MonoBehaviour
     {
         if (value)
         {
-            // change layer to display outline
-            transform.GetChild(0).gameObject.layer = 8;
+			// distance to object should be adapted to scale of
+			transform.GetChild(0).GetComponent<Renderer>().material.SetColor("_OutlineColor", Color.white);
+			transform.GetChild (0).GetComponent<Renderer> ().material.SetFloat ("_Outline", 0.005f * this.transform.lossyScale.x);
+
+			DisplayOutlineOfGroundFace ();
         }
         else
         {
-            // change layer to hide outline
-            transform.GetChild(0).gameObject.layer = 0;
+			transform.GetChild(0).GetComponent<Renderer>().material.SetColor("_OutlineColor", new Color(1f,1f,1f,0f));
+			transform.GetChild (0).GetComponent<Renderer> ().material.SetFloat ("_Outline", 0.00f);
+
+			if (DistanceVisualisation != null) {
+				// destroy previous distance vis
+				foreach (Transform visualObject in DistanceVisualisation)
+				{
+					Destroy(visualObject.gameObject);
+				}
+			}
         }
     }
 
@@ -704,28 +740,29 @@ public class ModelingObject : MonoBehaviour
         lastPositionController = controller.pointOfCollisionGO.transform.position;
         PositionOnMovementStart = transform.TransformPoint(bottomFace.center.coordinates);
 
-        // Display outline of groundface
-        GroundVisualOnStartMoving = Instantiate(GroundVisualPrefab);
-        GroundVisualOnStartMoving.transform.SetParent(DistanceVisualisation);
-        LineRenderer lines = GroundVisualOnStartMoving.GetComponent<LineRenderer>();
-        lines.SetVertexCount(bottomFace.vertexBundles.Length + 1);
-
-        for (int j = 0; j <= bottomFace.vertexBundles.Length; j++)
-        {
-            if (j == bottomFace.vertexBundles.Length)
-            {
-                Vector3 pos = bottomFace.vertexBundles[0].transform.GetChild(0).position;
-                lines.SetPosition(j, pos);
-            }
-            else
-            {
-                Vector3 pos = bottomFace.vertexBundles[j].transform.GetChild(0).position;
-                lines.SetPosition(j, pos);
-            }
-
-        }
+		DisplayOutlineOfGroundFace ();
+		objectSelector.HideSelectionButton ();
 
     }
+
+	public void DisplayOutlineOfGroundFace(){
+		// Display outline of groundface
+		GroundVisualOnStartMoving = Instantiate(GroundVisualPrefab);
+		GroundVisualOnStartMoving.transform.SetParent(DistanceVisualisation);
+		LineRenderer lines = GroundVisualOnStartMoving.GetComponent<LineRenderer>();
+		lines.SetVertexCount(bottomFace.vertexBundles.Length + 1);
+		lines.SetWidth (Mathf.Min(0.025f * transform.lossyScale.x, 0.03f), Mathf.Min(0.025f * transform.lossyScale.x, 0.03f));
+
+		for (int j = 0; j <= bottomFace.vertexBundles.Length; j++) {
+			if (j == bottomFace.vertexBundles.Length) {
+				Vector3 pos = bottomFace.vertexBundles [0].transform.GetChild (0).position;
+				lines.SetPosition (j, pos);
+			} else {
+				Vector3 pos = bottomFace.vertexBundles [j].transform.GetChild (0).position;
+				lines.SetPosition (j, pos);
+			}
+		}
+	}
 
     public void StopMoving(Selection controller, ModelingObject initiater)
     {
@@ -743,6 +780,10 @@ public class ModelingObject : MonoBehaviour
         {
             Destroy(visualObject.gameObject);
         }
+
+		if (!transform.parent.CompareTag ("Library")) {
+			objectSelector.ShowSelectionButton (controller);
+		}
     }
 
 
@@ -1099,20 +1140,44 @@ public class ModelingObject : MonoBehaviour
     }
 
 	public Vector3 GetPosOfClosestVertex(Vector3 position){
-		Vector3 closestVertex = topFace.vertexBundles[0].coordinates;
+		Vector3 closestVertex = bottomFace.vertexBundles[0].coordinates;
 		float shortestDistance = 999999f;
 
 		for (int i = 0; i < bottomFace.vertexBundles.Length; i++)
 		{
-			if (Vector3.Distance (position, transform.TransformPoint(bottomFace.vertexBundles [i].coordinates)) < shortestDistance) {
-				closestVertex =  transform.TransformPoint(bottomFace.vertexBundles [i].coordinates);
-				shortestDistance = Vector3.Distance (position,  transform.TransformPoint(bottomFace.vertexBundles [i].coordinates));
+			Vector3 newCoordinate = transform.TransformPoint (bottomFace.vertexBundles [i].coordinates);
+
+			if (Vector3.Distance (position, newCoordinate) < shortestDistance) {
+				closestVertex =  newCoordinate;
+				shortestDistance = Vector3.Distance (position,  newCoordinate);
 			}
-		}		
+		}
 
 		return closestVertex;
 
 	}
+
+	public void EnterTrashArea(){
+		inTrashArea = true;
+
+		Color newColor = transform.GetChild(0).GetComponent<Renderer>().material.color;
+		transform.GetChild(0).GetComponent<Renderer>().material.color = new Color(newColor.r - 0.3f, newColor.g - 0.3f, newColor.b - 0.3f, 1f);
+
+		// display trash icon
+		LeanTween.alpha(trashIcon, 1f, 0.3f);
+	}
+
+	public void ExitTrashArea(){
+		inTrashArea = false;
+
+		Color newColor = transform.GetChild(0).GetComponent<Renderer>().material.color;
+		transform.GetChild(0).GetComponent<Renderer>().material.color = new Color(newColor.r + 0.3f, newColor.g + 0.3f, newColor.b + 0.3f, 1f);
+
+		// display trash icon
+		LeanTween.alpha(trashIcon, 0f, 0.3f);
+	}
+
+
 
 }
 		

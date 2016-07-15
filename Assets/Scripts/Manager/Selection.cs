@@ -197,21 +197,25 @@ public class Selection : MonoBehaviour
                 temps = Time.time;
             }
 
-			if (triggerPressed && (currentFocus.CompareTag("ModelingObject") || currentFocus.CompareTag("TeleportPosition") || currentFocus.CompareTag("Library") )  && !movingObject && !faceSelection)
+			if (triggerPressed && (currentFocus.CompareTag("ModelingObject") || currentFocus.CompareTag("TeleportPosition") || currentFocus.CompareTag("Library") ))
             {
-				CreatePointOfCollisionPrefab();
-				movingObject = true;
-				UiCanvasGroup.Instance.Hide();
+				if (!movingObject && !faceSelection && !groupItemSelection){
+					
+					CreatePointOfCollisionPrefab();
+					movingObject = true;
+					UiCanvasGroup.Instance.Hide();
 
-				if (currentFocus.CompareTag ("ModelingObject")) {	
-					currentFocus.GetComponent<ModelingObject>().StartMoving(this, currentFocus.GetComponent<ModelingObject>());
-					//currentFocus.GetComponent<ModelingObject> ().DeSelect (this);
+					if (currentFocus.CompareTag ("ModelingObject")) {	
+						currentFocus.GetComponent<ModelingObject>().StartMoving(this, currentFocus.GetComponent<ModelingObject>());
+						//currentFocus.GetComponent<ModelingObject> ().DeSelect (this);
 
-				} else if (currentFocus.CompareTag ("TeleportPosition")) {
-					currentFocus.GetComponent<TeleportationPosition>().StartMoving(this);
-				} else if (currentFocus.CompareTag ("Library")) {
-					library.Instance.StartMoving(this);
+					} else if (currentFocus.CompareTag ("TeleportPosition")) {
+						currentFocus.GetComponent<TeleportationPosition>().StartMoving(this);
+					} else if (currentFocus.CompareTag ("Library")) {
+						library.Instance.StartMoving(this);
+					}
 				}
+
 
 			} 
             else if (triggerPressed && (movingHandle || currentFocus.CompareTag("Handle")))
@@ -240,12 +244,6 @@ public class Selection : MonoBehaviour
 						currentFocus.GetComponent<ModelingObject>().TrashObject(true);
 						device.TriggerHapticPulse(1000);
 					}
-
-					if (new Vector2(currentFocus.transform.localPosition.x, currentFocus.transform.localPosition.z).magnitude > 3.6f)
-					{
-						currentFocus.GetComponent<ModelingObject>().TrashObject(true);
-						device.TriggerHapticPulse(1000);
-					}
 				}
 
 				if (currentFocus.CompareTag ("TeleportPosition")) {
@@ -265,7 +263,6 @@ public class Selection : MonoBehaviour
             {
                 if (currentFocus.CompareTag("ModelingObject"))
                 {
-                    // check if that makes sense...
                     if (!groupItemSelection && currentSelection != null && currentSelection != currentFocus)
                     {
                         currentSelection.GetComponent<ModelingObject>().DeSelect(this);
@@ -273,21 +270,22 @@ public class Selection : MonoBehaviour
                         this.enableFaceSelection(false);
                     }
 
-                    if (faceSelection) {
-                        if (collidingFace != null)
-                        {
-                            this.enableFaceSelection(false);
-                            otherController.enableFaceSelection(false);
-                            collidingFace.CreateNewModelingObject();
-                            SelectLatestObject();
-                            UiCanvasGroup.Instance.shapeMenu.ActivateMenu();
-                            collidingFace = null;
-                        }
+					if (groupItemSelection)
+					{
+						ObjectsManager.Instance.AddObjectToGroup(ObjectsManager.Instance.currentGroup, currentFocus.GetComponent<ModelingObject>());  
+						currentFocus.GetComponent<ModelingObject> ().ShowOutline (true);
+
+					} else if (faceSelection) {
+						if (collidingFace != null)
+						{
+							this.enableFaceSelection(false);
+							otherController.enableFaceSelection(false);
+							collidingFace.CreateNewModelingObject();
+							SelectLatestObject();
+							UiCanvasGroup.Instance.shapeMenu.ActivateMenu();
+							collidingFace = null;
+						}
 					}
-                    else if (groupItemSelection)
-                    {
-                        ObjectsManager.Instance.AddObjectToGroup(ObjectsManager.Instance.currentGroup, currentFocus.GetComponent<ModelingObject>());  
-                    }
                 }
                 else if (currentFocus.CompareTag("SelectionButton"))
                 {
@@ -311,17 +309,22 @@ public class Selection : MonoBehaviour
 
             } else
             {
-                UiCanvasGroup.Instance.Hide();
 
-				if (currentSelection != null)
-				{
-					currentSelection.GetComponent<ModelingObject>().DeSelect(this);
+				// check that we are not in group selection
+				if (!groupItemSelection) {
+					UiCanvasGroup.Instance.Hide();
+
+					if (currentSelection != null)
+					{
+						currentSelection.GetComponent<ModelingObject>().DeSelect(this);
+					}
+
+					DeAssignCurrentSelection(currentSelection);
+					this.enableFaceSelection(false);
+					otherController.enableFaceSelection(false);
+					ObjectsManager.Instance.HideAllHandles();
 				}
 
-                DeAssignCurrentSelection(currentSelection);
-                this.enableFaceSelection(false);
-                otherController.enableFaceSelection(false);
-                ObjectsManager.Instance.HideAllHandles();
             }
 
             temps = 0;
@@ -332,7 +335,7 @@ public class Selection : MonoBehaviour
     {
         // directly select new object
         UiCanvasGroup.Instance.Show();
-        ObjectsManager.Instance.GetlatestObject().Select(this, uiPositon); ;
+        ObjectsManager.Instance.GetlatestObject().Select(this, uiPositon); 
     }
 
     public void FindCollidingFace(Vector3 pointOfCollision){
