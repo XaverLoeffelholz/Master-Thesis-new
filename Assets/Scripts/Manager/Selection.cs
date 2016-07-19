@@ -197,12 +197,14 @@ public class Selection : MonoBehaviour
                 temps = Time.time;
             }
 
-			if (triggerPressed && (currentFocus.CompareTag("ModelingObject") || currentFocus.CompareTag("TeleportPosition") || currentFocus.CompareTag("Library") ))
+			if (triggerPressed && temps > 0.1f && (currentFocus.CompareTag("ModelingObject") || currentFocus.CompareTag("TeleportPosition") || currentFocus.CompareTag("Library") ))
             {
 				if (!movingObject && !faceSelection && !groupItemSelection){
 					
 					CreatePointOfCollisionPrefab();
 					movingObject = true;
+					this.GetComponent<StageController> ().ShowPullVisual (true);
+
 					UiCanvasGroup.Instance.Hide();
 
 					if (currentFocus.CompareTag ("ModelingObject")) {	
@@ -248,6 +250,7 @@ public class Selection : MonoBehaviour
 
 				if (currentFocus.CompareTag ("TeleportPosition")) {
 					currentFocus.GetComponent<TeleportationPosition>().StopMoving(this);
+					Teleportation.Instance.JumpToPos(5);
 				}
 
 				if (currentFocus.CompareTag ("Library")) {
@@ -258,6 +261,7 @@ public class Selection : MonoBehaviour
 
             Destroy(pointOfCollisionGO);
             movingObject = false;
+			this.GetComponent<StageController> ().ShowPullVisual (false);
 
             if (currentFocus != null)
             {

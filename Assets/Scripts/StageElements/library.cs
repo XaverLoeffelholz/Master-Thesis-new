@@ -64,10 +64,6 @@ public class library : Singleton<library>{
 	{
 		moving = false;
 		controllerForMovement = null;
-
-		// trigger teleportation here:
-		Teleportation.Instance.JumpToPos(5);
-		//	ResetPosition ();
 	}
 
 

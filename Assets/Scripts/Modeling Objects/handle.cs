@@ -163,7 +163,7 @@ public class handle : MonoBehaviour {
     {
         float input = CalculateInputFromPoint(pointOfCollision.transform.position);
 
-        Vector3 positionScaler = initialLocalPositionFace + ((1f + input) * initialDistancceCenterScaler);
+        Vector3 positionScaler = initialLocalPositionFace + ((1f - input) * initialDistancceCenterScaler);
         Vector3 newDistanceCenterScaler = positionScaler - face.centerPosition;
 
         if (newDistanceCenterScaler.magnitude >= 0.1f && Vector3.Dot(initialDistancceCenterScaler, newDistanceCenterScaler)>0)
@@ -171,7 +171,6 @@ public class handle : MonoBehaviour {
             Vector3 position = initialLocalPositionHandle + (-input * (face.scalerPosition-face.centerPosition).normalized);
             transform.localPosition = RasterManager.Instance.Raster(position);
             //transform.localPosition = position;
-
 
             face.scaler.coordinates = RasterManager.Instance.Raster(positionScaler);
         }

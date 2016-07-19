@@ -9,6 +9,9 @@ public class Teleportation : Singleton<Teleportation> {
     public Transform View4;
 	public Transform MovingObject;
 
+	public GameObject maskLeft;
+	public GameObject maskRight;
+
     int i = 1;
 
     // Use this for initialization
@@ -50,9 +53,16 @@ public class Teleportation : Singleton<Teleportation> {
                 transform.position = View4.position;
                 transform.localRotation = Quaternion.Euler(new Vector3(0f, 270f, 0f));
                 break;
-			case 5:
-				transform.position = MovingObject.position ;
-				transform.rotation = MovingObject.rotation;
+		case 5:
+				// fade in masks	
+				LeanTween.scale(maskLeft, new Vector3(0.05f,0.05f,0.05f), 0.2f);
+				LeanTween.scale(maskRight, new Vector3(0.05f,0.05f,0.05f), 0.2f);
+
+				LeanTween.move (gameObject, MovingObject.position, 0.4f).setDelay(0.1f);
+				LeanTween.rotate (gameObject, MovingObject.rotation.eulerAngles, 0.4f).setDelay(0.1f);
+
+				LeanTween.scale(maskLeft, new Vector3(0.15f,0.15f,0.15f), 0.2f).setDelay(0.5f);
+				LeanTween.scale(maskRight, new Vector3(0.15f,0.15f,0.15f), 0.2f).setDelay(0.5f);
 				break;
         }
     }

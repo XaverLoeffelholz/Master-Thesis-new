@@ -13,11 +13,25 @@ public class StageController : MonoBehaviour {
     public bool scaleMode = false;
     private Selection selection;
 
+	public GameObject pullIcon;
+	public GameObject normalIcon;
+
     void Awake()
     {
         trackedObj = GetComponent<SteamVR_TrackedObject>();
         selection = this.GetComponent<Selection>();
     }
+
+
+	public void ShowPullVisual(bool value){
+		if (value) {
+			pullIcon.SetActive (true);
+			normalIcon.SetActive (false);
+		} else {
+			pullIcon.SetActive (false);
+			normalIcon.SetActive (true);
+		}
+	}
 
 
     // Update is called once per frame

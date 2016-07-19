@@ -35,10 +35,6 @@ public class TeleportationPosition : MonoBehaviour {
 	{
 		moving = false;
 		controllerForMovement = null;
-
-		// trigger teleportation here:
-		Teleportation.Instance.JumpToPos(5);
-	//	ResetPosition ();
 	}
 
 	
