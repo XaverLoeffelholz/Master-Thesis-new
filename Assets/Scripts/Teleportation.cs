@@ -54,16 +54,34 @@ public class Teleportation : Singleton<Teleportation> {
                 transform.localRotation = Quaternion.Euler(new Vector3(0f, 270f, 0f));
                 break;
 		case 5:
-				// fade in masks	
-				LeanTween.scale(maskLeft, new Vector3(0.05f,0.05f,0.05f), 0.2f);
-				LeanTween.scale(maskRight, new Vector3(0.05f,0.05f,0.05f), 0.2f);
-
-				LeanTween.move (gameObject, MovingObject.position, 0.4f).setDelay(0.1f);
-				LeanTween.rotate (gameObject, MovingObject.rotation.eulerAngles, 0.4f).setDelay(0.1f);
-
-				LeanTween.scale(maskLeft, new Vector3(0.15f,0.15f,0.15f), 0.2f).setDelay(0.5f);
-				LeanTween.scale(maskRight, new Vector3(0.15f,0.15f,0.15f), 0.2f).setDelay(0.5f);
+				JumpToPosOflittleGuy ();
 				break;
         }
     }
+
+
+	public void JumpToPosOflittleGuy(){
+
+		// get distance
+		float distance = Vector3.Distance(MovingObject.position, transform.position);
+
+		// get angle between
+		float angle = Quaternion.Angle(MovingObject.rotation, transform.rotation);
+
+		// define time variable
+		float time = distance * 0.3f;
+		float amountOfscaling = Mathf.Max (0.05f, (1f / (Mathf.Pow(angle*0.5f,2) + Mathf.Pow(distance,2))));  
+
+		// fade in masks	
+		LeanTween.scale(maskLeft, new Vector3(amountOfscaling, amountOfscaling, amountOfscaling), time * 0.2f);
+		LeanTween.scale(maskRight, new Vector3(amountOfscaling, amountOfscaling, amountOfscaling), time *  0.2f);
+
+		LeanTween.move (gameObject, MovingObject.position, time * 0.4f).setDelay(time * 0.05f);
+		LeanTween.rotate (gameObject, MovingObject.rotation.eulerAngles, time * 0.4f).setDelay(time * 0.05f);
+
+		LeanTween.scale(maskLeft, new Vector3(0.15f,0.15f,0.15f), time * 0.2f).setDelay(time * 0.4f);
+		LeanTween.scale(maskRight, new Vector3(0.15f,0.15f,0.15f), time * 0.2f).setDelay(time * 0.4f);
+	}
 }
+
+

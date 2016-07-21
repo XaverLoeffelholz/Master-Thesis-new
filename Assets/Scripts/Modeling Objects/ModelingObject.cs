@@ -127,20 +127,20 @@ public class ModelingObject : MonoBehaviour
 
             Vector3 newPositionCollider = transform.TransformPoint(RasterManager.Instance.Raster(transform.InverseTransformPoint(controllerForMovement.pointOfCollisionGO.transform.position)));
 			Vector3 newPositionWorld = this.transform.position + (newPositionCollider - lastPositionController);
-			this.transform.position = newPositionWorld;
+			transform.position = newPositionWorld;
 
 			Vector3 boundingBoxBottomCenter = transform.TransformPoint(GetBoundingBoxBottomCenter ());
 
 
-			/*
-
-			// Work on this later, block movement below 0, currently not working
-
-			// check if lowest point of object touches the ground
+			// This seems fine
 			if (boundingBoxBottomCenter.y <= ObjectsManager.Instance.stageScaler.transform.position.y) {
 
 				// check how far it is below
 				float belowZero = ObjectsManager.Instance.stageScaler.transform.position.y - boundingBoxBottomCenter.y;
+
+				transform.position = new Vector3 (transform.position.x, transform.position.y + belowZero, transform.position.z);
+
+				/*
 				Vector3 bottomPointOnGround = boundingBoxBottomCenter + new Vector3 (0f, belowZero, 0f);
 				float distancePointToCollisionGO = Vector3.Distance (newPositionCollider, bottomPointOnGround);
 
@@ -153,9 +153,11 @@ public class ModelingObject : MonoBehaviour
 				newPositionWorld = newPositionWorld + (movedistance * CenterBottomToCollisionGO);
 
 				this.transform.position = newPositionWorld;
+
+				*/
 			}
 
-			*/
+
 
 			this.transform.localPosition = RasterManager.Instance.Raster(this.transform.localPosition);
 

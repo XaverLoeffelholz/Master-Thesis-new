@@ -18,7 +18,7 @@ public class BiManualOperations : Singleton<BiManualOperations> {
 	
 	// Update is called once per frame
 	void FixedUpdate() {
-	    if (controller1.triggerPressed && controller2.triggerPressed && controller1.currentFocus == controller2.currentFocus)
+		if (controller1.triggerPressed && controller2.triggerPressed && controller1.currentFocus == controller2.currentFocus && controller1.currentFocus.CompareTag("ModelingObject"))
         {
             if (!scalingStarted)
             {
@@ -38,22 +38,27 @@ public class BiManualOperations : Singleton<BiManualOperations> {
 
     public void StartScaling()
     {
-        controller1.CreatePointOfCollisionPrefab();
-        controller2.CreatePointOfCollisionPrefab();
+		if (controller1.currentFocus != null) {
 
-        controller1.scalingObject = true;
-        controller2.scalingObject = true;
+			if (controller1.currentFocus.CompareTag("ModelingObject")){
+				controller1.CreatePointOfCollisionPrefab();
+				controller2.CreatePointOfCollisionPrefab();
 
-        scalingStarted = true;
+				controller1.scalingObject = true;
+				controller2.scalingObject = true;
 
-        initialscale = controller1.currentFocus.transform.localScale;
+				scalingStarted = true;
 
-        ModelingObject modObject = controller1.currentFocus.GetComponent<ModelingObject>();
+				initialscale = controller1.currentFocus.transform.localScale;
 
-        modObject.StartScaling(true);
-       
-        initialDistance = controller2.pointOfCollisionGO.transform.position - controller1.pointOfCollisionGO.transform.position;
-        lastDistance = initialDistance;
+				ModelingObject modObject = controller1.currentFocus.GetComponent<ModelingObject>();
+
+				modObject.StartScaling(true);
+
+				initialDistance = controller2.pointOfCollisionGO.transform.position - controller1.pointOfCollisionGO.transform.position;
+				lastDistance = initialDistance;
+			}
+		}  
     }
 
     public void ScaleObject()

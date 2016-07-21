@@ -90,6 +90,9 @@ public class StageController : MonoBehaviour {
 						objectgroup.Move(selection.pointOfCollisionGO.transform.position - prevPosition, selection.currentFocus.GetComponent<ModelingObject>());
 					}
 				}
+
+				// somehow not working
+				//selection.AdjustLengthPointer ((selection.pointOfCollisionGO.transform.position - transform.position).magnitude);
  
             }
             else if (scaleMode)
