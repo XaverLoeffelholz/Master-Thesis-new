@@ -17,6 +17,8 @@ public class handles : MonoBehaviour {
     public GameObject RotationYStepwise;
     public GameObject RotationZStepwise;
 
+    public GameObject circleTop;
+    public GameObject circleBottom;
 
     public GameObject TopHandles;
     public GameObject BottomHandles;
@@ -62,6 +64,8 @@ public class handles : MonoBehaviour {
     {
         DisableHandles();
         transform.parent.GetComponent<ModelingObject>().PositionHandles();
+        transform.parent.GetComponent<ModelingObject>().RotateHandles();
+
         TopHandles.SetActive(true);
         BottomHandles.SetActive(true);
         faceBottomScale.SetActive(true);

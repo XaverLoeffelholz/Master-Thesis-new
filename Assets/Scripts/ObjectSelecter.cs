@@ -82,6 +82,6 @@ public class ObjectSelecter : MonoBehaviour {
 
 	public void RePosition(Selection controller)
     {
-		transform.position = connectedObject.GetPosOfClosestVertex (controller.transform.position);
+		transform.position = connectedObject.GetPosOfClosestVertex (controller.transform.position, Face.faceType.BottomFace);
     }
 }

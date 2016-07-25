@@ -90,6 +90,12 @@ public class ModelingObject : MonoBehaviour
     // Update is called once per frame
     void FixedUpdate()
     {
+        if (!moving && transform.parent.CompareTag("Library"))
+        {
+            transform.Rotate(0, 10f * Time.deltaTime, 0);
+        }
+
+
         if (moving && !BiManualOperations.Instance.IsScalingStarted())
         {
 			if (inTrashArea) {
@@ -428,7 +434,7 @@ public class ModelingObject : MonoBehaviour
         InitializeVertices();
 
         // if this is a square, we want to rotate it's coordinate system
-        RotateAround(new Vector3(0f, 1f, 0f), 45f);
+      //  RotateAround(new Vector3(0f, 1f, 0f), 45f);
 		initialPosition = transform.position;
 		ShowOutline (false);
     }
@@ -552,8 +558,8 @@ public class ModelingObject : MonoBehaviour
 
     public void PositionHandles()
     {
-        handles.faceTopScale.transform.localPosition = topFace.scalerPosition;
-        handles.faceBottomScale.transform.localPosition = bottomFace.scalerPosition;
+        handles.faceTopScale.transform.position = GetPosOfClosestVertex(Teleportation.Instance.transform.position, Face.faceType.TopFace);
+        handles.faceBottomScale.transform.position = GetPosOfClosestVertex(Teleportation.Instance.transform.position, Face.faceType.BottomFace);
         handles.CenterTopPosition.transform.localPosition = topFace.centerPosition;
         handles.CenterBottomPosition.transform.localPosition = bottomFace.centerPosition;
         handles.HeightTop.transform.localPosition = topFace.centerPosition;
@@ -566,11 +572,11 @@ public class ModelingObject : MonoBehaviour
 
     public void RotateHandles()
     {
-        handles.faceTopScale.transform.localRotation = Quaternion.FromToRotation(handles.faceTopScale.transform.up, transform.TransformDirection(topFace.scalerPosition - topFace.centerPosition));
+        handles.faceTopScale.transform.localRotation = Quaternion.FromToRotation(handles.faceTopScale.transform.up, transform.TransformDirection(handles.faceTopScale.transform.localPosition - topFace.centerPosition));
         handles.CenterTopPosition.transform.localRotation = Quaternion.FromToRotation(handles.CenterTopPosition.transform.up, transform.TransformDirection(topFace.normal));
         handles.HeightTop.transform.localRotation = Quaternion.FromToRotation(handles.HeightTop.transform.up, transform.TransformDirection(topFace.normal));
 
-        handles.faceBottomScale.transform.localRotation = Quaternion.FromToRotation(handles.faceBottomScale.transform.up, transform.TransformDirection(bottomFace.scalerPosition - bottomFace.centerPosition));
+        handles.faceBottomScale.transform.localRotation = Quaternion.FromToRotation(handles.faceBottomScale.transform.up, transform.TransformDirection(handles.faceBottomScale.transform.localPosition - bottomFace.centerPosition));
         handles.CenterBottomPosition.transform.localRotation = Quaternion.FromToRotation(handles.CenterBottomPosition.transform.up, transform.TransformDirection(bottomFace.normal));
         handles.HeightBottom.transform.localRotation = Quaternion.FromToRotation(handles.HeightBottom.transform.up, transform.TransformDirection(bottomFace.normal));
     }
@@ -1141,21 +1147,39 @@ public class ModelingObject : MonoBehaviour
         return boundingBoxCenter;
     }
 
-	public Vector3 GetPosOfClosestVertex(Vector3 position){
-		Vector3 closestVertex = bottomFace.vertexBundles[0].coordinates;
-		float shortestDistance = 999999f;
+	public Vector3 GetPosOfClosestVertex(Vector3 position, Face.faceType typeOfFace){
 
-		for (int i = 0; i < bottomFace.vertexBundles.Length; i++)
-		{
-			Vector3 newCoordinate = transform.TransformPoint (bottomFace.vertexBundles [i].coordinates);
+        Vector3 closestVertex = bottomFace.vertexBundles[0].coordinates;
+        float shortestDistance = 999999f;
 
-			if (Vector3.Distance (position, newCoordinate) < shortestDistance) {
-				closestVertex =  newCoordinate;
-				shortestDistance = Vector3.Distance (position,  newCoordinate);
-			}
-		}
+        if (typeOfFace == Face.faceType.BottomFace)
+        {
+            for (int i = 0; i < bottomFace.vertexBundles.Length; i++)
+            {
+                Vector3 newCoordinate = transform.TransformPoint(bottomFace.vertexBundles[i].coordinates);
 
-		return closestVertex;
+                if (Vector3.Distance(position, newCoordinate) < shortestDistance)
+                {
+                    closestVertex = newCoordinate;
+                    shortestDistance = Vector3.Distance(position, newCoordinate);
+                }
+            }
+        }
+        else if (typeOfFace == Face.faceType.TopFace)
+        {
+            for (int i = 0; i < topFace.vertexBundles.Length; i++)
+            {
+                Vector3 newCoordinate = transform.TransformPoint(topFace.vertexBundles[i].coordinates);
+
+                if (Vector3.Distance(position, newCoordinate) < shortestDistance)
+                {
+                    closestVertex = newCoordinate;
+                    shortestDistance = Vector3.Distance(position, newCoordinate);
+                }
+            }
+        }
+
+        return closestVertex;
 
 	}
 

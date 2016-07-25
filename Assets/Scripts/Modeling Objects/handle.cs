@@ -173,6 +173,8 @@ public class handle : MonoBehaviour {
             //transform.localPosition = position;
 
             face.scaler.coordinates = RasterManager.Instance.Raster(positionScaler);
+
+            // update scale of circle
         }
 
         face.UpdateScaleFromCorner();

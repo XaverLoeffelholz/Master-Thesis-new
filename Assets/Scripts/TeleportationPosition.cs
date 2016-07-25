@@ -9,7 +9,6 @@ public class TeleportationPosition : MonoBehaviour {
 	private bool moving = false;
 
 	public Transform center;
-	public Transform cameraRig;
 
 	// Use this for initialization
 	void Start () {

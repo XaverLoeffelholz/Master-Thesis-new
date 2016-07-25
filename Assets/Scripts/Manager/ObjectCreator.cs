@@ -17,7 +17,9 @@ public class ObjectCreator : Singleton<ObjectCreator> {
 
     // Use this for initialization
     void Start () {
-        createNewObject(square, ModelingObject.ObjectType.square, null, null, new Vector3(0, 0.5f, 0f), true, null);
+        createNewObject(triangle, ModelingObject.ObjectType.triangle, null, null, new Vector3(-2, 0.3f, 0f), true, null);
+        createNewObject(square, ModelingObject.ObjectType.square, null, null, new Vector3(0, 0.3f, 0f), true, null);
+        createNewObject(octagon, ModelingObject.ObjectType.octagon, null, null, new Vector3(2, 0.3f, 0f), true, null);
         ObjectCreator.Instance.createSetofObjects();
     }
 
@@ -29,10 +31,11 @@ public class ObjectCreator : Singleton<ObjectCreator> {
 
     public void createSetofObjects()
     {
-		createNewObject(triangle, ModelingObject.ObjectType.triangle, null, null, library.GetComponent<library>().pos1.position, false, null);
+        createNewObject(triangle, ModelingObject.ObjectType.triangle, null, null, library.GetComponent<library>().pos1.position, false, null);       
 		createNewObject(square, ModelingObject.ObjectType.square, null, null, library.GetComponent<library>().pos2.position, false, null);
-      //  createNewObject(hexagon, ModelingObject.ObjectType.hexagon, null, null, library.GetComponent<library>().pos3.localPosition, false, null);
-		createNewObject(octagon, ModelingObject.ObjectType.octagon, null, null, library.GetComponent<library>().pos3.position, false, null);
+        createNewObject(octagon, ModelingObject.ObjectType.octagon, null, null, library.GetComponent<library>().pos3.position, false, null);
+
+        //createNewObject(hexagon, ModelingObject.ObjectType.hexagon, null, null, library.GetComponent<library>().pos3.localPosition, false, null);		
     }
 
 	public void createNewObject(Mesh mesh, ModelingObject.ObjectType type, Face groundface, ModelingObject original, Vector3 offSet, bool insideStage, Group group)
@@ -82,7 +85,7 @@ public class ObjectCreator : Singleton<ObjectCreator> {
             } else
             {
 				newObject.transform.position = offSet;
-                newObject.transform.localScale = new Vector3(0.35f, 0.35f, 0.35f);
+                newObject.transform.localScale = new Vector3(0.6f, 0.6f, 0.6f);
             }
 
         }

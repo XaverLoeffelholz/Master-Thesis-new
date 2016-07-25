@@ -21,16 +21,7 @@ public class Teleportation : Singleton<Teleportation> {
 	
 	// Update is called once per frame
 	void Update () {
-        if (Input.GetKeyDown(KeyCode.Space))
-        {
-            i++;
-
-            if (i < 4)
-            {
-                JumpToPos(i);
-            }
-        }
-
+     
     }
 
     public void JumpToPos(int pos)
@@ -70,10 +61,12 @@ public class Teleportation : Singleton<Teleportation> {
 
 		// define time variable
 		float time = distance * 0.3f;
-		float amountOfscaling = Mathf.Max (0.05f, (1f / (Mathf.Pow(angle*0.5f,2) + Mathf.Pow(distance,2))));  
+        //float amountOfscaling = Mathf.Max (0.05f, (1f / (Mathf.Pow(angle*0.5f,2) + Mathf.Pow(distance,2))));
 
-		// fade in masks	
-		LeanTween.scale(maskLeft, new Vector3(amountOfscaling, amountOfscaling, amountOfscaling), time * 0.2f);
+        float amountOfscaling = 2f;
+
+      // fade in masks	
+        LeanTween.scale(maskLeft, new Vector3(amountOfscaling, amountOfscaling, amountOfscaling), time * 0.2f);
 		LeanTween.scale(maskRight, new Vector3(amountOfscaling, amountOfscaling, amountOfscaling), time *  0.2f);
 
 		LeanTween.move (gameObject, MovingObject.position, time * 0.4f).setDelay(time * 0.05f);
