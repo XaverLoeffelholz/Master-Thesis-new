@@ -63,17 +63,18 @@ public class Teleportation : Singleton<Teleportation> {
 		float time = distance * 0.3f;
         //float amountOfscaling = Mathf.Max (0.05f, (1f / (Mathf.Pow(angle*0.5f,2) + Mathf.Pow(distance,2))));
 
-        float amountOfscaling = 2f;
+        float smallFieldOfView = 0.1f;
+        float bigFieldOfView = 0.1732f;
 
-      // fade in masks	
-        LeanTween.scale(maskLeft, new Vector3(amountOfscaling, amountOfscaling, amountOfscaling), time * 0.2f);
-		LeanTween.scale(maskRight, new Vector3(amountOfscaling, amountOfscaling, amountOfscaling), time *  0.2f);
+        // fade in masks	
+        LeanTween.scale(maskLeft, new Vector3(smallFieldOfView, smallFieldOfView, smallFieldOfView), time * 0.2f);
+		LeanTween.scale(maskRight, new Vector3(smallFieldOfView, smallFieldOfView, smallFieldOfView), time *  0.2f);
 
 		LeanTween.move (gameObject, MovingObject.position, time * 0.4f).setDelay(time * 0.05f);
 		LeanTween.rotate (gameObject, MovingObject.rotation.eulerAngles, time * 0.4f).setDelay(time * 0.05f);
 
-		LeanTween.scale(maskLeft, new Vector3(0.15f,0.15f,0.15f), time * 0.2f).setDelay(time * 0.4f);
-		LeanTween.scale(maskRight, new Vector3(0.15f,0.15f,0.15f), time * 0.2f).setDelay(time * 0.4f);
+		LeanTween.scale(maskLeft, new Vector3(bigFieldOfView, bigFieldOfView, bigFieldOfView), time * 0.2f).setDelay(time * 0.4f);
+		LeanTween.scale(maskRight, new Vector3(bigFieldOfView, bigFieldOfView, bigFieldOfView), time * 0.2f).setDelay(time * 0.4f);
 	}
 }
 
