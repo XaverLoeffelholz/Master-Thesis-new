@@ -41,6 +41,9 @@ public class handle : MonoBehaviour {
     private bool rotateStep = false;
     private bool locked = false;
 
+	public Transform circle;
+	private Vector3 initialScaleCircle;
+
     // Use this for initialization
     void Start () {
         ResetLastPosition();
@@ -70,6 +73,10 @@ public class handle : MonoBehaviour {
 
             initialLocalPositionHandle = transform.localPosition;
             initialPositionHandle = transform.position;
+
+			if (circle != null) {
+				initialScaleCircle = circle.localScale;
+			}
         }
 
         Vector3 pq = pointOfCollision - p1.transform.position;
@@ -168,13 +175,16 @@ public class handle : MonoBehaviour {
 
         if (newDistanceCenterScaler.magnitude >= 0.1f && Vector3.Dot(initialDistancceCenterScaler, newDistanceCenterScaler)>0)
         {
-            Vector3 position = initialLocalPositionHandle + (-input * (face.scalerPosition-face.centerPosition).normalized);
-            transform.localPosition = RasterManager.Instance.Raster(position);
-            //transform.localPosition = position;
+			Vector3 position = initialLocalPositionHandle + (-input * (initialLocalPositionHandle-face.centerPosition).normalized);
 
+            transform.localPosition = RasterManager.Instance.Raster(position);
             face.scaler.coordinates = RasterManager.Instance.Raster(positionScaler);
 
             // update scale of circle
+			if (circle != null) {
+				circle.localScale = initialScaleCircle * (newDistanceCenterScaler.magnitude / initialDistancceCenterScaler.magnitude); 
+			}
+
         }
 
         face.UpdateScaleFromCorner();

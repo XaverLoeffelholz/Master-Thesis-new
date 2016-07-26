@@ -44,16 +44,18 @@ public class StageController : MonoBehaviour {
             touchDown = true;
             lastX = device.GetAxis().x;
             lastY = device.GetAxis().y;
+
+			/*
             UiCanvasGroup.Instance.Hide();
 
-			if (selection.currentSelection != null) {
-				selection.GetComponent<ModelingObject> ().DeSelect (selection);
+			if (selection.currentSelection != null && selection.currentSelection.CompareTag("ModelingObject")) {
+				selection.currentSelection.GetComponent<ModelingObject> ().DeSelect (selection);
 			}
 
 			if (selection.otherController.currentSelection != null) {
 				selection.otherController.currentSelection.GetComponent<ModelingObject> ().DeSelect (selection.otherController);
 			}
-
+			*/
         }
 
         if (device.GetTouchUp(SteamVR_Controller.ButtonMask.Touchpad))
@@ -82,13 +84,14 @@ public class StageController : MonoBehaviour {
 					
 					selection.pointOfCollisionGO.transform.position = RasterManager.Instance.Raster(selection.pointOfCollisionGO.transform.position);
 
+					/*
 					Group objectgroup = selection.currentFocus.GetComponent<ModelingObject>().group;
 
 					// if object is grouped, add movement to group
 					if (objectgroup != null)
 					{
 						objectgroup.Move(selection.pointOfCollisionGO.transform.position - prevPosition, selection.currentFocus.GetComponent<ModelingObject>());
-					}
+					}*/
 				}
 
 				// somehow not working

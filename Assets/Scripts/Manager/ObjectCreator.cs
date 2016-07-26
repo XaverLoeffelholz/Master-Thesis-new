@@ -12,14 +12,16 @@ public class ObjectCreator : Singleton<ObjectCreator> {
     public Transform objects;
     public Transform library;
 
+	public Color standardColor;
+
     private int objectIDcount = 0;
 
 
     // Use this for initialization
     void Start () {
-        createNewObject(triangle, ModelingObject.ObjectType.triangle, null, null, new Vector3(-2, 0.3f, 0f), true, null);
-        createNewObject(square, ModelingObject.ObjectType.square, null, null, new Vector3(0, 0.3f, 0f), true, null);
-        createNewObject(octagon, ModelingObject.ObjectType.octagon, null, null, new Vector3(2, 0.3f, 0f), true, null);
+		createNewObject(triangle, ModelingObject.ObjectType.triangle, null, null, new Vector3(-2, 0.3f, 0f), true, null, standardColor);
+		createNewObject(square, ModelingObject.ObjectType.square, null, null, new Vector3(0, 0.3f, 0f), true, null, standardColor);
+		createNewObject(octagon, ModelingObject.ObjectType.octagon, null, null, new Vector3(2, 0.3f, 0f), true, null, standardColor);
         ObjectCreator.Instance.createSetofObjects();
     }
 
@@ -31,14 +33,14 @@ public class ObjectCreator : Singleton<ObjectCreator> {
 
     public void createSetofObjects()
     {
-        createNewObject(triangle, ModelingObject.ObjectType.triangle, null, null, library.GetComponent<library>().pos1.position, false, null);       
-		createNewObject(square, ModelingObject.ObjectType.square, null, null, library.GetComponent<library>().pos2.position, false, null);
-        createNewObject(octagon, ModelingObject.ObjectType.octagon, null, null, library.GetComponent<library>().pos3.position, false, null);
+		createNewObject(triangle, ModelingObject.ObjectType.triangle, null, null, library.GetComponent<library>().pos1.position, false, null, standardColor);       
+		createNewObject(square, ModelingObject.ObjectType.square, null, null, library.GetComponent<library>().pos2.position, false, null, standardColor);
+		createNewObject(octagon, ModelingObject.ObjectType.octagon, null, null, library.GetComponent<library>().pos3.position, false, null, standardColor);
 
         //createNewObject(hexagon, ModelingObject.ObjectType.hexagon, null, null, library.GetComponent<library>().pos3.localPosition, false, null);		
     }
 
-	public void createNewObject(Mesh mesh, ModelingObject.ObjectType type, Face groundface, ModelingObject original, Vector3 offSet, bool insideStage, Group group)
+	public void createNewObject(Mesh mesh, ModelingObject.ObjectType type, Face groundface, ModelingObject original, Vector3 offSet, bool insideStage, Group group, Color color)
     {
         GameObject newObject = new GameObject();
         newObject = Instantiate(modelingObject);
@@ -101,6 +103,8 @@ public class ObjectCreator : Singleton<ObjectCreator> {
         if (group != null) {
             ObjectsManager.Instance.AddObjectToGroup(group, newModelingObject);
         }
+
+		newModelingObject.ChangeColor(standardColor, true);
     }
 
 
@@ -113,39 +117,41 @@ public class ObjectCreator : Singleton<ObjectCreator> {
 		switch (numberOfVertices) 
 		{
 		case 3:
-			createNewObject (triangle, ModelingObject.ObjectType.triangle, groundface, null, offset, true, null);
+			createNewObject (triangle, ModelingObject.ObjectType.triangle, groundface, null, offset, true, null, standardColor);
                 break;
 		case 4:
-			createNewObject (square, ModelingObject.ObjectType.square, groundface, null, offset, true, null);
+			createNewObject (square, ModelingObject.ObjectType.square, groundface, null, offset, true, null, standardColor);
                 break;
 		case 6:
-			createNewObject (hexagon, ModelingObject.ObjectType.hexagon, groundface, null, offset, true, null);
+			createNewObject (hexagon, ModelingObject.ObjectType.hexagon, groundface, null, offset, true, null, standardColor);
                 break;
 		case 8:
-			createNewObject (octagon, ModelingObject.ObjectType.octagon, groundface, null, offset, true, null);
+			createNewObject (octagon, ModelingObject.ObjectType.octagon, groundface, null, offset, true, null, standardColor);
                 break;
 		}
 	}
 
     public void DuplicateObject(ModelingObject original, Group group)
     {
+		// restructure this!!! only pass type 
+
         Vector3 localPosition = original.topFace.centerPosition;
         localPosition = localPosition + (original.transform.localPosition - original.bottomFace.centerPosition);
 
         if (original.typeOfObject == ModelingObject.ObjectType.triangle)
         {
-            createNewObject(triangle, original.typeOfObject, null, original, localPosition, true, group);
+			createNewObject(triangle, original.typeOfObject, null, original, localPosition, true, group, standardColor);
         } else if (original.typeOfObject == ModelingObject.ObjectType.square)
         {
-            createNewObject(square, original.typeOfObject, null, original, localPosition, true, group);
+			createNewObject(square, original.typeOfObject, null, original, localPosition, true, group, standardColor);
         }
         else if (original.typeOfObject == ModelingObject.ObjectType.hexagon)
         {
-            createNewObject(hexagon, original.typeOfObject, null, original, localPosition, true, group);
+			createNewObject(hexagon, original.typeOfObject, null, original, localPosition, true, group, standardColor);
         }
         else if (original.typeOfObject == ModelingObject.ObjectType.octagon)
         {
-            createNewObject(octagon, original.typeOfObject, null, original, localPosition, true, group);
+			createNewObject(octagon, original.typeOfObject, null, original, localPosition, true, group, standardColor);
         }
 
 

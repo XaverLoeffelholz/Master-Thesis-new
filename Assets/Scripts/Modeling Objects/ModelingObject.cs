@@ -74,10 +74,11 @@ public class ModelingObject : MonoBehaviour
 	private Vector3 initialPosition;
 
 	private Transform player;
-
 	public GameObject trashIcon;
-
 	private Color currentColor;
+
+	private bool initialBlocking;
+	private Vector3 initialPositionController;
 
     // Use this for initialization
     void Start()
@@ -96,7 +97,7 @@ public class ModelingObject : MonoBehaviour
         }
 
 
-        if (moving && !BiManualOperations.Instance.IsScalingStarted())
+        if (moving)
         {
 			if (inTrashArea) {
 				trashIcon.transform.parent.transform.LookAt (player);
@@ -113,250 +114,223 @@ public class ModelingObject : MonoBehaviour
                 }
             }
 
-
             // if the user takes an object from the library, delete other objects in the library
             // we could also just create a new version of the taken object
 
             if (transform.parent.CompareTag("Library"))
             {
-				//Vector2 distanceToInitialPosition = new Vector2 (initialPosition.x - transform.position.x, initialPosition.z - transform.position.z);
+				transform.SetParent(ObjectsManager.Instance.transform);
+				library.Instance.ClearLibrary();                
 
-				//if (distanceToInitialPosition.magnitude > transform.lossyScale.x*5f) {
-					transform.SetParent(ObjectsManager.Instance.transform);
-					library.Instance.ClearLibrary();                
-
-					LeanTween.scale (this.gameObject, Vector3.one, 0.3f).setEase(LeanTweenType.easeInOutExpo);
-					LeanTween.rotateLocal (this.gameObject, Vector3.zero, 0.3f).setEase(LeanTweenType.easeInOutExpo);
-				//}
-
+				LeanTween.scale (this.gameObject, Vector3.one, 0.3f).setEase(LeanTweenType.easeInOutExpo);
+				LeanTween.rotateLocal (this.gameObject, Vector3.zero, 0.3f).setEase(LeanTweenType.easeInOutExpo);
             }
 
-            Vector3 newPositionCollider = transform.TransformPoint(RasterManager.Instance.Raster(transform.InverseTransformPoint(controllerForMovement.pointOfCollisionGO.transform.position)));
-			Vector3 newPositionWorld = this.transform.position + (newPositionCollider - lastPositionController);
-			transform.position = newPositionWorld;
+			if (!BiManualOperations.Instance.IsScalingStarted ()) {
+				Vector3 newPositionCollider = transform.TransformPoint(RasterManager.Instance.Raster(transform.InverseTransformPoint(controllerForMovement.pointOfCollisionGO.transform.position)));
 
-			Vector3 boundingBoxBottomCenter = transform.TransformPoint(GetBoundingBoxBottomCenter ());
+				Vector3 newPositionWorld = this.transform.position + (newPositionCollider - initialPositionController);
+
+				if (!initialBlocking) {
+					newPositionWorld = this.transform.position + (newPositionCollider - lastPositionController);
+					transform.position = newPositionWorld;
+				}
+
+				if (initialBlocking && (newPositionCollider - initialPositionController).sqrMagnitude > 0.05f) {
+					initialBlocking = false;
+					newPositionWorld = this.transform.position + (newPositionCollider - initialPositionController);
+					transform.position = newPositionWorld;
+				}
 
 
-			// This seems fine
-			if (boundingBoxBottomCenter.y <= ObjectsManager.Instance.stageScaler.transform.position.y) {
+				float lowestPoint =  transform.TransformPoint(GetBoundingBoxBottomCenter ()).y;
 
-				// check how far it is below
-				float belowZero = ObjectsManager.Instance.stageScaler.transform.position.y - boundingBoxBottomCenter.y;
+				// here we need to check for the whole group if there is an object touching 0
+				if (group != null) {
+					// get lowest point of group
+					lowestPoint = group.GetBoundingBoxBottomCenter().y;
+				}
 
-				transform.position = new Vector3 (transform.position.x, transform.position.y + belowZero, transform.position.z);
+				if (lowestPoint <= ObjectsManager.Instance.stageScaler.transform.position.y) {					
+					// check how far it is belowfadd
+					float belowZero = ObjectsManager.Instance.stageScaler.transform.position.y - lowestPoint;
+					//Debug.Log ("below zero:" + belowZero);
+					transform.position = new Vector3 (transform.position.x, transform.position.y + belowZero, transform.position.z);
+				}
 
-				/*
-				Vector3 bottomPointOnGround = boundingBoxBottomCenter + new Vector3 (0f, belowZero, 0f);
-				float distancePointToCollisionGO = Vector3.Distance (newPositionCollider, bottomPointOnGround);
+				this.transform.localPosition = RasterManager.Instance.Raster(this.transform.localPosition);
 
-				// get Vector between center bottom and collider
-				Vector3 CenterBottomToCollisionGO = (newPositionCollider - boundingBoxBottomCenter).normalized;
+				// here check for possible snappings
+				if (bottomFace.center.possibleSnappingVertexBundle != null)
+				{
+					if (!snapped)
+					{
+						controllerForMovement.TriggerIfPressed(1500);
+						snapped = true;
+					}
 
-				// move on vector until 
-				float movedistance = Mathf.Sqrt(Mathf.Pow(belowZero,2f) + Mathf.Pow(distancePointToCollisionGO,2f));
+					if ((snapped && (newPositionCollider - lastPositionController).sqrMagnitude < 0.08f * transform.lossyScale.x)) {
+						Vector3 distanceCurrentBottomSnap = bottomFace.center.possibleSnappingVertexBundle.transform.GetChild (0).position - bottomFace.center.transform.GetChild (0).position;
+						this.transform.position = this.transform.position + distanceCurrentBottomSnap;
+					} else {
+						bottomFace.center.possibleSnappingVertexBundle.possibleSnappingVertexBundle = null;
+						bottomFace.center.possibleSnappingVertexBundle = null;
+					}
 
-				newPositionWorld = newPositionWorld + (movedistance * CenterBottomToCollisionGO);
+				}
+				else
+				{
+					snapped = false;
+					lastPositionController = newPositionCollider;
+				}
 
-				this.transform.position = newPositionWorld;
+				if (group != null)
+				{
+					Vector3 distance = transform.position - prevPosition;
+					group.Move(distance, this);
+				}
 
-				*/
+				lastPositionX = PositionOnMovementStart;
+				lastPositionY = PositionOnMovementStart;
+
+			}
+			          
+
+			// show amount of movement on x
+			if (bottomFace.center.coordinates.x != transform.InverseTransformPoint(PositionOnMovementStart).x)
+			{
+				// maybe check local positon
+				int count = RasterManager.Instance.getNumberOfGridUnits(bottomFace.center.coordinates.x, transform.InverseTransformPoint(PositionOnMovementStart).x);
+
+				for (int i = 0; i <= Mathf.Abs(count); i++)
+				{
+					if (i == 0)
+					{
+						// Display center of object before moving
+						GameObject CenterVisual = Instantiate(CenterVisualPrefab);
+						CenterVisual.transform.SetParent(DistanceVisualisation);
+						CenterVisual.transform.localEulerAngles = new Vector3(0f, 0f, 0f);
+
+						// change size depending on scale of stage
+						CenterVisual.transform.localScale = new Vector3(1f, 1f, 1f);
+						CenterVisual.transform.position = PositionOnMovementStart;
+
+						// Display center of object after moving
+						GameObject CenterVisual2 = Instantiate(CenterVisualPrefab);
+						CenterVisual2.transform.SetParent(DistanceVisualisation);
+						CenterVisual2.transform.localEulerAngles = new Vector3(0f, 0f, 0f);
+						CenterVisual2.transform.localScale = new Vector3(1f, 1f, 1f);
+						CenterVisual2.transform.position = bottomFace.center.transform.GetChild(0).position;
+
+						// Display outline of groundface
+						GameObject GroundVisual = Instantiate(GroundVisualPrefab);
+						GroundVisual.transform.SetParent(DistanceVisualisation);
+						LineRenderer lines = GroundVisual.GetComponent<LineRenderer>();
+						lines.SetWidth (Mathf.Min(0.025f * transform.lossyScale.x, 0.03f), Mathf.Min(0.025f * transform.lossyScale.x, 0.03f));
+
+						if (snapped)
+						{
+							lines.SetColors(Color.green, Color.green);
+						}
+
+						lines.SetVertexCount(bottomFace.vertexBundles.Length + 1);
+
+						for (int j = 0; j <= bottomFace.vertexBundles.Length; j++)
+						{
+							if (j == bottomFace.vertexBundles.Length)
+							{
+								Vector3 pos = bottomFace.vertexBundles[0].transform.GetChild(0).position;
+								lines.SetPosition(j, pos);
+							}
+							else
+							{
+								Vector3 pos = bottomFace.vertexBundles[j].transform.GetChild(0).position;
+								lines.SetPosition(j, pos);
+							}
+
+						}
+
+					}
+
+					GameObject DistanceVisualX = Instantiate(DistanceVisualPrefab);
+					DistanceVisualX.transform.SetParent(DistanceVisualisation);
+					DistanceVisualX.transform.localEulerAngles = new Vector3(0f, 0f, 0f);
+					DistanceVisualX.transform.localScale = new Vector3(1f, 1f, 1f);
+					DistanceVisualX.transform.position = PositionOnMovementStart;
+
+					if (bottomFace.center.coordinates.x > transform.InverseTransformPoint(PositionOnMovementStart).x)
+					{
+						DistanceVisualX.transform.localPosition += new Vector3(i * RasterManager.Instance.rasterLevel, 0f, 0f);
+					}
+					else
+					{
+						DistanceVisualX.transform.localPosition += new Vector3(i * RasterManager.Instance.rasterLevel * (-1.0f), 0f, 0f);
+					}
+
+					lastPositionX = DistanceVisualX.transform.position;
+					lastPositionY = DistanceVisualX.transform.position;
+				}
+
 			}
 
 
 
-			this.transform.localPosition = RasterManager.Instance.Raster(this.transform.localPosition);
+			// show amount of movement on y
+			if (bottomFace.center.coordinates.y != transform.InverseTransformPoint(PositionOnMovementStart).y)
+			{
+				// use raster manager
+				int count = RasterManager.Instance.getNumberOfGridUnits(bottomFace.center.coordinates.y, transform.InverseTransformPoint(PositionOnMovementStart).y);
 
-            // here check for possible snappings
-            if (bottomFace.center.possibleSnappingVertexBundle != null)
-            {
-                if (!snapped)
-                {
-                    controllerForMovement.TriggerIfPressed(1500);
-                    snapped = true;
-                }
+				for (int i = 0; i <= Mathf.Abs(count); i++)
+				{
+					GameObject DistanceVisualY = Instantiate(DistanceVisualPrefab);
+					DistanceVisualY.transform.SetParent(DistanceVisualisation);
+					DistanceVisualY.transform.localEulerAngles = new Vector3(0f, 0f, 0f);
+					DistanceVisualY.transform.localScale = new Vector3(1f, 1f, 1f);
+					DistanceVisualY.transform.position = lastPositionX;
 
-                if ((snapped && (newPositionCollider - lastPositionController).sqrMagnitude < 0.04f * transform.lossyScale.x))
-                {
-                    Vector3 distanceCurrentBottomSnap = bottomFace.center.possibleSnappingVertexBundle.transform.GetChild(0).position - bottomFace.center.transform.GetChild(0).position;
-                    this.transform.position = this.transform.position + distanceCurrentBottomSnap;
-                }
-            }
-			/*
-            else if (bottomFace.center.possibleGroundSnapping != null)
-            {
-                if (!snapped)
-                {
-                    controllerForMovement.TriggerIfPressed(800);
-                    snapped = true;
-                }
+					if (bottomFace.center.coordinates.y > transform.InverseTransformPoint(PositionOnMovementStart).y)
+					{
+						DistanceVisualY.transform.localPosition += new Vector3(0f, i * RasterManager.Instance.rasterLevel, 0f);
+					}
+					else
+					{
+						DistanceVisualY.transform.localPosition += new Vector3(0f, i * RasterManager.Instance.rasterLevel * (-1.0f), 0f);
+					}
 
-                if ((snapped && (newPositionCollider - lastPositionController).sqrMagnitude < 0.02f * transform.lossyScale.x))
-                {
-                    Vector3 newPos = this.transform.position;
-                    newPos.y = bottomFace.center.possibleGroundSnapping.transform.position.y + (transform.position.y - bottomFace.center.transform.GetChild(0).position.y);
-                    this.transform.position = newPos;
+					lastPositionY = DistanceVisualY.transform.position;
+				}
 
-                    lastPositionController = new Vector3(newPositionCollider.x, lastPositionController.y, newPositionCollider.z);
-                }
-
-            }*/
-            else
-            {
-                snapped = false;
-                lastPositionController = newPositionCollider;
-            }
-
-            if (group != null)
-            {
-                Vector3 distance = transform.position - prevPosition;
-                group.Move(distance, this);
-            }
-
-            lastPositionX = PositionOnMovementStart;
-            lastPositionY = PositionOnMovementStart;
-
-            if (!firstTimeMoving)
-            {
-                // show amount of movement on x
-                if (bottomFace.center.coordinates.x != transform.InverseTransformPoint(PositionOnMovementStart).x)
-                {
-                    // maybe check local positon
-                    int count = RasterManager.Instance.getNumberOfGridUnits(bottomFace.center.coordinates.x, transform.InverseTransformPoint(PositionOnMovementStart).x);
-
-                    for (int i = 0; i <= Mathf.Abs(count); i++)
-                    {
-                        if (i == 0)
-                        {
-                            // Display center of object before moving
-                            GameObject CenterVisual = Instantiate(CenterVisualPrefab);
-                            CenterVisual.transform.SetParent(DistanceVisualisation);
-                            CenterVisual.transform.localEulerAngles = new Vector3(0f, 0f, 0f);
-
-                            // change size depending on scale of stage
-                            CenterVisual.transform.localScale = new Vector3(1f, 1f, 1f);
-                            CenterVisual.transform.position = PositionOnMovementStart;
-
-                            // Display center of object after moving
-                            GameObject CenterVisual2 = Instantiate(CenterVisualPrefab);
-                            CenterVisual2.transform.SetParent(DistanceVisualisation);
-                            CenterVisual2.transform.localEulerAngles = new Vector3(0f, 0f, 0f);
-                            CenterVisual2.transform.localScale = new Vector3(1f, 1f, 1f);
-                            CenterVisual2.transform.position = bottomFace.center.transform.GetChild(0).position;
-
-                            // Display outline of groundface
-                            GameObject GroundVisual = Instantiate(GroundVisualPrefab);
-                            GroundVisual.transform.SetParent(DistanceVisualisation);
-                            LineRenderer lines = GroundVisual.GetComponent<LineRenderer>();
-							lines.SetWidth (Mathf.Min(0.025f * transform.lossyScale.x, 0.03f), Mathf.Min(0.025f * transform.lossyScale.x, 0.03f));
-
-                            if (snapped)
-                            {
-                                lines.SetColors(Color.green, Color.green);
-                            }
-
-                            lines.SetVertexCount(bottomFace.vertexBundles.Length + 1);
-
-                            for (int j = 0; j <= bottomFace.vertexBundles.Length; j++)
-                            {
-                                if (j == bottomFace.vertexBundles.Length)
-                                {
-                                    Vector3 pos = bottomFace.vertexBundles[0].transform.GetChild(0).position;
-                                    lines.SetPosition(j, pos);
-                                }
-                                else
-                                {
-                                    Vector3 pos = bottomFace.vertexBundles[j].transform.GetChild(0).position;
-                                    lines.SetPosition(j, pos);
-                                }
-
-                            }
-
-                        }
-
-                        GameObject DistanceVisualX = Instantiate(DistanceVisualPrefab);
-                        DistanceVisualX.transform.SetParent(DistanceVisualisation);
-                        DistanceVisualX.transform.localEulerAngles = new Vector3(0f, 0f, 0f);
-                        DistanceVisualX.transform.localScale = new Vector3(1f, 1f, 1f);
-                        DistanceVisualX.transform.position = PositionOnMovementStart;
-
-                        if (bottomFace.center.coordinates.x > transform.InverseTransformPoint(PositionOnMovementStart).x)
-                        {
-                            DistanceVisualX.transform.localPosition += new Vector3(i * RasterManager.Instance.rasterLevel, 0f, 0f);
-                        }
-                        else
-                        {
-                            DistanceVisualX.transform.localPosition += new Vector3(i * RasterManager.Instance.rasterLevel * (-1.0f), 0f, 0f);
-                        }
-
-                        lastPositionX = DistanceVisualX.transform.position;
-                        lastPositionY = DistanceVisualX.transform.position;
-                    }
-
-                }
+			}
 
 
+			// show amount of movement on z
+			if (bottomFace.center.coordinates.z != transform.InverseTransformPoint(PositionOnMovementStart).z)
+			{
+				// use raster manager
+				int count = RasterManager.Instance.getNumberOfGridUnits(bottomFace.center.coordinates.z, transform.InverseTransformPoint(PositionOnMovementStart).z);
 
-                // show amount of movement on y
-                if (bottomFace.center.coordinates.y != transform.InverseTransformPoint(PositionOnMovementStart).y)
-                {
-                    // use raster manager
-                    int count = RasterManager.Instance.getNumberOfGridUnits(bottomFace.center.coordinates.y, transform.InverseTransformPoint(PositionOnMovementStart).y);
+				for (int i = 0; i <= Mathf.Abs(count); i++)
+				{
+					GameObject DistanceVisualZ = Instantiate(DistanceVisualPrefab);
+					DistanceVisualZ.transform.SetParent(DistanceVisualisation);
+					DistanceVisualZ.transform.localEulerAngles = new Vector3(0f, 0f, 0f);
+					DistanceVisualZ.transform.localScale = new Vector3(1f, 1f, 1f);
+					DistanceVisualZ.transform.GetChild(0).localEulerAngles = new Vector3(0f, 90f, 0f);
+					DistanceVisualZ.transform.position = lastPositionY;
 
-                    for (int i = 0; i <= Mathf.Abs(count); i++)
-                    {
-                        GameObject DistanceVisualY = Instantiate(DistanceVisualPrefab);
-                        DistanceVisualY.transform.SetParent(DistanceVisualisation);
-                        DistanceVisualY.transform.localEulerAngles = new Vector3(0f, 0f, 0f);
-                        DistanceVisualY.transform.localScale = new Vector3(1f, 1f, 1f);
-                        DistanceVisualY.transform.position = lastPositionX;
+					if (bottomFace.center.coordinates.z > transform.InverseTransformPoint(PositionOnMovementStart).z)
+					{
+						DistanceVisualZ.transform.localPosition += new Vector3(0f, 0f, i * RasterManager.Instance.rasterLevel);
+					}
+					else
+					{
+						DistanceVisualZ.transform.localPosition += new Vector3(0f, 0f, i * RasterManager.Instance.rasterLevel * (-1.0f));
+					}
+				}
 
-                        if (bottomFace.center.coordinates.y > transform.InverseTransformPoint(PositionOnMovementStart).y)
-                        {
-                            DistanceVisualY.transform.localPosition += new Vector3(0f, i * RasterManager.Instance.rasterLevel, 0f);
-                        }
-                        else
-                        {
-                            DistanceVisualY.transform.localPosition += new Vector3(0f, i * RasterManager.Instance.rasterLevel * (-1.0f), 0f);
-                        }
-
-                        lastPositionY = DistanceVisualY.transform.position;
-                    }
-
-                }
-
-
-                // show amount of movement on z
-                if (bottomFace.center.coordinates.z != transform.InverseTransformPoint(PositionOnMovementStart).z)
-                {
-                    // use raster manager
-                    int count = RasterManager.Instance.getNumberOfGridUnits(bottomFace.center.coordinates.z, transform.InverseTransformPoint(PositionOnMovementStart).z);
-
-                    for (int i = 0; i <= Mathf.Abs(count); i++)
-                    {
-                        GameObject DistanceVisualZ = Instantiate(DistanceVisualPrefab);
-                        DistanceVisualZ.transform.SetParent(DistanceVisualisation);
-                        DistanceVisualZ.transform.localEulerAngles = new Vector3(0f, 0f, 0f);
-                        DistanceVisualZ.transform.localScale = new Vector3(1f, 1f, 1f);
-                        DistanceVisualZ.transform.GetChild(0).localEulerAngles = new Vector3(0f, 90f, 0f);
-                        DistanceVisualZ.transform.position = lastPositionY;
-
-                        if (bottomFace.center.coordinates.z > transform.InverseTransformPoint(PositionOnMovementStart).z)
-                        {
-                            DistanceVisualZ.transform.localPosition += new Vector3(0f, 0f, i * RasterManager.Instance.rasterLevel);
-                        }
-                        else
-                        {
-                            DistanceVisualZ.transform.localPosition += new Vector3(0f, 0f, i * RasterManager.Instance.rasterLevel * (-1.0f));
-                        }
-                    }
-
-                }
-
-
-            }
-
-
+			}
+				
 			if (new Vector2 (transform.localPosition.x, transform.localPosition.z).magnitude > 3.6f) {
 				if (!inTrashArea) {
 					EnterTrashArea ();
@@ -565,9 +539,9 @@ public class ModelingObject : MonoBehaviour
         handles.HeightTop.transform.localPosition = topFace.centerPosition;
         handles.HeightBottom.transform.localPosition = bottomFace.centerPosition;
 
-        handles.RotationX.transform.localPosition = this.transform.localPosition;
-        handles.RotationY.transform.localPosition = this.transform.localPosition;
-        handles.RotationZ.transform.localPosition = this.transform.localPosition;
+       // handles.RotationX.transform.localPosition = this.transform.localPosition;
+       // handles.RotationY.transform.localPosition = this.transform.localPosition;
+       // handles.RotationZ.transform.localPosition = this.transform.localPosition;
     }
 
     public void RotateHandles()
@@ -616,7 +590,7 @@ public class ModelingObject : MonoBehaviour
                 group.FocusGroup(this);
             }
 
-			if (!transform.parent.CompareTag("Library")){
+			if (!transform.parent.CompareTag("Library") && !controller.groupItemSelection){
 				objectSelector.ShowSelectionButton (controller);
 			}
 
@@ -647,13 +621,13 @@ public class ModelingObject : MonoBehaviour
     public void Highlight()
     {
         Color newColor = transform.GetChild(0).GetComponent<Renderer>().material.color;
-        transform.GetChild(0).GetComponent<Renderer>().material.color = new Color(newColor.r + 0.2f, newColor.g + 0.2f, newColor.b + 0.2f, 1f);
+		transform.GetChild(0).GetComponent<Renderer>().material.color = new Color(currentColor.r * 1.2f, currentColor.g * 1.2f, currentColor.b * 1.2f, 1f);
     }
 
     public void UnHighlight()
     {
         Color newColor = transform.GetChild(0).GetComponent<Renderer>().material.color;
-        transform.GetChild(0).GetComponent<Renderer>().material.color = new Color(newColor.r - 0.2f, newColor.g - 0.2f, newColor.b - 0.2f, 1f);
+		transform.GetChild(0).GetComponent<Renderer>().material.color = new Color(currentColor.r, currentColor.g, currentColor.b, 1f);
     }
 
     public void Select(Selection controller, Vector3 uiPosition)
@@ -675,21 +649,20 @@ public class ModelingObject : MonoBehaviour
     }
 		
     public void DeSelect(Selection controller)
-    {
+    {		
         if (group != null)
         {
             group.DeSelectGroup(this);
         }
 
 		selected = false;
+		ShowOutline(false);
 
 		objectSelector.DeSelect (controller);
         controller.DeAssignCurrentSelection(transform.gameObject);
         handles.DisableHandles();
 
 		UnFocus (controller);
-
-        ShowOutline(false);
     }
 
     public void ShowOutline(bool value)
@@ -700,7 +673,7 @@ public class ModelingObject : MonoBehaviour
 			transform.GetChild(0).GetComponent<Renderer>().material.SetColor("_OutlineColor", Color.white);
 			transform.GetChild (0).GetComponent<Renderer> ().material.SetFloat ("_Outline", 0.005f * this.transform.lossyScale.x);
 
-			DisplayOutlineOfGroundFace ();
+			//DisplayOutlineOfGroundFace ();
         }
         else
         {
@@ -744,13 +717,16 @@ public class ModelingObject : MonoBehaviour
     public void StartMoving(Selection controller, ModelingObject initiater)
     {
         moving = true;
+		initialBlocking = true;
         controllerForMovement = controller;
         lastPositionController = controller.pointOfCollisionGO.transform.position;
+		initialPositionController = controller.pointOfCollisionGO.transform.position;
         PositionOnMovementStart = transform.TransformPoint(bottomFace.center.coordinates);
+
+		bottomFace.center.possibleSnappingVertexBundle = null;
 
 		DisplayOutlineOfGroundFace ();
 		objectSelector.HideSelectionButton ();
-
     }
 
 	public void DisplayOutlineOfGroundFace(){
@@ -790,7 +766,7 @@ public class ModelingObject : MonoBehaviour
         }
 
 		if (!transform.parent.CompareTag ("Library")) {
-			objectSelector.ShowSelectionButton (controller);
+			//objectSelector.ShowSelectionButton (controller);
 		}
     }
 
@@ -989,9 +965,15 @@ public class ModelingObject : MonoBehaviour
         Trash.Instance.TrashAreaActive(false);
     }
 
-    public void ChangeColor(Color color)
+	public void ChangeColor(Color color, bool initiator)
     {
+		if (group != null && initiator)
+		{
+			group.ColorGroup(this, color);
+		}
+
         transform.GetChild(0).GetComponent<Renderer>().material.color = color;
+		currentColor = color;
     }
 
     public void RotateAround(Vector3 angleAxis, float angle)
@@ -1146,6 +1128,95 @@ public class ModelingObject : MonoBehaviour
 
         return boundingBoxCenter;
     }
+
+
+	public Vector3 GetBoundingBoxMinima()
+	{
+		Vector3 minima = new Vector3 (9999f, 9999f, 9999f);
+
+		for (int i = 0; i < topFace.vertexBundles.Length; i++)
+		{
+			Vector3 current = topFace.vertexBundles[i].coordinates;
+
+			if (current.x < minima.x) {
+				minima.x = current.x;
+			}
+
+			if (current.y < minima.y) {
+				minima.y = current.y;
+			}
+
+			if (current.z < minima.z) {
+				minima.z = current.z;
+			}
+
+		}
+
+		for (int i = 0; i < bottomFace.vertexBundles.Length; i++)
+		{
+			Vector3 current = bottomFace.vertexBundles[i].coordinates;
+
+			if (current.x < minima.x) {
+				minima.x = current.x;
+			}
+
+			if (current.y < minima.y) {
+				minima.y = current.y;
+			}
+
+			if (current.z < minima.z) {
+				minima.z = current.z;
+			}
+
+		}
+
+		return minima;
+	}
+
+	public Vector3 GetBoundingBoxMaxima()
+	{
+		Vector3 maxima = new Vector3 (-9999f, -9999f, -9999f);
+
+		for (int i = 0; i < topFace.vertexBundles.Length; i++)
+		{
+			Vector3 current = topFace.vertexBundles[i].coordinates;
+
+			if (current.x > maxima.x) {
+				maxima.x = current.x;
+			}
+
+			if (current.y > maxima.y) {
+				maxima.y = current.y;
+			}
+
+			if (current.z > maxima.z) {
+				maxima.z = current.z;
+			}
+
+		}
+
+		for (int i = 0; i < bottomFace.vertexBundles.Length; i++)
+		{
+			Vector3 current = bottomFace.vertexBundles[i].coordinates;
+
+			if (current.x > maxima.x) {
+				maxima.x = current.x;
+			}
+
+			if (current.y > maxima.y) {
+				maxima.y = current.y;
+			}
+
+			if (current.z > maxima.z) {
+				maxima.z = current.z;
+			}
+
+		}
+
+		return maxima;
+	}
+
+
 
 	public Vector3 GetPosOfClosestVertex(Vector3 position, Face.faceType typeOfFace){
 

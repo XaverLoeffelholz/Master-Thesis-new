@@ -70,6 +70,10 @@ public class ObjectSelecter : MonoBehaviour {
 			controller.currentSelection.GetComponent<ModelingObject> ().DeSelect (controller);
 		}
 
+		if (controller.otherController.currentSelection != null) {
+			controller.otherController.currentSelection.GetComponent<ModelingObject> ().DeSelect (controller);
+		}
+
         connectedObject.Select(controller, uiPosition);
 		Highlighter.SetActive (true);
     }

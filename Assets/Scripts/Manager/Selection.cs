@@ -115,7 +115,7 @@ public class Selection : MonoBehaviour
 
 				AdjustLengthPointer (hit.distance);
 
-				if (hit.rigidbody != null) {
+				if (hit.rigidbody != null && hit.rigidbody.transform.parent != null) {
 					if (currentFocus != hit.rigidbody.transform.parent.gameObject) {
 						// focus of Object
 						if (hit.rigidbody.transform.parent.gameObject.CompareTag ("ModelingObject")) {
@@ -131,7 +131,7 @@ public class Selection : MonoBehaviour
 							DeFocusCurrent (hit.rigidbody.transform.parent.gameObject);
 							currentFocus = hit.rigidbody.transform.parent.gameObject;
 							currentFocus.GetComponent<UiElement> ().Focus (this);
-							device.TriggerHapticPulse (300);
+							device.TriggerHapticPulse (600);
 						} else if (hit.rigidbody.transform.parent.gameObject.CompareTag ("TeleportTrigger")) {
 							DeFocusCurrent (hit.rigidbody.transform.parent.gameObject);
 							currentFocus = hit.rigidbody.transform.parent.gameObject;
@@ -141,7 +141,7 @@ public class Selection : MonoBehaviour
 							DeFocusCurrent (hit.rigidbody.transform.parent.gameObject);
 							currentFocus = hit.rigidbody.transform.parent.gameObject;
 							currentFocus.GetComponent<ObjectSelecter> ().connectedObject.Focus (this);
-							device.TriggerHapticPulse (300);
+							device.TriggerHapticPulse (600);
 						} else if (hit.rigidbody.transform.parent.gameObject.CompareTag ("TeleportPosition")) {
 							DeFocusCurrent (hit.rigidbody.transform.parent.gameObject);
 							currentFocus = hit.rigidbody.transform.parent.gameObject;
@@ -313,6 +313,7 @@ public class Selection : MonoBehaviour
 
             } else
             {
+				// user is clicking somewhere outside to close the menu
 
 				// check that we are not in group selection
 				if (!groupItemSelection) {
@@ -337,6 +338,8 @@ public class Selection : MonoBehaviour
 
     public void SelectLatestObject()
     {
+		// deselect current object
+
         // directly select new object
         UiCanvasGroup.Instance.Show();
         ObjectsManager.Instance.GetlatestObject().Select(this, uiPositon); 

@@ -63,8 +63,8 @@ public class handles : MonoBehaviour {
     public void ShowFrustumHandles()
     {
         DisableHandles();
-        transform.parent.GetComponent<ModelingObject>().PositionHandles();
-        transform.parent.GetComponent<ModelingObject>().RotateHandles();
+        //transform.parent.GetComponent<ModelingObject>().PositionHandles();
+        //transform.parent.GetComponent<ModelingObject>().RotateHandles();
 
         TopHandles.SetActive(true);
         BottomHandles.SetActive(true);

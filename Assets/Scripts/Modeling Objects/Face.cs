@@ -184,36 +184,51 @@ public class Face : MonoBehaviour {
 	}
 
 	public void OrderVertexBundlesClockwise(){
-		
-		VertexBundle[] OrderedVertexBundles = new VertexBundle[vertexBundles.Length];
-		VertexBundle[] LeftVertexBundles = vertexBundles;
 
-		OrderedVertexBundles [0] = vertexBundles [0];
+		// Quick fix for Octagon
+		if (parentModelingObject.typeOfObject == ModelingObject.ObjectType.octagon) {
+			
+			VertexBundle[] OrderedVertexBundles = new VertexBundle[vertexBundles.Length];
 
-		for (int i = 1; i < OrderedVertexBundles.Length; i++) {
+			for (int i = 0; i < OrderedVertexBundles.Length; i++) {
+				OrderedVertexBundles [i] = vertexBundles [vertexBundles.Length - i - 1];
+			}
 
-			float distance = 0f;
-			int idOfnextBundle = 0;
+			vertexBundles = OrderedVertexBundles;
 
-			// check which vertex bundle is the closes clockwise of the current one
-			for (int j = 1; j < LeftVertexBundles.Length; j++) {
-				if (LeftVertexBundles[j] != null) {
-					float newDistance = Vector3.Dot (normal, Vector3.Cross (OrderedVertexBundles [i-1].coordinates - centerPosition, LeftVertexBundles [j].coordinates - centerPosition));
-					if (newDistance > distance) {
-						distance = newDistance;
-						idOfnextBundle = j;
+		} else {
+			VertexBundle[] OrderedVertexBundles = new VertexBundle[vertexBundles.Length];
+			VertexBundle[] LeftVertexBundles = vertexBundles;
+
+			OrderedVertexBundles [0] = vertexBundles [0];
+
+			for (int i = 1; i < OrderedVertexBundles.Length; i++) {
+
+				float distance = 0f;
+				int idOfnextBundle = 0;
+
+				// check which vertex bundle is the closes clockwise of the current one
+				for (int j = 1; j < LeftVertexBundles.Length; j++) {
+					if (LeftVertexBundles[j] != null) {
+						float newDistance = Vector3.Dot (normal, Vector3.Cross (OrderedVertexBundles [i-1].coordinates - centerPosition, LeftVertexBundles [j].coordinates - centerPosition));
+						if (newDistance > distance) {
+							distance = newDistance;
+							idOfnextBundle = j;
+						}
 					}
+
 				}
+
+				distance = 0f;
+				OrderedVertexBundles [i] = LeftVertexBundles [idOfnextBundle];
+				LeftVertexBundles [idOfnextBundle] = null;
 
 			}
 
-			distance = 0f;
-			OrderedVertexBundles [i] = LeftVertexBundles [idOfnextBundle];
-			LeftVertexBundles [idOfnextBundle] = null;
-
+			vertexBundles = OrderedVertexBundles;
 		}
+		
 
-		vertexBundles = OrderedVertexBundles;
 
 	}
 

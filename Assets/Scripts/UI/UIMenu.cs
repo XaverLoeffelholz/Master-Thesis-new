@@ -126,8 +126,9 @@ public class UIMenu : MonoBehaviour {
             case (buttonType.Delete):
                 Delete();
                 break;
-            case (buttonType.Duplicate):
-                Duplicate();
+		case (buttonType.Duplicate):
+			Duplicate ();
+				parentCanvas.currentModelingObject.DeSelect (controller);
                 controller.SelectLatestObject();
                 parentCanvas.objectMenu.ActivateMenu();
                 break;
@@ -195,6 +196,6 @@ public class UIMenu : MonoBehaviour {
 
     public void ChangeColor(UiElement button)
     {
-        UiCanvasGroup.Instance.currentModelingObject.ChangeColor(button.gameObject.GetComponent<Image>().color);
+        UiCanvasGroup.Instance.currentModelingObject.ChangeColor(button.gameObject.GetComponent<Image>().color, true);
     }
 }

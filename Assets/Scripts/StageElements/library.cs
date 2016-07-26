@@ -40,7 +40,7 @@ public class library : Singleton<library>{
             }
         }
 
-        Invoke("RefillLibrary", 1.3f);
+        Invoke("RefillLibrary", 1.0f);
     }
 
     public void RefillLibrary()

@@ -72,6 +72,7 @@ public class ObjectsManager : Singleton<ObjectsManager>
         modelingObject.transform.SetParent(group.transform);
         modelingObject.group = group;
         group.objectList.Add(modelingObject);
+		group.DrawBoundingBox ();
     }
 
     public void TakeObjectOutOfGroup(Group group, ModelingObject modelingObject)
@@ -79,6 +80,7 @@ public class ObjectsManager : Singleton<ObjectsManager>
         modelingObject.transform.SetParent(group.transform.parent);
         modelingObject.group = null;
         group.objectList.Remove(modelingObject);
+		group.DrawBoundingBox ();
     }
 
     public void ReOpenGroup(Group group)
