@@ -10,7 +10,9 @@ public class StageController : MonoBehaviour {
     private float lastX;
     private bool touchDown;
     SteamVR_TrackedObject trackedObj;
-    public bool scaleMode = false;
+
+    [HideInInspector]
+    public bool scaleMode;
     private Selection selection;
 
 	public GameObject pullIcon;
@@ -18,6 +20,14 @@ public class StageController : MonoBehaviour {
 
     void Awake()
     {
+        if (selection.typeOfController == Selection.controllerType.mainController)
+        {
+            scaleMode = true;
+        } else
+        {
+            scaleMode = false;
+        }
+
         trackedObj = GetComponent<SteamVR_TrackedObject>();
         selection = this.GetComponent<Selection>();
     }

@@ -5,6 +5,10 @@ using System;
 [RequireComponent(typeof(SteamVR_TrackedObject))]
 public class Selection : MonoBehaviour
 {
+    public enum controllerType { mainController, SecondaryController}
+
+    public controllerType typeOfController;
+
     public GameObject currentFocus;
     public GameObject currentSelection;
 	public Vector3 pointOfCollision;
@@ -36,6 +40,11 @@ public class Selection : MonoBehaviour
     void Awake()
     {
         trackedObj = GetComponent<SteamVR_TrackedObject>();
+
+        if (typeOfController == controllerType.SecondaryController)
+        {
+            LaserPointer.transform.GetChild(0).gameObject.SetActive(false);
+        }
     }
 
 
@@ -205,10 +214,15 @@ public class Selection : MonoBehaviour
 					movingObject = true;
 					this.GetComponent<StageController> ().ShowPullVisual (true);
 
+                    // here we should also change the icon on the other controller to a toggle where we can choose between rotation and scaling
+
+                    //!!!!
+
 					UiCanvasGroup.Instance.Hide();
 
 					if (currentFocus.CompareTag ("ModelingObject")) {	
 						currentFocus.GetComponent<ModelingObject>().StartMoving(this, currentFocus.GetComponent<ModelingObject>());
+                        otherController.LaserPointer.transform.GetChild(0).gameObject.SetActive(true);
 						//currentFocus.GetComponent<ModelingObject> ().DeSelect (this);
 
 					} else if (currentFocus.CompareTag ("TeleportPosition")) {

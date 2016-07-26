@@ -80,6 +80,8 @@ public class ModelingObject : MonoBehaviour
 	private bool initialBlocking;
 	private Vector3 initialPositionController;
 
+    public BoundingBox boundingBox;
+
     // Use this for initialization
     void Start()
     {
@@ -635,6 +637,9 @@ public class ModelingObject : MonoBehaviour
         if (group != null)
         {
             group.SelectGroup(this);
+        } else
+        {
+            DrawBoundingBox();
         }
 
 		selected = true;
@@ -654,8 +659,12 @@ public class ModelingObject : MonoBehaviour
         {
             group.DeSelectGroup(this);
         }
+        else
+        {
+            boundingBox.HideBoundingBox(); 
+        }
 
-		selected = false;
+        selected = false;
 		ShowOutline(false);
 
 		objectSelector.DeSelect (controller);
@@ -688,6 +697,29 @@ public class ModelingObject : MonoBehaviour
 				}
 			}
         }
+    }
+
+    public void DrawBoundingBox()
+    {
+        boundingBox.coordinates = new Vector3[8];
+
+        // get highest and lowest values for x,y,z
+        Vector3 minima = GetBoundingBoxMinima();
+        Vector3 maxima = GetBoundingBoxMaxima();
+
+        // set all points
+        boundingBox.coordinates[0] = new Vector3(maxima.x, maxima.y, maxima.z);
+        boundingBox.coordinates[1] = new Vector3(maxima.x, maxima.y, minima.z);
+        boundingBox.coordinates[2] = new Vector3(minima.x, maxima.y, minima.z);
+        boundingBox.coordinates[3] = new Vector3(minima.x, maxima.y, maxima.z);
+
+        boundingBox.coordinates[4] = new Vector3(maxima.x, minima.y, maxima.z);
+        boundingBox.coordinates[5] = new Vector3(maxima.x, minima.y, minima.z);
+        boundingBox.coordinates[6] = new Vector3(minima.x, minima.y, minima.z);
+        boundingBox.coordinates[7] = new Vector3(minima.x, minima.y, maxima.z);
+
+        boundingBox.DrawBoundingBox();
+
     }
 
     public void AssignVertexBundlesToFaces()
