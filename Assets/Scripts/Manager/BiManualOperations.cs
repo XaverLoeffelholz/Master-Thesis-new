@@ -76,6 +76,14 @@ public class BiManualOperations : Singleton<BiManualOperations> {
 
             ModelingObject modObject = controller1.currentFocus.GetComponent<ModelingObject>();
 
+			if (newScale > 5f) {
+				newScale = 5f;
+			}
+
+			if (newScale < 0f) {
+				newScale = 0f;
+			}
+
             modObject.ScaleBy(newScale, true);
         }
         else

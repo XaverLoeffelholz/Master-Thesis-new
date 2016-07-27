@@ -92,19 +92,19 @@ public class ObjectCreator : Singleton<ObjectCreator> {
 
         }
 
-       // newModelingObject.CorrectOffset();
-       newModelingObject.InitiateHandles();
-
         if (original != null)
         {
             newModelingObject.SetVertexBundlePositions(original);
         }
 
+		// newModelingObject.CorrectOffset();
+		newModelingObject.InitiateHandles();
+
         if (group != null) {
             ObjectsManager.Instance.AddObjectToGroup(group, newModelingObject);
         }
 
-		newModelingObject.ChangeColor(standardColor, true);
+		newModelingObject.ChangeColor(color, true);
     }
 
 
@@ -133,28 +133,24 @@ public class ObjectCreator : Singleton<ObjectCreator> {
 
     public void DuplicateObject(ModelingObject original, Group group)
     {
-		// restructure this!!! only pass type 
-
         Vector3 localPosition = original.topFace.centerPosition;
         localPosition = localPosition + (original.transform.localPosition - original.bottomFace.centerPosition);
 
         if (original.typeOfObject == ModelingObject.ObjectType.triangle)
         {
-			createNewObject(triangle, original.typeOfObject, null, original, localPosition, true, group, standardColor);
+			createNewObject(triangle, original.typeOfObject, null, original, localPosition, true, group, original.currentColor);
         } else if (original.typeOfObject == ModelingObject.ObjectType.square)
         {
-			createNewObject(square, original.typeOfObject, null, original, localPosition, true, group, standardColor);
+			createNewObject(square, original.typeOfObject, null, original, localPosition, true, group, original.currentColor);
         }
         else if (original.typeOfObject == ModelingObject.ObjectType.hexagon)
         {
-			createNewObject(hexagon, original.typeOfObject, null, original, localPosition, true, group, standardColor);
+			createNewObject(hexagon, original.typeOfObject, null, original, localPosition, true, group, original.currentColor);
         }
         else if (original.typeOfObject == ModelingObject.ObjectType.octagon)
         {
-			createNewObject(octagon, original.typeOfObject, null, original, localPosition, true, group, standardColor);
+			createNewObject(octagon, original.typeOfObject, null, original, localPosition, true, group, original.currentColor);
         }
-
-
     }
 
 

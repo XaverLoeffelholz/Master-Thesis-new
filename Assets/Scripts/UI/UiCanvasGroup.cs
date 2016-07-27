@@ -77,14 +77,21 @@ public class UiCanvasGroup : Singleton<UiCanvasGroup>{
         visible = true;
     }
 
+	public void CloseMenu(Selection controller){
+		Hide();
+
+		if (currentModelingObject != null)
+		{
+			currentModelingObject.DeSelect(controller);
+		}
+	}
+
+
     public void Hide()
     {
         LeanTween.alphaCanvas(canvGroup, 0f, 0.3f).setOnComplete(DeactivateMenus);
+		ObjectsManager.Instance.HideAllHandles();
 
-        if (currentModelingObject!= null)
-        {
-            currentModelingObject.handles.DisableHandles();
-        }
         visible = false;
     }
 

@@ -12,7 +12,12 @@ public class ObjectSelecter : MonoBehaviour {
 	public GameObject buttonGameObject;
 	private Transform stageScaler;
 
+	private Color standardColor;
+	private Color highlightedColor;
+
     public bool active;
+
+	public GameObject Hover;
 
 	// Use this for initialization
 	void Start () {
@@ -24,6 +29,9 @@ public class ObjectSelecter : MonoBehaviour {
             userCamera = Camera.main;
 
 		stageScaler = GameObject.Find ("StageScaler").transform;
+
+		standardColor = buttonGameObject.GetComponent<Renderer> ().material.color;
+		highlightedColor = new Color(standardColor.r * 0.5f, standardColor.g * 0.5f, standardColor.b * 0.5f, 1f);
     }
 	
 	// Update is called once per frame
@@ -55,13 +63,17 @@ public class ObjectSelecter : MonoBehaviour {
 		buttonGameObject.SetActive (false);
     }
 
-	public void Focus(Selection controller){		
-		// use for hover effects
-
+	public void Focus(Selection controller){
+		LeanTween.alpha(Hover, 1f, 0.3f).setEase(LeanTweenType.easeInOutCubic);
+		//LeanTween.scale(buttonGameObject, transform.lossyScale *1.2f, 0.3f).setEase(LeanTweenType.easeInOutCubic);
+		//LeanTween.color(buttonGameObject, highlightedColor, 0.3f).setEase(LeanTweenType.easeInOutCubic);
 	}
 
 	public void UnFocus(Selection controller){
-		// 
+		LeanTween.alpha(Hover, 0f, 0.3f).setEase(LeanTweenType.easeInOutCubic);
+
+		//LeanTween.scale(buttonGameObject, transform.lossyScale/1.2f, 0.3f).setEase(LeanTweenType.easeInOutCubic);
+		//LeanTween.color(buttonGameObject, standardColor, 0.3f).setEase(LeanTweenType.easeInOutCubic);
 	}
 
     public void Select(Selection controller, Vector3 uiPosition)

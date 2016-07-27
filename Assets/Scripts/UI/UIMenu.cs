@@ -20,6 +20,7 @@ public class UIMenu : MonoBehaviour {
     public enum buttonType
     {
         Menu,
+		CloseMenu,
         Delete,
         GroupStart,
         GroupEnd,
@@ -71,12 +72,16 @@ public class UIMenu : MonoBehaviour {
         List<GameObject> buttons = new List<GameObject>();
         foreach (Transform child in transform)
         {
-            if (child.parent == transform && !child.CompareTag("Colors"))
+			if (child.parent == transform)
             {
-                child.gameObject.SetActive(true);
-                buttons.Add(child.gameObject);
+				if (child.name == "UI Close"){
+					child.gameObject.SetActive(true);
+					child.GetComponent<RectTransform>().anchoredPosition3D = new Vector3(500f, -50f, 0f);
+				} else {
+					child.gameObject.SetActive(true);
+					buttons.Add(child.gameObject);
+				}
             }
-
         }
         transform.parent.GetComponent<UiCanvasGroup>().ArrangeUIObjects(buttons);
         transform.parent.GetComponent<UiCanvasGroup>().Show();
@@ -126,11 +131,12 @@ public class UIMenu : MonoBehaviour {
             case (buttonType.Delete):
                 Delete();
                 break;
-		case (buttonType.Duplicate):
-			Duplicate ();
-				parentCanvas.currentModelingObject.DeSelect (controller);
-                controller.SelectLatestObject();
-                parentCanvas.objectMenu.ActivateMenu();
+			case (buttonType.Duplicate):
+				Duplicate ();
+
+				//UiCanvasGroup.Instance.Hide ();
+                //controller.SelectLatestObject();
+                //parentCanvas.objectMenu.ActivateMenu();
                 break;
             case (buttonType.GroupStart):
                 StartGroup();
@@ -147,6 +153,9 @@ public class UIMenu : MonoBehaviour {
             case (buttonType.Extrude):
                 Extrude();
                 break;
+			case (buttonType.CloseMenu):
+				parentCanvas.CloseMenu(controller);
+				break;
         }
 
     }
@@ -191,6 +200,7 @@ public class UIMenu : MonoBehaviour {
 
     public void Duplicate()
     {
+		Debug.Log ("Duplicate object!");
         ObjectCreator.Instance.DuplicateObject(parentCanvas.currentModelingObject, null);
     }
 

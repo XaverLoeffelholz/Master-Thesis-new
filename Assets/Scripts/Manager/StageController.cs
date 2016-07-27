@@ -3,6 +3,11 @@ using System.Collections;
 
 public class StageController : MonoBehaviour {
 
+	public enum controllerMode { scalingStage, rotatingStage, pullPushObject, toggleRotateScale };
+
+	public controllerMode standardControllerMode;
+	public controllerMode currentControllerMode;
+
     public Transform stage;
     public Transform library;
     public Transform trash;
@@ -17,29 +22,71 @@ public class StageController : MonoBehaviour {
 
 	public GameObject pullIcon;
 	public GameObject normalIcon;
+	public GameObject toggle;
+	public GameObject toggle2;
+	public GameObject toggleBG;
+
+	public bool recognizeNewSwipe;
 
     void Awake()
     {
-        if (selection.typeOfController == Selection.controllerType.mainController)
-        {
-            scaleMode = true;
-        } else
-        {
-            scaleMode = false;
-        }
-
-        trackedObj = GetComponent<SteamVR_TrackedObject>();
+		trackedObj = GetComponent<SteamVR_TrackedObject>();
         selection = this.GetComponent<Selection>();
+
+		if (selection.typeOfController == Selection.controllerType.mainController)
+		{
+			scaleMode = true;
+		} else
+		{
+			scaleMode = false;
+		}
     }
 
 
-	public void ShowPullVisual(bool value){
+	public void ShowPullVisual(bool value){		
 		if (value) {
+			currentControllerMode = controllerMode.pullPushObject;
 			pullIcon.SetActive (true);
 			normalIcon.SetActive (false);
+			toggle.SetActive (false);
+			toggle2.SetActive (false);
+			toggleBG.SetActive (false);
 		} else {
+			currentControllerMode = standardControllerMode;
 			pullIcon.SetActive (false);
 			normalIcon.SetActive (true);
+			toggle.SetActive (false);
+			toggle2.SetActive (false);
+			toggleBG.SetActive (false);
+		}
+	}
+
+	public void ShowScaleRotationToggle(bool value) {
+		
+		if (value) {
+			currentControllerMode = controllerMode.toggleRotateScale;
+			toggleBG.SetActive (true);
+
+			recognizeNewSwipe = true;
+
+			if (BiManualOperations.Instance.currentBimanualMode == BiManualOperations.bimanualMode.scaling) {
+				toggle.SetActive (true);
+				toggle2.SetActive (false);
+			} else {
+				toggle.SetActive (false);
+				toggle2.SetActive (true);
+			}
+
+			pullIcon.SetActive (false);
+			normalIcon.SetActive (false);
+
+		} else {
+			currentControllerMode = standardControllerMode;
+			toggle.SetActive (false);
+			toggle2.SetActive (false);
+			pullIcon.SetActive (false);
+			normalIcon.SetActive (true);
+			toggleBG.SetActive (false);
 		}
 	}
 
@@ -54,18 +101,6 @@ public class StageController : MonoBehaviour {
             touchDown = true;
             lastX = device.GetAxis().x;
             lastY = device.GetAxis().y;
-
-			/*
-            UiCanvasGroup.Instance.Hide();
-
-			if (selection.currentSelection != null && selection.currentSelection.CompareTag("ModelingObject")) {
-				selection.currentSelection.GetComponent<ModelingObject> ().DeSelect (selection);
-			}
-
-			if (selection.otherController.currentSelection != null) {
-				selection.otherController.currentSelection.GetComponent<ModelingObject> ().DeSelect (selection.otherController);
-			}
-			*/
         }
 
         if (device.GetTouchUp(SteamVR_Controller.ButtonMask.Touchpad))
@@ -75,40 +110,37 @@ public class StageController : MonoBehaviour {
 
         if (touchDown)
         {
-            if (selection.GetObjectMoving())
+			if (currentControllerMode == controllerMode.pullPushObject)
             {
                 // turn y value into scale of stage          
                 float amountY = device.GetAxis().y - lastY;
                 lastY = device.GetAxis().y;
 
-                // get vector between controller and current object
-				Vector3 ObjectToController = selection.pointOfCollisionGO.transform.position - transform.position;
+				if (selection.pointOfCollisionGO != null) {
+					// get vector between controller and current object
+					Vector3 ObjectToController = selection.pointOfCollisionGO.transform.position - transform.position;
 
-                //maybe move this part into modelingobject
-				Vector3 prevPosition = selection.pointOfCollisionGO.transform.position;
+					//maybe move this part into modelingobject
+					Vector3 prevPosition = selection.pointOfCollisionGO.transform.position;
 
-                // move object on line when using touchpad
-				selection.pointOfCollisionGO.transform.position = selection.pointOfCollisionGO.transform.position + ObjectToController * amountY;
+					// move object on line when using touchpad
+					selection.pointOfCollisionGO.transform.position = selection.pointOfCollisionGO.transform.position + ObjectToController * amountY;
 
-				if (selection.currentFocus.CompareTag ("ModelingObject")) {
-					
-					selection.pointOfCollisionGO.transform.position = RasterManager.Instance.Raster(selection.pointOfCollisionGO.transform.position);
+					if (selection.currentFocus.CompareTag ("ModelingObject")) {
 
-					/*
-					Group objectgroup = selection.currentFocus.GetComponent<ModelingObject>().group;
+						selection.pointOfCollisionGO.transform.position = RasterManager.Instance.Raster (selection.pointOfCollisionGO.transform.position);
 
-					// if object is grouped, add movement to group
-					if (objectgroup != null)
-					{
-						objectgroup.Move(selection.pointOfCollisionGO.transform.position - prevPosition, selection.currentFocus.GetComponent<ModelingObject>());
-					}*/
-				}
+					}
 
-				// somehow not working
-				//selection.AdjustLengthPointer ((selection.pointOfCollisionGO.transform.position - transform.position).magnitude);
+					// somehow not working
+					//selection.AdjustLengthPointer ((selection.pointOfCollisionGO.transform.position - transform.position).magnitude);
+
+				} 
+
+
  
             }
-            else if (scaleMode)
+			else if (currentControllerMode == controllerMode.scalingStage)
             {
                 // turn y value into scale of stage          
                 float amountY = device.GetAxis().y - lastY;
@@ -116,12 +148,32 @@ public class StageController : MonoBehaviour {
 
 				ScaleStage (amountY);
             }
-            else
-            {
+			else if (currentControllerMode == controllerMode.rotatingStage)
+			{
+				// turn x value into rotation of stage
+				float amountX = device.GetAxis().x - lastX;
+				lastX = device.GetAxis().x;
+				stage.Rotate(0, amountX * 25f, 0);
+			}
+			else if (currentControllerMode == controllerMode.toggleRotateScale)
+			{
+				if (recognizeNewSwipe) {
+					recognizeNewSwipe = false;
+					lastX = device.GetAxis().x;
+				}
                 // turn x value into rotation of stage
                 float amountX = device.GetAxis().x - lastX;
-                lastX = device.GetAxis().x;
-                stage.Rotate(0, amountX * 25f, 0);
+
+	
+				if (amountX > 0.6f) {					
+					RotateObjectMode();
+
+				} else if(amountX < -0.6f) {					
+					ScaleObjectMode();
+
+				}
+
+
             }
 
         }
@@ -132,6 +184,29 @@ public class StageController : MonoBehaviour {
     {
 
     }
+
+	public void ScaleObjectMode(){
+		BiManualOperations.Instance.currentBimanualMode = BiManualOperations.bimanualMode.scaling;
+		recognizeNewSwipe = true;
+
+		toggle.SetActive (true);
+		toggle2.SetActive (false);
+	}
+
+	public void RotateObjectMode(){
+		
+		BiManualOperations.Instance.currentBimanualMode = BiManualOperations.bimanualMode.rotating;
+		recognizeNewSwipe = true;
+
+		toggle.SetActive (false);
+		toggle2.SetActive (true);
+	}
+
+
+
+	public void ToggleMode(){
+
+	}
 
 	public void ScaleStage(float amountY){
 		

@@ -75,7 +75,7 @@ public class ModelingObject : MonoBehaviour
 
 	private Transform player;
 	public GameObject trashIcon;
-	private Color currentColor;
+	public Color currentColor;
 
 	private bool initialBlocking;
 	private Vector3 initialPositionController;
@@ -143,7 +143,6 @@ public class ModelingObject : MonoBehaviour
 					newPositionWorld = this.transform.position + (newPositionCollider - initialPositionController);
 					transform.position = newPositionWorld;
 				}
-
 
 				float lowestPoint =  transform.TransformPoint(GetBoundingBoxBottomCenter ()).y;
 
@@ -412,6 +411,7 @@ public class ModelingObject : MonoBehaviour
         // if this is a square, we want to rotate it's coordinate system
       //  RotateAround(new Vector3(0f, 1f, 0f), 45f);
 		initialPosition = transform.position;
+
 		ShowOutline (false);
     }
 
@@ -592,7 +592,7 @@ public class ModelingObject : MonoBehaviour
                 group.FocusGroup(this);
             }
 
-			if (!transform.parent.CompareTag("Library") && !controller.groupItemSelection){
+			if (!transform.parent.CompareTag("Library") && !controller.groupItemSelection && !moving){
 				objectSelector.ShowSelectionButton (controller);
 			}
 
@@ -623,7 +623,7 @@ public class ModelingObject : MonoBehaviour
     public void Highlight()
     {
         Color newColor = transform.GetChild(0).GetComponent<Renderer>().material.color;
-		transform.GetChild(0).GetComponent<Renderer>().material.color = new Color(currentColor.r * 1.2f, currentColor.g * 1.2f, currentColor.b * 1.2f, 1f);
+		transform.GetChild(0).GetComponent<Renderer>().material.color = new Color(currentColor.r * 1.5f, currentColor.g * 1.5f, currentColor.b * 1.5f, 1f);
     }
 
     public void UnHighlight()
@@ -639,7 +639,7 @@ public class ModelingObject : MonoBehaviour
             group.SelectGroup(this);
         } else
         {
-            DrawBoundingBox();
+            //DrawBoundingBox();
         }
 
 		selected = true;
@@ -704,8 +704,8 @@ public class ModelingObject : MonoBehaviour
         boundingBox.coordinates = new Vector3[8];
 
         // get highest and lowest values for x,y,z
-        Vector3 minima = GetBoundingBoxMinima();
-        Vector3 maxima = GetBoundingBoxMaxima();
+		Vector3 minima = ObjectsManager.Instance.transform.TransformPoint(GetBoundingBoxMinima());
+		Vector3 maxima = ObjectsManager.Instance.transform.TransformPoint(GetBoundingBoxMaxima());
 
         // set all points
         boundingBox.coordinates[0] = new Vector3(maxima.x, maxima.y, maxima.z);
@@ -971,6 +971,12 @@ public class ModelingObject : MonoBehaviour
 
         bottomFace.ReplaceFacefromObjectScaler(relativeTo, amount);
         topFace.ReplaceFacefromObjectScaler(relativeTo, amount);
+
+		// Update handles for Frustum
+
+		PositionHandles ();
+		topFace.scaleHandle.circle.localScale = topFace.scaleHandle.circle.localScale * newScale;
+		bottomFace.scaleHandle.circle.localScale = topFace.scaleHandle.circle.localScale * newScale;
     }
 
     public void UpDateObjectFromCorner()
@@ -1065,20 +1071,17 @@ public class ModelingObject : MonoBehaviour
 
         // update centers and recalculate normals of side faces
 
+		/*
         for (int i = 0; i < faces.Length; i++)
         {
             faces[i].UpdateCenter();
             faces[i].RecalculateNormal();
             faces[i].UpdateSpecialVertexCoordinates();
         }
-
-        handles.HeightTop.transform.localEulerAngles = otherObject.handles.HeightTop.transform.localEulerAngles;
-        handles.HeightBottom.transform.localEulerAngles = otherObject.handles.HeightBottom.transform.localEulerAngles;
-        handles.faceTopScale.transform.localEulerAngles = otherObject.handles.faceTopScale.transform.localEulerAngles;
-        handles.faceBottomScale.transform.localEulerAngles = otherObject.handles.faceBottomScale.transform.localEulerAngles;
-
+			
         // update inner coordinate system
         coordinateSystem.transform.localEulerAngles = otherObject.coordinateSystem.transform.localEulerAngles;
+        */
     }
 
     public Vector3 GetBoundingBoxTopCenter()
@@ -1168,7 +1171,7 @@ public class ModelingObject : MonoBehaviour
 
 		for (int i = 0; i < topFace.vertexBundles.Length; i++)
 		{
-			Vector3 current = topFace.vertexBundles[i].coordinates;
+			Vector3 current = ObjectsManager.Instance.transform.InverseTransformPoint(transform.TransformPoint(topFace.vertexBundles[i].coordinates));
 
 			if (current.x < minima.x) {
 				minima.x = current.x;
@@ -1186,7 +1189,7 @@ public class ModelingObject : MonoBehaviour
 
 		for (int i = 0; i < bottomFace.vertexBundles.Length; i++)
 		{
-			Vector3 current = bottomFace.vertexBundles[i].coordinates;
+			Vector3 current = ObjectsManager.Instance.transform.InverseTransformPoint(transform.TransformPoint(bottomFace.vertexBundles[i].coordinates));
 
 			if (current.x < minima.x) {
 				minima.x = current.x;
@@ -1211,7 +1214,7 @@ public class ModelingObject : MonoBehaviour
 
 		for (int i = 0; i < topFace.vertexBundles.Length; i++)
 		{
-			Vector3 current = topFace.vertexBundles[i].coordinates;
+			Vector3 current = ObjectsManager.Instance.transform.InverseTransformPoint(transform.TransformPoint(topFace.vertexBundles[i].coordinates));
 
 			if (current.x > maxima.x) {
 				maxima.x = current.x;
@@ -1229,7 +1232,7 @@ public class ModelingObject : MonoBehaviour
 
 		for (int i = 0; i < bottomFace.vertexBundles.Length; i++)
 		{
-			Vector3 current = bottomFace.vertexBundles[i].coordinates;
+			Vector3 current = ObjectsManager.Instance.transform.InverseTransformPoint(transform.TransformPoint(bottomFace.vertexBundles[i].coordinates));
 
 			if (current.x > maxima.x) {
 				maxima.x = current.x;

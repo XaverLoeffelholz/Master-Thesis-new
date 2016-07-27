@@ -43,6 +43,11 @@ public class Group : MonoBehaviour {
 		boundingBox.coordinates[6] = new Vector3(minima.x,minima.y,minima.z);
 		boundingBox.coordinates[7] = new Vector3(minima.x,minima.y,maxima.z);
 
+		for (int i = 0; i < objectList.Count; i++)
+		{
+			objectList [i].boundingBox.HideBoundingBox ();
+		}
+
 		boundingBox.DrawBoundingBox ();
 	}
 
