@@ -1014,6 +1014,45 @@ public class ModelingObject : MonoBehaviour
 		currentColor = color;
     }
 
+
+    public void Rotate(Quaternion rotation)
+    {
+        for (int i = 0; i < topFace.vertexBundles.Length; i++)
+        {
+            // rotate coordinates of every vertexbundle
+            topFace.vertexBundles[i].coordinates = rotation * topFace.vertexBundles[i].coordinates;
+        }
+
+        topFace.center.coordinates = rotation * topFace.center.coordinates;
+
+        for (int i = 0; i < bottomFace.vertexBundles.Length; i++)
+        {
+            // rotate coordinates of every vertexbundle
+            bottomFace.vertexBundles[i].coordinates = rotation * bottomFace.vertexBundles[i].coordinates;
+
+        }
+
+        bottomFace.center.coordinates = rotation * bottomFace.center.coordinates;
+
+        // update centers and recalculate normals of side faces
+
+        for (int i = 0; i < faces.Length; i++)
+        {
+            faces[i].UpdateCenter();
+            faces[i].RecalculateNormal();
+            faces[i].UpdateSpecialVertexCoordinates();
+        }
+
+
+        handles.HeightTop.transform.Rotate(rotation.eulerAngles);
+        handles.HeightBottom.transform.Rotate(rotation.eulerAngles);
+        handles.faceTopScale.transform.Rotate(rotation.eulerAngles);
+        handles.faceBottomScale.transform.Rotate(rotation.eulerAngles);
+
+        // update inner coordinate system
+        coordinateSystem.transform.Rotate(rotation.eulerAngles);
+    }
+
     public void RotateAround(Vector3 angleAxis, float angle)
     {
         for (int i = 0; i < topFace.vertexBundles.Length; i++)
