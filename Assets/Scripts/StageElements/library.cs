@@ -19,6 +19,8 @@ public class library : Singleton<library>{
 	public GameObject bottom;
 	public GameObject shell;
 
+	public Infopanel libraryInfopanel;
+
     // Use this for initialization
     void Start () {
 		initialPosition = transform.position;
@@ -51,6 +53,8 @@ public class library : Singleton<library>{
         }
 
         Invoke("RefillLibrary", 1.0f);
+
+		libraryInfopanel.CloseInfoPanel ();
     }
 
     public void RefillLibrary()

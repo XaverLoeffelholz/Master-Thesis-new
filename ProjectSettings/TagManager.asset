@@ -24,6 +24,7 @@ TagManager:
   - TeleportPosition
   - Library
   - HeightControl
+  - InfoPanel
   layers:
   - Default
   - TransparentFX

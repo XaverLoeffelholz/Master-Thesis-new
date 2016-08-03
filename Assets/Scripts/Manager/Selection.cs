@@ -41,6 +41,7 @@ public class Selection : MonoBehaviour
 	public bool controllerActive;
 
 	public CircleAnimaton circleAnimation;
+	public Infopanel trashInfopanel;
 
     void Awake()
     {
@@ -77,6 +78,8 @@ public class Selection : MonoBehaviour
 				library.Instance.UnFocus (this);
 			} else if (currentFocus.CompareTag ("HeightControl")) {
 				currentFocus.GetComponent<StageHeightController> ().UnFocus (this);
+			}else if (currentFocus.CompareTag ("InfoPanel")) {
+				currentFocus.GetComponent<Infopanel> ().UnFocus (this);
 			} else if (currentFocus.CompareTag ("SelectionButton")) {
 				
 				// compare selection button and object
@@ -178,6 +181,12 @@ public class Selection : MonoBehaviour
 								currentFocus.GetComponent<StageHeightController> ().Focus (this);
 								device.TriggerHapticPulse (600);
 							}
+							else if (!UiCanvasGroup.Instance.visible && hit.rigidbody.transform.parent.gameObject.CompareTag ("InfoPanel")) {
+								DeFocusCurrent (hit.rigidbody.transform.parent.gameObject);
+								currentFocus = hit.rigidbody.transform.parent.gameObject;
+								currentFocus.GetComponent<Infopanel> ().Focus (this);
+								device.TriggerHapticPulse (600);
+							}
 						}
 
 						// Set position of collision
@@ -239,7 +248,7 @@ public class Selection : MonoBehaviour
 							}
 
 							this.GetComponent<StageController> ().ShowPullVisual (true);
-							otherController.transform.GetComponent<StageController> ().ShowScaleRotationToggle (true);	
+							//otherController.transform.GetComponent<StageController> ().ShowScaleRotationToggle (true);	
 							currentFocus.GetComponent<ModelingObject>().StartMoving(this, currentFocus.GetComponent<ModelingObject>());
 							device.TriggerHapticPulse (1800);
 
@@ -249,14 +258,14 @@ public class Selection : MonoBehaviour
 								circleAnimation.StartAnimation ();
 							}
 							this.GetComponent<StageController> ().ShowPullVisual (true);
-							otherController.transform.GetComponent<StageController> ().ShowScaleRotationToggle (true);
+							//otherController.transform.GetComponent<StageController> ().ShowScaleRotationToggle (true);
 							currentFocus.GetComponent<TeleportationPosition>().StartMoving(this);
 						} else if (currentFocus.CompareTag ("Library")) {
 							if (circleAnimation != null) {
 								circleAnimation.StartAnimation ();
 							}
 							this.GetComponent<StageController> ().ShowPullVisual (true);
-							otherController.transform.GetComponent<StageController> ().ShowScaleRotationToggle (true);
+							//otherController.transform.GetComponent<StageController> ().ShowScaleRotationToggle (true);
 							library.Instance.StartMoving(this);
 						} else if (currentFocus.CompareTag ("HeightControl")) {
 							currentFocus.GetComponent<StageHeightController>().StartMoving(this);
@@ -296,11 +305,13 @@ public class Selection : MonoBehaviour
 						otherController.ActivateController (false);
 
 						this.GetComponent<StageController> ().ShowPullVisual (false);
-						otherController.transform.GetComponent<StageController> ().ShowScaleRotationToggle (false);
+						//otherController.transform.GetComponent<StageController> ().ShowScaleRotationToggle (false);
 
 						if (currentFocus.GetComponent<ModelingObject>().inTrashArea)
 						{
 							currentFocus.GetComponent<ModelingObject>().TrashObject(true);
+							trashInfopanel.CloseInfoPanel ();
+
 							//currentFocus = null;
 							device.TriggerHapticPulse(1000);
 						}
@@ -310,12 +321,12 @@ public class Selection : MonoBehaviour
 						currentFocus.GetComponent<TeleportationPosition>().StopMoving(this);
 
 						this.GetComponent<StageController> ().ShowPullVisual (false);
-						otherController.transform.GetComponent<StageController> ().ShowScaleRotationToggle (false);
+						//otherController.transform.GetComponent<StageController> ().ShowScaleRotationToggle (false);
 
 						Teleportation.Instance.JumpToPos(5);
 					} else if (currentFocus.CompareTag ("Library")) {
 						this.GetComponent<StageController> ().ShowPullVisual (false);
-						otherController.transform.GetComponent<StageController> ().ShowScaleRotationToggle (false);
+						//otherController.transform.GetComponent<StageController> ().ShowScaleRotationToggle (false);
 
 						library.Instance.StopMoving(this);
 					} else if (currentFocus.CompareTag ("HeightControl")) {
@@ -369,10 +380,17 @@ public class Selection : MonoBehaviour
 					else if (currentFocus.CompareTag("UiElement"))
 					{
 						if (Time.time - tempsUI > 0.1f) {
+							device.TriggerHapticPulse (1000);
+
 							tempsUI = Time.time;
 							currentFocus.GetComponent<UiElement>().goal.ActivateMenu();
 							currentFocus.GetComponent<UiElement>().PerformAction(this);
 						}
+					}					
+					else if (currentFocus.CompareTag("InfoPanel"))
+					{
+						device.TriggerHapticPulse (1000);
+						currentFocus.GetComponent<Infopanel> ().CloseInfoPanel ();
 					}
 					else if (currentFocus.CompareTag("TeleportTrigger"))
 					{
