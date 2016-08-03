@@ -45,7 +45,7 @@ public class Group : MonoBehaviour {
 
 		for (int i = 0; i < objectList.Count; i++)
 		{
-			objectList [i].boundingBox.HideBoundingBox ();
+			objectList [i].boundingBox.ClearBoundingBox ();
 		}
 
 		boundingBox.DrawBoundingBox ();
@@ -237,7 +237,7 @@ public class Group : MonoBehaviour {
             }
         }
 
-		boundingBox.HideBoundingBox ();
+		boundingBox.ClearBoundingBox ();
 
     }
 

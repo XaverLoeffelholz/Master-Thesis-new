@@ -94,6 +94,7 @@ public class UIMenu : MonoBehaviour {
         {
             case (menuType.Rotation):
                 parentCanvas.currentModelingObject.handles.ShowRotationHandles();
+                parentCanvas.currentModelingObject.ShowBoundingBox();
                 break;
             case (menuType.NonUniformScaling):
                 parentCanvas.currentModelingObject.handles.DisableHandles();

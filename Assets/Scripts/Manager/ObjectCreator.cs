@@ -97,8 +97,9 @@ public class ObjectCreator : Singleton<ObjectCreator> {
             newModelingObject.SetVertexBundlePositions(original);
         }
 
-		// newModelingObject.CorrectOffset();
-		newModelingObject.InitiateHandles();
+        // newModelingObject.CorrectOffset();
+        newModelingObject.CalculateBoundingBox();
+        newModelingObject.InitiateHandles();
 
         if (group != null) {
             ObjectsManager.Instance.AddObjectToGroup(group, newModelingObject);

@@ -47,6 +47,7 @@ public class ModelingObject : MonoBehaviour
 
     private Vector3 PositionOnMovementStart;
 
+    public GameObject linesPrefab;
     public GameObject DistanceVisualPrefab;
     public GameObject CenterVisualPrefab;
     public GameObject GroundVisualPrefab;
@@ -83,6 +84,8 @@ public class ModelingObject : MonoBehaviour
     public BoundingBox boundingBox;
 
 	private bool trashed = false;
+
+
 
     // Use this for initialization
     void Start()
@@ -234,8 +237,20 @@ public class ModelingObject : MonoBehaviour
 						CenterVisual2.transform.localScale = new Vector3(1f, 1f, 1f);
 						CenterVisual2.transform.position = bottomFace.center.transform.GetChild(0).position;
 
-						// Display outline of groundface
-						GameObject GroundVisual = Instantiate(GroundVisualPrefab);
+                        Vector3[] bottomCoordinates = new Vector3[bottomFace.vertexBundles.Length];
+
+                        for (int j = 0; j <= bottomFace.vertexBundles.Length; j++)
+                        {
+                            bottomCoordinates[j] = bottomFace.vertexBundles[j].transform.GetChild(0).position;
+                        }
+
+                        GameObject lines = Instantiate(linesPrefab);
+                        lines.transform.SetParent(DistanceVisualisation);
+                        lines.GetComponent<Lines>().DrawLinesWorldCoordinate(bottomCoordinates);
+
+                        /*
+                        // Display outline of groundface
+                        GameObject GroundVisual = Instantiate(GroundVisualPrefab);
 						GroundVisual.transform.SetParent(DistanceVisualisation);
 						LineRenderer lines = GroundVisual.GetComponent<LineRenderer>();
 						lines.SetWidth (Mathf.Min(0.025f * transform.lossyScale.x, 0.03f), Mathf.Min(0.025f * transform.lossyScale.x, 0.03f));
@@ -260,7 +275,7 @@ public class ModelingObject : MonoBehaviour
 								lines.SetPosition(j, pos);
 							}
 
-						}
+						} */
 
 					}
 
@@ -569,6 +584,10 @@ public class ModelingObject : MonoBehaviour
 		handles.faceBottomScale.transform.localRotation = Quaternion.FromToRotation(transform.InverseTransformDirection(handles.faceBottomScale.transform.up), transform.TransformDirection(handles.faceBottomScale.transform.localPosition - bottomFace.centerPosition));
 		handles.CenterBottomPosition.transform.localRotation = Quaternion.FromToRotation(transform.InverseTransformDirection(handles.CenterBottomPosition.transform.up), transform.TransformDirection(bottomFace.normal));
 		handles.HeightBottom.transform.localRotation = Quaternion.FromToRotation(transform.InverseTransformDirection(handles.HeightBottom.transform.up), transform.TransformDirection(bottomFace.normal));
+
+        // use Bounding Box to rotate rotation Handles
+
+
     }
 
     public void InitiateHandles()
@@ -592,6 +611,9 @@ public class ModelingObject : MonoBehaviour
         bottomFace.centerHandle = handles.CenterBottomPosition.GetComponent<handle>();
         bottomFace.heightHandle = handles.HeightBottom.GetComponent<handle>();
         bottomFace.scaleHandle = handles.faceBottomScale.GetComponent<handle>();
+
+        // use Bounding Box to position rotation Handles
+
 
     }
 
@@ -681,11 +703,7 @@ public class ModelingObject : MonoBehaviour
 			{
 				group.DeSelectGroup(this);
 			}
-			else
-			{
-				boundingBox.HideBoundingBox(); 
-			}
-
+			
 			selected = false;
 			ShowOutline(false);
 
@@ -693,9 +711,9 @@ public class ModelingObject : MonoBehaviour
 			objectSelector.DeSelect (controller);
 			controller.DeAssignCurrentSelection(transform.gameObject);
 			handles.DisableHandles();
+            boundingBox.ClearBoundingBox();
 
-			UnFocus (controller);
-
+            UnFocus (controller);
 		}
 
     }
@@ -725,9 +743,12 @@ public class ModelingObject : MonoBehaviour
         }
     }
 
-    public void DrawBoundingBox()
+    public void CalculateBoundingBox()
     {
-        boundingBox.coordinates = new Vector3[8];
+        if (boundingBox.coordinates == null)
+        {
+            boundingBox.coordinates = new Vector3[8];
+        }
 
         // get highest and lowest values for x,y,z
 		Vector3 minima = ObjectsManager.Instance.transform.TransformPoint(GetBoundingBoxMinima());
@@ -743,9 +764,12 @@ public class ModelingObject : MonoBehaviour
         boundingBox.coordinates[5] = new Vector3(maxima.x, minima.y, minima.z);
         boundingBox.coordinates[6] = new Vector3(minima.x, minima.y, minima.z);
         boundingBox.coordinates[7] = new Vector3(minima.x, minima.y, maxima.z);
+    }
 
+    public void ShowBoundingBox()
+    {
+        CalculateBoundingBox();
         boundingBox.DrawBoundingBox();
-
     }
 
     public void AssignVertexBundlesToFaces()
@@ -789,7 +813,21 @@ public class ModelingObject : MonoBehaviour
 
 	public void DisplayOutlineOfGroundFace(){
 		// Display outline of groundface
-		GroundVisualOnStartMoving = Instantiate(GroundVisualPrefab);
+
+
+        Vector3[] bottomCoordinates = new Vector3[bottomFace.vertexBundles.Length];
+
+        for (int j = 0; j <= bottomFace.vertexBundles.Length; j++)
+        {
+            bottomCoordinates[j] = bottomFace.vertexBundles[j].transform.GetChild(0).position;
+        }
+
+        GameObject lines = Instantiate(linesPrefab);
+        lines.transform.SetParent(DistanceVisualisation);
+        lines.GetComponent<Lines>().DrawLinesWorldCoordinate(bottomCoordinates);
+
+        /*
+        GroundVisualOnStartMoving = Instantiate(GroundVisualPrefab);
 		GroundVisualOnStartMoving.transform.SetParent(DistanceVisualisation);
 		LineRenderer lines = GroundVisualOnStartMoving.GetComponent<LineRenderer>();
 		lines.SetVertexCount(bottomFace.vertexBundles.Length + 1);
@@ -803,8 +841,8 @@ public class ModelingObject : MonoBehaviour
 				Vector3 pos = bottomFace.vertexBundles [j].transform.GetChild (0).position;
 				lines.SetPosition (j, pos);
 			}
-		}
-	}
+		} */
+    }
 
     public void StopMoving(Selection controller, ModelingObject initiater)
     {
@@ -1243,7 +1281,7 @@ public class ModelingObject : MonoBehaviour
 
 		for (int i = 0; i < topFace.vertexBundles.Length; i++)
 		{
-			Vector3 current = ObjectsManager.Instance.transform.InverseTransformPoint(transform.TransformPoint(topFace.vertexBundles[i].coordinates));
+			Vector3 current = topFace.vertexBundles[i].coordinates;
 
 			if (current.x < minima.x) {
 				minima.x = current.x;
@@ -1261,7 +1299,7 @@ public class ModelingObject : MonoBehaviour
 
 		for (int i = 0; i < bottomFace.vertexBundles.Length; i++)
 		{
-			Vector3 current = ObjectsManager.Instance.transform.InverseTransformPoint(transform.TransformPoint(bottomFace.vertexBundles[i].coordinates));
+			Vector3 current = bottomFace.vertexBundles[i].coordinates;
 
 			if (current.x < minima.x) {
 				minima.x = current.x;
@@ -1286,7 +1324,7 @@ public class ModelingObject : MonoBehaviour
 
 		for (int i = 0; i < topFace.vertexBundles.Length; i++)
 		{
-			Vector3 current = ObjectsManager.Instance.transform.InverseTransformPoint(transform.TransformPoint(topFace.vertexBundles[i].coordinates));
+			Vector3 current = topFace.vertexBundles[i].coordinates;
 
 			if (current.x > maxima.x) {
 				maxima.x = current.x;
@@ -1304,7 +1342,7 @@ public class ModelingObject : MonoBehaviour
 
 		for (int i = 0; i < bottomFace.vertexBundles.Length; i++)
 		{
-			Vector3 current = ObjectsManager.Instance.transform.InverseTransformPoint(transform.TransformPoint(bottomFace.vertexBundles[i].coordinates));
+			Vector3 current = bottomFace.vertexBundles[i].coordinates;
 
 			if (current.x > maxima.x) {
 				maxima.x = current.x;

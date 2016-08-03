@@ -146,13 +146,13 @@ public class handle : MonoBehaviour {
                 ChangeHeight(pointOfCollision);
                 break;
             case handleType.RotationX:
-                Rotate(pointOfCollision);
+                RotateX(pointOfCollision);
                 break;
             case handleType.RotationY:
-                Rotate(pointOfCollision);
+                RotateY(pointOfCollision);
                 break;
             case handleType.RotationZ:
-                Rotate(pointOfCollision);
+                RotateZ(pointOfCollision);
                 break;
             case handleType.RotationXstepwise:
                 SetRotateStepTrue();
@@ -237,6 +237,51 @@ public class handle : MonoBehaviour {
 
         input = RasterManager.Instance.RasterAngle(input);
         connectedModelingObject.RotateAround((RotationAxis.transform.position - connectedObject.transform.position), input*0.5f);
+
+    }
+
+    private void RotateX(GameObject pointOfCollision)
+    {
+        // calculate input
+
+
+        // move handle
+
+
+        // apply rotation
+
+
+        //update Bounding box
+
+    }
+
+    private void RotateY(GameObject pointOfCollision)
+    {
+        // calculate input
+
+
+        // move handle
+
+
+        // apply rotation
+
+
+        //update Bounding box
+
+    }
+
+    private void RotateZ(GameObject pointOfCollision)
+    {
+        // calculate input
+
+
+        // move handle
+
+
+        // apply rotation
+
+
+        //update Bounding box
 
     }
 
