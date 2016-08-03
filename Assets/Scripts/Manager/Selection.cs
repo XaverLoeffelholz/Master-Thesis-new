@@ -25,6 +25,7 @@ public class Selection : MonoBehaviour
     public GameObject LaserPointer;
     public GameObject pointOfCollisionPrefab;
     private float temps;
+	private float tempsUI;
 	private bool faceSelection;
 
     [HideInInspector]
@@ -39,6 +40,8 @@ public class Selection : MonoBehaviour
 
 	public bool controllerActive;
 
+	public CircleAnimaton circleAnimation;
+
     void Awake()
     {
         trackedObj = GetComponent<SteamVR_TrackedObject>();
@@ -48,6 +51,8 @@ public class Selection : MonoBehaviour
 		} else {
 			ActivateController (true);
 		}
+
+		tempsUI = Time.time;
     }
 
 
@@ -70,6 +75,8 @@ public class Selection : MonoBehaviour
 				currentFocus.GetComponent<TeleportationPosition> ().UnFocus (this);
 			} else if (currentFocus.CompareTag ("Library")) {
 				library.Instance.UnFocus (this);
+			} else if (currentFocus.CompareTag ("HeightControl")) {
+				currentFocus.GetComponent<StageHeightController> ().UnFocus (this);
 			} else if (currentFocus.CompareTag ("SelectionButton")) {
 				
 				// compare selection button and object
@@ -77,11 +84,13 @@ public class Selection : MonoBehaviour
 					if (currentFocus.GetComponent<ObjectSelecter> ().connectedObject != newObject.GetComponent<ModelingObject> ()) {
 						currentFocus.GetComponent<ObjectSelecter> ().UnFocus (this);
 						currentFocus.GetComponent<ObjectSelecter> ().connectedObject.UnFocus (this);
-					}	
-				} else if (newObject != currentFocus) {
+					} else {
+						currentFocus.GetComponent<ObjectSelecter> ().UnFocus (this);
+					}
+				} else {
 					currentFocus.GetComponent<ObjectSelecter> ().UnFocus (this);
 					currentFocus.GetComponent<ObjectSelecter> ().connectedObject.UnFocus (this);
-				}
+				} 
 			}
 
 			currentFocus = null;
@@ -119,7 +128,7 @@ public class Selection : MonoBehaviour
 				if (Physics.Raycast (LaserPointer.transform.position, LaserPointer.transform.forward, out hit)) {
 					if (currentFocus != null) {
 						Vector3 directionLaserPointerObject = (currentFocus.transform.position - LaserPointer.transform.position).normalized;
-						uiPositon = LaserPointer.transform.position + directionLaserPointerObject * 0.6f + Vector3.down * 0.25f;
+						uiPositon = LaserPointer.transform.position + directionLaserPointerObject * 0.5f + Vector3.down * 0.27f;
 					}
 
 					AdjustLengthPointer (hit.distance);
@@ -127,40 +136,47 @@ public class Selection : MonoBehaviour
 					if (hit.rigidbody != null && hit.rigidbody.transform.parent != null) {
 						if (currentFocus != hit.rigidbody.transform.parent.gameObject) {
 							// focus of Object
-							if (hit.rigidbody.transform.parent.gameObject.CompareTag ("ModelingObject")) {
+							if (!UiCanvasGroup.Instance.visible && hit.rigidbody.transform.parent.gameObject.CompareTag ("ModelingObject")) {
 								DeFocusCurrent (hit.rigidbody.transform.parent.gameObject);
 								currentFocus = hit.rigidbody.transform.parent.gameObject;
 								currentFocus.GetComponent<ModelingObject> ().Focus (this);
+								device.TriggerHapticPulse (300);
 							} else if (hit.rigidbody.transform.parent.gameObject.CompareTag ("Handle")) {
 								DeFocusCurrent (hit.rigidbody.transform.parent.gameObject);
 								currentFocus = hit.rigidbody.transform.parent.gameObject;
 								currentFocus.GetComponent<handle> ().Focus (this);
-								device.TriggerHapticPulse (300);
+								device.TriggerHapticPulse (600);
 							} else if (hit.rigidbody.transform.parent.gameObject.CompareTag ("UiElement")) {
 								DeFocusCurrent (hit.rigidbody.transform.parent.gameObject);
 								currentFocus = hit.rigidbody.transform.parent.gameObject;
 								currentFocus.GetComponent<UiElement> ().Focus (this);
 								device.TriggerHapticPulse (600);
-							} else if (hit.rigidbody.transform.parent.gameObject.CompareTag ("TeleportTrigger")) {
+							} else if (!UiCanvasGroup.Instance.visible && hit.rigidbody.transform.parent.gameObject.CompareTag ("TeleportTrigger")) {
 								DeFocusCurrent (hit.rigidbody.transform.parent.gameObject);
 								currentFocus = hit.rigidbody.transform.parent.gameObject;
 								currentFocus.GetComponent<TeleportationTrigger> ().Focus (this);
-								device.TriggerHapticPulse (300);
-							} else if (hit.rigidbody.transform.parent.gameObject.CompareTag ("SelectionButton")) {
+								device.TriggerHapticPulse (600);
+							} else if (!UiCanvasGroup.Instance.visible && hit.rigidbody.transform.parent.gameObject.CompareTag ("SelectionButton")) {
 								DeFocusCurrent (hit.rigidbody.transform.parent.gameObject);
 								currentFocus = hit.rigidbody.transform.parent.gameObject;
+								currentFocus.GetComponent<ObjectSelecter> ().Focus (this);
 								currentFocus.GetComponent<ObjectSelecter> ().connectedObject.Focus (this);
 								device.TriggerHapticPulse (600);
-							} else if (hit.rigidbody.transform.parent.gameObject.CompareTag ("TeleportPosition")) {
+							} else if (!UiCanvasGroup.Instance.visible && hit.rigidbody.transform.parent.gameObject.CompareTag ("TeleportPosition")) {
 								DeFocusCurrent (hit.rigidbody.transform.parent.gameObject);
 								currentFocus = hit.rigidbody.transform.parent.gameObject;
 								currentFocus.GetComponent<TeleportationPosition> ().Focus (this);
-								device.TriggerHapticPulse (300);
-							} else if (hit.rigidbody.transform.parent.gameObject.CompareTag ("Library")) {
+								device.TriggerHapticPulse (600);
+							} else if (!UiCanvasGroup.Instance.visible && hit.rigidbody.transform.parent.gameObject.CompareTag ("Library")) {
 								DeFocusCurrent (hit.rigidbody.transform.parent.gameObject);
 								currentFocus = hit.rigidbody.transform.parent.gameObject;
 								library.Instance.Focus (this);
-								device.TriggerHapticPulse (300);
+								device.TriggerHapticPulse (600);
+							} else if (!UiCanvasGroup.Instance.visible && hit.rigidbody.transform.parent.gameObject.CompareTag ("HeightControl")) {
+								DeFocusCurrent (hit.rigidbody.transform.parent.gameObject);
+								currentFocus = hit.rigidbody.transform.parent.gameObject;
+								currentFocus.GetComponent<StageHeightController> ().Focus (this);
+								device.TriggerHapticPulse (600);
 							}
 						}
 
@@ -198,6 +214,7 @@ public class Selection : MonoBehaviour
 				}
 			} 
 
+
 			if (currentFocus != null)
 			{
 				if (device.GetTouchDown(SteamVR_Controller.ButtonMask.Trigger))
@@ -207,32 +224,42 @@ public class Selection : MonoBehaviour
 				}
 
 				if (triggerPressed && temps > 0.1f 
-					&& (currentFocus.CompareTag("ModelingObject") || currentFocus.CompareTag("TeleportPosition") || currentFocus.CompareTag("Library") )
+					&& (currentFocus.CompareTag("ModelingObject") || currentFocus.CompareTag("TeleportPosition") || currentFocus.CompareTag("Library") || currentFocus.CompareTag("HeightControl") )
 					&& typeOfController == controllerType.mainController)
 				{
 					if (!movingObject && !faceSelection && !groupItemSelection){
 
 						CreatePointOfCollisionPrefab();
 						movingObject = true;
-						this.GetComponent<StageController> ().ShowPullVisual (true);
-						otherController.transform.GetComponent<StageController> ().ShowScaleRotationToggle (true);
-
-						// here we should also change the icon on the other controller to a toggle where we can choose between rotation and scaling
-
-						//!!!!
-
 						UiCanvasGroup.Instance.Hide();
 
-						if (currentFocus.CompareTag ("ModelingObject")) {	
+						if (currentFocus.CompareTag ("ModelingObject")) {
+							if (circleAnimation != null) {
+								circleAnimation.StartAnimation ();
+							}
+
+							this.GetComponent<StageController> ().ShowPullVisual (true);
+							otherController.transform.GetComponent<StageController> ().ShowScaleRotationToggle (true);	
 							currentFocus.GetComponent<ModelingObject>().StartMoving(this, currentFocus.GetComponent<ModelingObject>());
+							device.TriggerHapticPulse (1800);
+
 							otherController.ActivateController(true);
-
-							//currentFocus.GetComponent<ModelingObject> ().DeSelect (this);
-
 						} else if (currentFocus.CompareTag ("TeleportPosition")) {
+							if (circleAnimation != null) {
+								circleAnimation.StartAnimation ();
+							}
+							this.GetComponent<StageController> ().ShowPullVisual (true);
+							otherController.transform.GetComponent<StageController> ().ShowScaleRotationToggle (true);
 							currentFocus.GetComponent<TeleportationPosition>().StartMoving(this);
 						} else if (currentFocus.CompareTag ("Library")) {
+							if (circleAnimation != null) {
+								circleAnimation.StartAnimation ();
+							}
+							this.GetComponent<StageController> ().ShowPullVisual (true);
+							otherController.transform.GetComponent<StageController> ().ShowScaleRotationToggle (true);
 							library.Instance.StartMoving(this);
+						} else if (currentFocus.CompareTag ("HeightControl")) {
+							currentFocus.GetComponent<StageHeightController>().StartMoving(this);
 						}
 					}
 
@@ -260,6 +287,11 @@ public class Selection : MonoBehaviour
 					otherController.movingHandle = false;
 
 					if (currentFocus.CompareTag ("ModelingObject")) {	
+						if (circleAnimation != null) {
+							circleAnimation.StartAnimation ();
+						}
+
+						device.TriggerHapticPulse (1800);
 						currentFocus.GetComponent<ModelingObject>().StopMoving(this, currentFocus.GetComponent<ModelingObject>());
 						otherController.ActivateController (false);
 
@@ -269,18 +301,27 @@ public class Selection : MonoBehaviour
 						if (currentFocus.GetComponent<ModelingObject>().inTrashArea)
 						{
 							currentFocus.GetComponent<ModelingObject>().TrashObject(true);
+							//currentFocus = null;
 							device.TriggerHapticPulse(1000);
 						}
-					}
 
-					if (currentFocus.CompareTag ("TeleportPosition")) {
+						currentFocus.GetComponent<ModelingObject> ().DeSelect (this);
+					} else if (currentFocus.CompareTag ("TeleportPosition")) {
 						currentFocus.GetComponent<TeleportationPosition>().StopMoving(this);
+
+						this.GetComponent<StageController> ().ShowPullVisual (false);
+						otherController.transform.GetComponent<StageController> ().ShowScaleRotationToggle (false);
+
 						Teleportation.Instance.JumpToPos(5);
+					} else if (currentFocus.CompareTag ("Library")) {
+						this.GetComponent<StageController> ().ShowPullVisual (false);
+						otherController.transform.GetComponent<StageController> ().ShowScaleRotationToggle (false);
+
+						library.Instance.StopMoving(this);
+					} else if (currentFocus.CompareTag ("HeightControl")) {
+						currentFocus.GetComponent<StageHeightController>().StopMoving(this);
 					}
 
-					if (currentFocus.CompareTag ("Library")) {
-						library.Instance.StopMoving(this);
-					}
 
 				}
 
@@ -324,10 +365,14 @@ public class Selection : MonoBehaviour
 						currentFocus.GetComponent<handle>().ResetLastPosition();
 						currentFocus.GetComponent<handle>().UnLock();
 						currentFocus.GetComponent<handle>().UnFocus(this);
-					} else if (currentFocus.CompareTag("UiElement"))
+					} 
+					else if (currentFocus.CompareTag("UiElement"))
 					{
-						currentFocus.GetComponent<UiElement>().goal.ActivateMenu();
-						currentFocus.GetComponent<UiElement>().PerformAction(this);
+						if (Time.time - tempsUI > 0.1f) {
+							tempsUI = Time.time;
+							currentFocus.GetComponent<UiElement>().goal.ActivateMenu();
+							currentFocus.GetComponent<UiElement>().PerformAction(this);
+						}
 					}
 					else if (currentFocus.CompareTag("TeleportTrigger"))
 					{
@@ -337,6 +382,9 @@ public class Selection : MonoBehaviour
 				} else
 				{
 					// user is clicking somewhere outside to close the menu
+					// test how it is if we not use that
+
+					/*
 
 					// check that we are not in group selection
 					if (!groupItemSelection) {
@@ -346,7 +394,7 @@ public class Selection : MonoBehaviour
 						this.enableFaceSelection(false);
 						otherController.enableFaceSelection(false);
 					}
-
+					*/
 				}
 
 				temps = 0;
@@ -379,7 +427,7 @@ public class Selection : MonoBehaviour
         if (pointOfCollisionGO == null)
         {
             pointOfCollisionGO = (GameObject)Instantiate(pointOfCollisionPrefab, pointOfCollision, new Quaternion(0f, 0f, 0, 0f));
-            pointOfCollisionGO.transform.SetParent(LaserPointer.transform);
+            pointOfCollisionGO.transform.SetParent(transform);
         }
     }
 

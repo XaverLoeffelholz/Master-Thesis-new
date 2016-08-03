@@ -23,6 +23,7 @@ TagManager:
   - SelectionButton
   - TeleportPosition
   - Library
+  - HeightControl
   layers:
   - Default
   - TransparentFX

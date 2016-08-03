@@ -200,7 +200,6 @@ public class UIMenu : MonoBehaviour {
 
     public void Duplicate()
     {
-		Debug.Log ("Duplicate object!");
         ObjectCreator.Instance.DuplicateObject(parentCanvas.currentModelingObject, null);
     }
 

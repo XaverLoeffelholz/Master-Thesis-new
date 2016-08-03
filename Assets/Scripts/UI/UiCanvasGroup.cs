@@ -22,6 +22,10 @@ public class UiCanvasGroup : Singleton<UiCanvasGroup>{
     public UIMenu objectMenu;
     public UIMenu newObjectMenu;
 
+	public Color normalColor;
+	public Color hoverColor;
+	public Color clickColor;
+
     // Use this for initialization
     void Start () {
         visible = false;
@@ -106,7 +110,8 @@ public class UiCanvasGroup : Singleton<UiCanvasGroup>{
         float width = elements.Count * positioningWidth;
 
         // define height based on number of elements
-        float height = elements.Count * positioningHeight;
+       // float height = elements.Count * positioningHeight;
+		float height = 4f * positioningHeight;
 
         for (int i=0; i < elements.Count; i++)
         {

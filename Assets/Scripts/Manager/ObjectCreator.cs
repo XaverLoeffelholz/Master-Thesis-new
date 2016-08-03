@@ -19,9 +19,9 @@ public class ObjectCreator : Singleton<ObjectCreator> {
 
     // Use this for initialization
     void Start () {
-		createNewObject(triangle, ModelingObject.ObjectType.triangle, null, null, new Vector3(-2, 0.3f, 0f), true, null, standardColor);
+		//createNewObject(triangle, ModelingObject.ObjectType.triangle, null, null, new Vector3(-2, 0.3f, 0f), true, null, standardColor);
 		createNewObject(square, ModelingObject.ObjectType.square, null, null, new Vector3(0, 0.3f, 0f), true, null, standardColor);
-		createNewObject(octagon, ModelingObject.ObjectType.octagon, null, null, new Vector3(2, 0.3f, 0f), true, null, standardColor);
+		//createNewObject(octagon, ModelingObject.ObjectType.octagon, null, null, new Vector3(2, 0.3f, 0f), true, null, standardColor);
         ObjectCreator.Instance.createSetofObjects();
     }
 

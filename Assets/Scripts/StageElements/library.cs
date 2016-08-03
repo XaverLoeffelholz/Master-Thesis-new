@@ -14,6 +14,11 @@ public class library : Singleton<library>{
     public Transform pos3;
     public Transform pos4;
 
+	public GameObject container;
+	public GameObject top;
+	public GameObject bottom;
+	public GameObject shell;
+
     // Use this for initialization
     void Start () {
 		initialPosition = transform.position;
@@ -25,10 +30,15 @@ public class library : Singleton<library>{
 	}
 
 	public void Focus(Selection controller){
-
+		LeanTween.scale (gameObject, new Vector3(0.725f, 0.725f,0.725f), 0.1f);
+		LeanTween.color (top, new Color (0.9f, 0.9f, 1f, 0.8f), 0.1f);
+		LeanTween.color (bottom, new Color (0.6f, 0.7f, 0.8f, 1f), 0.1f);
 	}
 	public void UnFocus(Selection controller){
-
+		LeanTween.scale (gameObject, new Vector3(0.7f, 0.7f,0.7f), 0.1f);
+		LeanTween.color (shell, new Color (1f, 1f, 1f, 0.3f), 0.1f);
+		LeanTween.color (top, new Color (0.5f, 0.5f, 0.5f, 1f), 0.1f);
+		LeanTween.color (bottom, new Color (0.5f, 0.5f, 0.5f, 1f), 0.1f);
 	}
 
     public void ClearLibrary()

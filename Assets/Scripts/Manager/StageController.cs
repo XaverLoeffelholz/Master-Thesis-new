@@ -26,20 +26,53 @@ public class StageController : MonoBehaviour {
 	public GameObject toggle2;
 	public GameObject toggleBG;
 
+	public GameObject line;
+	private Vector3 lineInitialScale;
+	public Color lineColorNormal;
+	public Color lineColorTouch;
+
 	public bool recognizeNewSwipe;
+
+	public Vector3 minPosLine;
+	public Vector3 maxPosLine;
+
+	public GameObject touchpad;
+	private Vector3 touchpadInitialScale;
+	private Vector3 touchpadInitialPos;
 
     void Awake()
     {
 		trackedObj = GetComponent<SteamVR_TrackedObject>();
         selection = this.GetComponent<Selection>();
 
+		lineInitialScale = line.transform.localScale;
+		touchpadInitialScale = touchpad.transform.localScale;
+		touchpadInitialPos = touchpad.transform.localPosition;
+
 		if (selection.typeOfController == Selection.controllerType.mainController)
 		{
 			scaleMode = true;
+
+			// move line to point
+			float posLine = (stage.parent.localScale.x - 0.25f) / 3.75f;
+			line.transform.localPosition = minPosLine + posLine * (maxPosLine - minPosLine);
+
+			float scale = Mathf.Sqrt((Mathf.Abs(posLine - 0.5f)) / 0.5f);
+			line.transform.localScale = new Vector3 (Mathf.Max(lineInitialScale.x * (1f-scale), lineInitialScale.x*0.7f), lineInitialScale.y, lineInitialScale.z);
 		} else
 		{
 			scaleMode = false;
+
+			// move line to point for rotation
+			// move line to point
+			float posLine = ((stage.localRotation.eulerAngles.y - (Mathf.Floor(stage.localRotation.eulerAngles.y/90f) * 90f)) / 90f);
+			line.transform.localPosition = minPosLine + posLine * (maxPosLine - minPosLine);
+
+			float scale = Mathf.Sqrt((Mathf.Abs(posLine - 0.5f)) / 0.5f);
+			line.transform.localScale = new Vector3 (Mathf.Max(lineInitialScale.x * (1f-scale), lineInitialScale.x*0.7f), lineInitialScale.y, lineInitialScale.z);
 		}
+
+
     }
 
 
@@ -94,18 +127,30 @@ public class StageController : MonoBehaviour {
     // Update is called once per frame
     void FixedUpdate()
     {
-
+		
         var device = SteamVR_Controller.Input((int)trackedObj.index);
 
         if (device.GetTouchDown(SteamVR_Controller.ButtonMask.Touchpad)){
             touchDown = true;
             lastX = device.GetAxis().x;
             lastY = device.GetAxis().y;
+
+			LeanTween.color (line, lineColorTouch, 0.1f);
+			LeanTween.scale (touchpad, touchpadInitialScale * 1.2f, 0.2f); 
+			LeanTween.moveLocalY (touchpad, touchpadInitialPos.y + 0.003f, 0.2f);
+
+			device.TriggerHapticPulse (1000);
         }
 
         if (device.GetTouchUp(SteamVR_Controller.ButtonMask.Touchpad))
         {
             touchDown = false;
+
+			LeanTween.color (line, lineColorNormal, 0.1f);
+			LeanTween.scale (touchpad, touchpadInitialScale, 0.2f).setDelay(0.1f); 
+			LeanTween.moveLocalY (touchpad, touchpadInitialPos.y, 0.2f).setDelay(0.1f);
+
+			device.TriggerHapticPulse (1000);
         }
 
         if (touchDown)
@@ -120,21 +165,24 @@ public class StageController : MonoBehaviour {
 					// get vector between controller and current object
 					Vector3 ObjectToController = selection.pointOfCollisionGO.transform.position - transform.position;
 
-					//maybe move this part into modelingobject
-					Vector3 prevPosition = selection.pointOfCollisionGO.transform.position;
-
 					// move object on line when using touchpad
-					selection.pointOfCollisionGO.transform.position = selection.pointOfCollisionGO.transform.position + ObjectToController * amountY;
+					selection.pointOfCollisionGO.transform.position = selection.pointOfCollisionGO.transform.position + ObjectToController * amountY*1.4f;
 
 					if (selection.currentFocus.CompareTag ("ModelingObject")) {
-
 						selection.pointOfCollisionGO.transform.position = RasterManager.Instance.Raster (selection.pointOfCollisionGO.transform.position);
-
 					}
 
-					// somehow not working
-					//selection.AdjustLengthPointer ((selection.pointOfCollisionGO.transform.position - transform.position).magnitude);
+					float distance = (selection.pointOfCollisionGO.transform.position - transform.position).magnitude;
 
+					// somehow not working
+					selection.AdjustLengthPointer (distance);
+
+					// move line to point
+					float posLine = ((distance - (Mathf.Floor(distance/5f) * 5f)) / 5f);
+					line.transform.localPosition = minPosLine + posLine * (maxPosLine - minPosLine);
+
+					float scale = Mathf.Sqrt((Mathf.Abs(posLine - 0.5f)) / 0.5f);
+					line.transform.localScale = new Vector3 (Mathf.Max(lineInitialScale.x * (1f-scale), lineInitialScale.x*0.7f), lineInitialScale.y, lineInitialScale.z);
 				} 
 
 
@@ -153,7 +201,8 @@ public class StageController : MonoBehaviour {
 				// turn x value into rotation of stage
 				float amountX = device.GetAxis().x - lastX;
 				lastX = device.GetAxis().x;
-				stage.Rotate(0, amountX * 25f, 0);
+
+				RotateStage (amountX);
 			}
 			else if (currentControllerMode == controllerMode.toggleRotateScale)
 			{
@@ -163,7 +212,6 @@ public class StageController : MonoBehaviour {
 				}
                 // turn x value into rotation of stage
                 float amountX = device.GetAxis().x - lastX;
-
 	
 				if (amountX > 0.6f) {					
 					RotateObjectMode();
@@ -208,6 +256,17 @@ public class StageController : MonoBehaviour {
 
 	}
 
+	public void RotateStage(float amountX){
+		stage.Rotate(0, amountX * 25f, 0);
+
+		// move line to point
+		float posLine = ((stage.localRotation.eulerAngles.y - (Mathf.Floor(stage.localRotation.eulerAngles.y/90f) * 90f)) / 90f);
+		line.transform.localPosition = minPosLine + posLine * (maxPosLine - minPosLine);
+
+		float scale = Mathf.Sqrt((Mathf.Abs(posLine - 0.5f)) / 0.5f);
+		line.transform.localScale = new Vector3 (Mathf.Max(lineInitialScale.x * (1f-scale), lineInitialScale.x*0.7f), lineInitialScale.y, lineInitialScale.z);
+	}
+
 	public void ScaleStage(float amountY){
 		
 		Vector3 scaleStage = stage.parent.localScale;
@@ -219,11 +278,18 @@ public class StageController : MonoBehaviour {
 		Vector3 trashScale = trash.localScale;
 		trashScale = trashScale + (trashScale * amountY * 2);
 
-		if (scaleStage.x >= 0.1f && scaleStage.x <= 4f)
+		if (scaleStage.x >= 0.25f && scaleStage.x <= 4f)
 		{
 			stage.parent.localScale = scaleStage; 
 			library.localScale = libraryStage;
 			trash.localScale = trashScale;
+
+			// move line to point
+			float posLine = (scaleStage.x - 0.25f) / 3.75f;
+			line.transform.localPosition = minPosLine + posLine * (maxPosLine - minPosLine);
+
+			float scale = Mathf.Sqrt((Mathf.Abs(posLine - 0.5f)) / 0.5f);
+			line.transform.localScale = new Vector3 (Mathf.Max(lineInitialScale.x * (1f-scale), lineInitialScale.x*0.7f), lineInitialScale.y, lineInitialScale.z);
 		}
 
 

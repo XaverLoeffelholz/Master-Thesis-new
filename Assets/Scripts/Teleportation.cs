@@ -75,6 +75,8 @@ public class Teleportation : Singleton<Teleportation> {
 
 		LeanTween.scale(maskLeft, new Vector3(bigFieldOfView, bigFieldOfView, bigFieldOfView), time * 0.2f).setDelay(time * 0.4f);
 		LeanTween.scale(maskRight, new Vector3(bigFieldOfView, bigFieldOfView, bigFieldOfView), time * 0.2f).setDelay(time * 0.4f);
+
+		// here we have to adapt the position of scaling center and scaling library
 	}
 }
 

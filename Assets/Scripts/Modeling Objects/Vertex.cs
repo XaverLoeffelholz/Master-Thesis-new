@@ -89,9 +89,12 @@ public class Vertex : MonoBehaviour {
         {
             if (col.collider.gameObject.CompareTag("Vertex") && col.collider.transform.parent != transform.parent)
             {
-                if (col.collider.transform.parent.GetComponent<VertexBundle>().centerVertex)
+				VertexBundle colliderVertBundle = col.collider.transform.parent.GetComponent<VertexBundle>();
+				
+				if (colliderVertBundle.centerVertex)
                 {
                     parentVertexBundle.possibleSnappingVertexBundle = null;
+					colliderVertBundle.usedForSnapping = false;
                 }
 
             }

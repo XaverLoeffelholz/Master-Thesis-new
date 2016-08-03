@@ -9,6 +9,8 @@ public class VertexBundle : MonoBehaviour {
     public GameObject possibleLineSnapping;
     public GameObject possibleGroundSnapping;
 
+	public bool usedForSnapping = false;
+
     // Use this for initialization
     void Start () {
 	

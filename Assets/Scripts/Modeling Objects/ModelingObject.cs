@@ -82,6 +82,8 @@ public class ModelingObject : MonoBehaviour
 
     public BoundingBox boundingBox;
 
+	private bool trashed = false;
+
     // Use this for initialization
     void Start()
     {
@@ -129,6 +131,7 @@ public class ModelingObject : MonoBehaviour
             }
 
 			if (!BiManualOperations.Instance.IsScalingStarted ()) {
+				
 				Vector3 newPositionCollider = transform.TransformPoint(RasterManager.Instance.Raster(transform.InverseTransformPoint(controllerForMovement.pointOfCollisionGO.transform.position)));
 
 				Vector3 newPositionWorld = this.transform.position + (newPositionCollider - initialPositionController);
@@ -159,25 +162,33 @@ public class ModelingObject : MonoBehaviour
 					transform.position = new Vector3 (transform.position.x, transform.position.y + belowZero, transform.position.z);
 				}
 
+				//LeanTween.moveLocal (gameObject, RasterManager.Instance.Raster (this.transform.localPosition), 0.1f);
+
 				this.transform.localPosition = RasterManager.Instance.Raster(this.transform.localPosition);
 
 				// here check for possible snappings
-				if (bottomFace.center.possibleSnappingVertexBundle != null)
+				if (bottomFace.center.possibleSnappingVertexBundle != null && !bottomFace.center.possibleSnappingVertexBundle.usedForSnapping)
 				{
-					if (!snapped)
-					{
-						controllerForMovement.TriggerIfPressed(1500);
+					if (!snapped) {
+						controllerForMovement.TriggerIfPressed (1500);
+						bottomFace.center.possibleSnappingVertexBundle.usedForSnapping = true;
 						snapped = true;
-					}
 
-					if ((snapped && (newPositionCollider - lastPositionController).sqrMagnitude < 0.08f * transform.lossyScale.x)) {
 						Vector3 distanceCurrentBottomSnap = bottomFace.center.possibleSnappingVertexBundle.transform.GetChild (0).position - bottomFace.center.transform.GetChild (0).position;
 						this.transform.position = this.transform.position + distanceCurrentBottomSnap;
-					} else {
-						bottomFace.center.possibleSnappingVertexBundle.possibleSnappingVertexBundle = null;
-						bottomFace.center.possibleSnappingVertexBundle = null;
-					}
 
+					} else {
+						
+						if ((snapped && Mathf.Abs((newPositionCollider - lastPositionController).magnitude) < 0.3f * transform.lossyScale.x)) {
+							Vector3 distanceCurrentBottomSnap = bottomFace.center.possibleSnappingVertexBundle.transform.GetChild (0).position - bottomFace.center.transform.GetChild (0).position;
+							this.transform.position = this.transform.position + distanceCurrentBottomSnap;
+						} else {
+							snapped = false;	
+							bottomFace.center.possibleSnappingVertexBundle.usedForSnapping = false;
+							bottomFace.center.possibleSnappingVertexBundle.possibleSnappingVertexBundle = null;
+							bottomFace.center.possibleSnappingVertexBundle = null;
+						}
+					}
 				}
 				else
 				{
@@ -534,9 +545,12 @@ public class ModelingObject : MonoBehaviour
 
     public void PositionHandles()
     {
-        handles.faceTopScale.transform.position = GetPosOfClosestVertex(Teleportation.Instance.transform.position, Face.faceType.TopFace);
-        handles.faceBottomScale.transform.position = GetPosOfClosestVertex(Teleportation.Instance.transform.position, Face.faceType.BottomFace);
-        handles.CenterTopPosition.transform.localPosition = topFace.centerPosition;
+        //handles.faceTopScale.transform.position = GetPosOfClosestVertex(Teleportation.Instance.transform.position, Face.faceType.TopFace);
+        //handles.faceBottomScale.transform.position = GetPosOfClosestVertex(Teleportation.Instance.transform.position, Face.faceType.BottomFace);
+        
+		handles.faceTopScale.transform.position = transform.TransformPoint(topFace.scaler.coordinates);
+		handles.faceBottomScale.transform.position = transform.TransformPoint(bottomFace.scaler.coordinates);
+		handles.CenterTopPosition.transform.localPosition = topFace.centerPosition;
         handles.CenterBottomPosition.transform.localPosition = bottomFace.centerPosition;
         handles.HeightTop.transform.localPosition = topFace.centerPosition;
         handles.HeightBottom.transform.localPosition = bottomFace.centerPosition;
@@ -548,13 +562,13 @@ public class ModelingObject : MonoBehaviour
 
     public void RotateHandles()
     {
-        handles.faceTopScale.transform.localRotation = Quaternion.FromToRotation(handles.faceTopScale.transform.up, transform.TransformDirection(handles.faceTopScale.transform.localPosition - topFace.centerPosition));
-        handles.CenterTopPosition.transform.localRotation = Quaternion.FromToRotation(handles.CenterTopPosition.transform.up, transform.TransformDirection(topFace.normal));
-        handles.HeightTop.transform.localRotation = Quaternion.FromToRotation(handles.HeightTop.transform.up, transform.TransformDirection(topFace.normal));
+		handles.faceTopScale.transform.localRotation = Quaternion.FromToRotation(transform.InverseTransformDirection(handles.faceTopScale.transform.up), transform.TransformDirection(handles.faceTopScale.transform.localPosition - topFace.centerPosition));
+		handles.CenterTopPosition.transform.localRotation = Quaternion.FromToRotation(transform.InverseTransformDirection(handles.CenterTopPosition.transform.up), transform.TransformDirection(topFace.normal));
+		handles.HeightTop.transform.localRotation = Quaternion.FromToRotation(transform.InverseTransformDirection(handles.HeightTop.transform.up), transform.TransformDirection(topFace.normal));
 
-        handles.faceBottomScale.transform.localRotation = Quaternion.FromToRotation(handles.faceBottomScale.transform.up, transform.TransformDirection(handles.faceBottomScale.transform.localPosition - bottomFace.centerPosition));
-        handles.CenterBottomPosition.transform.localRotation = Quaternion.FromToRotation(handles.CenterBottomPosition.transform.up, transform.TransformDirection(bottomFace.normal));
-        handles.HeightBottom.transform.localRotation = Quaternion.FromToRotation(handles.HeightBottom.transform.up, transform.TransformDirection(bottomFace.normal));
+		handles.faceBottomScale.transform.localRotation = Quaternion.FromToRotation(transform.InverseTransformDirection(handles.faceBottomScale.transform.up), transform.TransformDirection(handles.faceBottomScale.transform.localPosition - bottomFace.centerPosition));
+		handles.CenterBottomPosition.transform.localRotation = Quaternion.FromToRotation(transform.InverseTransformDirection(handles.CenterBottomPosition.transform.up), transform.TransformDirection(bottomFace.normal));
+		handles.HeightBottom.transform.localRotation = Quaternion.FromToRotation(transform.InverseTransformDirection(handles.HeightBottom.transform.up), transform.TransformDirection(bottomFace.normal));
     }
 
     public void InitiateHandles()
@@ -592,7 +606,7 @@ public class ModelingObject : MonoBehaviour
                 group.FocusGroup(this);
             }
 
-			if (!transform.parent.CompareTag("Library") && !controller.groupItemSelection && !moving){
+			if (!transform.parent.CompareTag("Library") && !controller.groupItemSelection && !moving && !selected){
 				objectSelector.ShowSelectionButton (controller);
 			}
 
@@ -622,56 +636,68 @@ public class ModelingObject : MonoBehaviour
 
     public void Highlight()
     {
-        Color newColor = transform.GetChild(0).GetComponent<Renderer>().material.color;
+      //  Color newColor = transform.GetChild(0).GetComponent<Renderer>().material.color;
 		transform.GetChild(0).GetComponent<Renderer>().material.color = new Color(currentColor.r * 1.5f, currentColor.g * 1.5f, currentColor.b * 1.5f, 1f);
     }
 
     public void UnHighlight()
     {
-        Color newColor = transform.GetChild(0).GetComponent<Renderer>().material.color;
+     //   Color newColor = transform.GetChild(0).GetComponent<Renderer>().material.color;
 		transform.GetChild(0).GetComponent<Renderer>().material.color = new Color(currentColor.r, currentColor.g, currentColor.b, 1f);
     }
 
     public void Select(Selection controller, Vector3 uiPosition)
     {		
-        if (group != null)
-        {
-            group.SelectGroup(this);
-        } else
-        {
-            //DrawBoundingBox();
-        }
+		if (!selected) {
+			if (group != null)
+			{
+				group.SelectGroup(this);
+			} else
+			{
+				//DrawBoundingBox();
+			}
 
-		selected = true;
+			selected = true;
 
-        controller.AssignCurrentSelection(transform.gameObject);
-        handles.gameObject.transform.GetChild(0).gameObject.SetActive(true);
+			// move selection button
+			objectSelector.active = false;
+			objectSelector.MoveAndFace (uiPosition);
 
-        UiCanvasGroup.Instance.transform.position = uiPosition;
-        UiCanvasGroup.Instance.OpenMainMenu(this, controller);
+			controller.AssignCurrentSelection(transform.gameObject);
+			handles.gameObject.transform.GetChild(0).gameObject.SetActive(true);
 
-		ShowOutline(true);
+			UiCanvasGroup.Instance.transform.position = uiPosition;
+			UiCanvasGroup.Instance.OpenMainMenu(this, controller);
+
+			ShowOutline(true);
+		}      
     }
 		
     public void DeSelect(Selection controller)
     {		
-        if (group != null)
-        {
-            group.DeSelectGroup(this);
-        }
-        else
-        {
-            boundingBox.HideBoundingBox(); 
-        }
+		if (selected) {
+			
+			if (group != null)
+			{
+				group.DeSelectGroup(this);
+			}
+			else
+			{
+				boundingBox.HideBoundingBox(); 
+			}
 
-        selected = false;
-		ShowOutline(false);
+			selected = false;
+			ShowOutline(false);
 
-		objectSelector.DeSelect (controller);
-        controller.DeAssignCurrentSelection(transform.gameObject);
-        handles.DisableHandles();
+			objectSelector.RePosition (controller);
+			objectSelector.DeSelect (controller);
+			controller.DeAssignCurrentSelection(transform.gameObject);
+			handles.DisableHandles();
 
-		UnFocus (controller);
+			UnFocus (controller);
+
+		}
+
     }
 
     public void ShowOutline(bool value)
@@ -975,8 +1001,8 @@ public class ModelingObject : MonoBehaviour
 		// Update handles for Frustum
 
 		PositionHandles ();
-		topFace.scaleHandle.circle.localScale = topFace.scaleHandle.circle.localScale * newScale;
-		bottomFace.scaleHandle.circle.localScale = topFace.scaleHandle.circle.localScale * newScale;
+	//	topFace.scaleHandle.circle.localScale = topFace.scaleHandle.circle.localScale * newScale;
+	//	bottomFace.scaleHandle.circle.localScale = topFace.scaleHandle.circle.localScale * newScale;
     }
 
     public void UpDateObjectFromCorner()
@@ -994,13 +1020,19 @@ public class ModelingObject : MonoBehaviour
 
     public void TrashObject(bool initiator)
     {
-        if (group != null && initiator)
-        {
-            group.TrashGroup(this);
-        }
+		if (!trashed) {
+			trashed = true;
 
-        transform.gameObject.SetActive(false);
-        Trash.Instance.TrashAreaActive(false);
+			if (group != null && initiator)
+			{
+				group.TrashGroup(this);
+			}
+
+			transform.gameObject.SetActive(false);
+			Trash.Instance.TrashAreaActive(false);
+		}
+		
+
     }
 
 	public void ChangeColor(Color color, bool initiator)
@@ -1110,17 +1142,18 @@ public class ModelingObject : MonoBehaviour
 
         // update centers and recalculate normals of side faces
 
-		/*
         for (int i = 0; i < faces.Length; i++)
         {
             faces[i].UpdateCenter();
             faces[i].RecalculateNormal();
             faces[i].UpdateSpecialVertexCoordinates();
         }
-			
-        // update inner coordinate system
-        coordinateSystem.transform.localEulerAngles = otherObject.coordinateSystem.transform.localEulerAngles;
-        */
+
+		//PositionHandles ();
+
+		// later we could need this for rotation
+
+		//RotateHandles ();     
     }
 
     public Vector3 GetBoundingBoxTopCenter()

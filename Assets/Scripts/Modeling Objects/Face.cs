@@ -119,13 +119,24 @@ public class Face : MonoBehaviour {
 
     public void SetScaler()
     {
-        scaler = vertexBundles[0];
-        scalerPosition = scaler.coordinates;
+		if (typeOfFace == faceType.TopFace)
+		{   
+			scaler = vertexBundles[1];
+			scalerPosition = scaler.coordinates;
 
-        if (typeOfFace == faceType.TopFace)
-        {
-            parentModelingObject.scalerObject = vertexBundles[0];
-        }
+            parentModelingObject.scalerObject = vertexBundles[1];
+
+
+
+		} else if (typeOfFace == faceType.BottomFace)
+		{   
+			scaler = vertexBundles[vertexBundles.Length-1];
+			scalerPosition = scaler.coordinates;
+
+			parentModelingObject.scalerObject = vertexBundles[vertexBundles.Length-1];
+
+		}
+
     }
 
 	public void CalculateCenter(){

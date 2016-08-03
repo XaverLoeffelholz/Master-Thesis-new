@@ -17,9 +17,6 @@ public class handles : MonoBehaviour {
     public GameObject RotationYStepwise;
     public GameObject RotationZStepwise;
 
-    public GameObject circleTop;
-    public GameObject circleBottom;
-
     public GameObject TopHandles;
     public GameObject BottomHandles;
 
@@ -68,8 +65,10 @@ public class handles : MonoBehaviour {
 
         TopHandles.SetActive(true);
         BottomHandles.SetActive(true);
+
         faceBottomScale.SetActive(true);
         faceTopScale.SetActive(true);
+
         HeightTop.SetActive(true);
         HeightBottom.SetActive(true);
 

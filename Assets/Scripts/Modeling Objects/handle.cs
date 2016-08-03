@@ -44,6 +44,8 @@ public class handle : MonoBehaviour {
 	public Transform circle;
 	private Vector3 initialScaleCircle;
 
+	public GameObject arrow;
+
     // Use this for initialization
     void Start () {
         ResetLastPosition();
@@ -74,9 +76,10 @@ public class handle : MonoBehaviour {
             initialLocalPositionHandle = transform.localPosition;
             initialPositionHandle = transform.position;
 
+			/*
 			if (circle != null) {
 				initialScaleCircle = circle.localScale;
-			}
+			}*/
         }
 
         Vector3 pq = pointOfCollision - p1.transform.position;
@@ -168,21 +171,24 @@ public class handle : MonoBehaviour {
 
     private void ScaleFace(GameObject pointOfCollision)
     {
-        float input = CalculateInputFromPoint(pointOfCollision.transform.position);
+        float input = CalculateInputFromPoint(pointOfCollision.transform.position)*1.5f;
 
         Vector3 positionScaler = initialLocalPositionFace + ((1f - input) * initialDistancceCenterScaler);
         Vector3 newDistanceCenterScaler = positionScaler - face.centerPosition;
 
         if (newDistanceCenterScaler.magnitude >= 0.1f && Vector3.Dot(initialDistancceCenterScaler, newDistanceCenterScaler)>0)
         {
-			Vector3 position = initialLocalPositionHandle + (-input * (initialLocalPositionHandle-face.centerPosition).normalized);
+			Vector3 position = initialLocalPositionHandle + (-input * (initialLocalPositionHandle-face.centerPosition).normalized * 0.5f);
 
-            transform.localPosition = RasterManager.Instance.Raster(position);
-            face.scaler.coordinates = RasterManager.Instance.Raster(positionScaler);
+			positionScaler = RasterManager.Instance.Raster(positionScaler);
+			transform.position = connectedModelingObject.transform.TransformPoint(positionScaler);
+			face.scaler.coordinates = positionScaler;
 
             // update scale of circle
 			if (circle != null) {
-				circle.localScale = initialScaleCircle * (newDistanceCenterScaler.magnitude / initialDistancceCenterScaler.magnitude); 
+				//circle.localScale = initialScaleCircle * (newDistanceCenterScaler.magnitude / initialDistancceCenterScaler.magnitude); 
+				//circle.localScale = new Vector3(newDistanceCenterScaler.magnitude,newDistanceCenterScaler.magnitude,newDistanceCenterScaler.magnitude);
+
 			}
 
         }
@@ -256,17 +262,17 @@ public class handle : MonoBehaviour {
     {
 		if (!focused) {
 
-            if (typeOfHandle == handleType.RotationXstepwise)
-            {
-                Debug.Log("hovering arrow");
-            }
-
 			if (!clicked && !handles.objectFocused)	{
+				
+				if (arrow != null) {
+					// Hover effect: Scale bigger & change color
+					LeanTween.scale (arrow, new Vector3 (0.014f,0.014f, 0.014f), 0.1f);
+					LeanTween.color (arrow, new Color (0.7f, 0.8f, 1f, 1f), 0.1f);
+				}
 
                 controller.AssignCurrentFocus(transform.gameObject);
 				handles.objectFocused = true;
 
-				LeanTween.color(this.gameObject, Color.cyan, 0.2f);
 				focused = true;
 			}
 		}
@@ -278,6 +284,12 @@ public class handle : MonoBehaviour {
 		if (focused) {
 			if(!controller.triggerPressed)
 			{
+				if (arrow != null) {
+					// Hover effect: Scale bigger & change color
+					LeanTween.scale(arrow, new Vector3(0.01f, 0.01f, 0.01f), 0.1f);
+					LeanTween.color(arrow, new Color(0.6f,0.6f,0.6f,1f), 0.1f);
+				}
+
                 controller.DeAssignCurrentFocus(transform.gameObject);
 				handles.objectFocused = false;
 				LeanTween.color(this.gameObject, Color.white, 0.2f);
