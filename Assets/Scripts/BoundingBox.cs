@@ -22,9 +22,17 @@ public class BoundingBox : MonoBehaviour {
 	public void DrawBoundingBox(){
         ClearBoundingBox();
 
-        GameObject lines = Instantiate(linesPrefab);
-        lines.transform.SetParent(transform.GetChild(0));
-        lines.GetComponent<Lines>().DrawLinesWorldCoordinate(coordinates);
+        GameObject linesGO = Instantiate(linesPrefab);
+		linesGO.transform.SetParent(transform.GetChild(0));
+		Lines lines = linesGO.GetComponent<Lines> ();
+
+		lines.DrawLinesWorldCoordinate(new Vector3[] {coordinates[0],coordinates[1],coordinates[2],coordinates[3]});
+		lines.DrawLinesWorldCoordinate(new Vector3[] {coordinates[4],coordinates[5],coordinates[6],coordinates[7]});
+
+		lines.DrawLinesWorldCoordinate(new Vector3[] {coordinates[0],coordinates[4]});
+		lines.DrawLinesWorldCoordinate(new Vector3[] {coordinates[1],coordinates[5]});
+		lines.DrawLinesWorldCoordinate(new Vector3[] {coordinates[2],coordinates[6]});
+		lines.DrawLinesWorldCoordinate(new Vector3[] {coordinates[3],coordinates[7]});
     }
 
     public void ClearBoundingBox()
