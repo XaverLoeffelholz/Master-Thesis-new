@@ -10,7 +10,10 @@ public class TestRotationManager : MonoBehaviour {
 
     // Use this for initialization
     void Start () {
-        previousRotation = Quaternion.LookRotation(p1.transform.position - p2.transform.position);
+        Vector3 pos1 = new Vector3(p1.transform.position.x, 0, p1.transform.position.z);
+        Vector3 pos2 = new Vector3(p2.transform.position.x, 0, p2.transform.position.z);
+       
+        previousRotation = Quaternion.LookRotation(pos1 - pos2);
     }
 	
 	// Update is called once per frame
@@ -18,10 +21,13 @@ public class TestRotationManager : MonoBehaviour {
 
         // test like this, with rastering
 
-   //     Vector3 centerBetween = p1.transform.position * 0.5f + p2.transform.position * 0.5f;
-   //     transform.position = centerBetween;
+        //     Vector3 centerBetween = p1.transform.position * 0.5f + p2.transform.position * 0.5f;
+        //     transform.position = centerBetween;
 
-        Quaternion newRotation = Quaternion.LookRotation(p1.transform.position - p2.transform.position);
+        Vector3 pos1 = new Vector3(p1.transform.position.x, 0, p1.transform.position.z);
+        Vector3 pos2 = new Vector3(p2.transform.position.x, 0, p2.transform.position.z);
+
+        Quaternion newRotation = Quaternion.LookRotation(pos1-pos2);
         Quaternion relative = Quaternion.Inverse(previousRotation) * newRotation;
         previousRotation = newRotation;
 
