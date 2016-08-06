@@ -40,6 +40,8 @@ public class StageController : MonoBehaviour {
 	private Vector3 touchpadInitialScale;
 	private Vector3 touchpadInitialPos;
 
+	private float amountOfMovementForHapticFeedback;
+
     void Awake()
     {
 		trackedObj = GetComponent<SteamVR_TrackedObject>();
@@ -134,23 +136,25 @@ public class StageController : MonoBehaviour {
             touchDown = true;
             lastX = device.GetAxis().x;
             lastY = device.GetAxis().y;
+			amountOfMovementForHapticFeedback = 0f;
 
 			LeanTween.color (line, lineColorTouch, 0.1f);
 			LeanTween.scale (touchpad, touchpadInitialScale * 1.2f, 0.2f); 
 			LeanTween.moveLocalY (touchpad, touchpadInitialPos.y + 0.003f, 0.2f);
 
-			device.TriggerHapticPulse (1000);
+			device.TriggerHapticPulse (2000);
         }
 
         if (device.GetTouchUp(SteamVR_Controller.ButtonMask.Touchpad))
         {
             touchDown = false;
 
+
 			LeanTween.color (line, lineColorNormal, 0.1f);
 			LeanTween.scale (touchpad, touchpadInitialScale, 0.2f).setDelay(0.1f); 
 			LeanTween.moveLocalY (touchpad, touchpadInitialPos.y, 0.2f).setDelay(0.1f);
 
-			device.TriggerHapticPulse (1000);
+			device.TriggerHapticPulse (1400);
         }
 
         if (touchDown)
@@ -160,6 +164,13 @@ public class StageController : MonoBehaviour {
                 // turn y value into scale of stage          
                 float amountY = device.GetAxis().y - lastY;
                 lastY = device.GetAxis().y;
+
+				amountOfMovementForHapticFeedback += amountY;
+
+				if (amountOfMovementForHapticFeedback > 2f) {
+					device.TriggerHapticPulse (1000);
+					amountOfMovementForHapticFeedback = 0f;
+				}
 
 				if (selection.pointOfCollisionGO != null) {
 					// get vector between controller and current object
@@ -194,6 +205,14 @@ public class StageController : MonoBehaviour {
                 float amountY = device.GetAxis().y - lastY;
                 lastY = device.GetAxis().y;
 
+				amountOfMovementForHapticFeedback += amountY;
+
+				if (amountOfMovementForHapticFeedback > 2f) {
+					device.TriggerHapticPulse (1000);
+					amountOfMovementForHapticFeedback = 0f;
+				}
+
+
 				ScaleStage (amountY);
             }
 			else if (currentControllerMode == controllerMode.rotatingStage)
@@ -201,6 +220,14 @@ public class StageController : MonoBehaviour {
 				// turn x value into rotation of stage
 				float amountX = device.GetAxis().x - lastX;
 				lastX = device.GetAxis().x;
+
+				amountOfMovementForHapticFeedback += amountX;
+
+				if (amountOfMovementForHapticFeedback > 2f) {
+					device.TriggerHapticPulse (1000);
+					amountOfMovementForHapticFeedback = 0f;
+				}
+
 
 				RotateStage (amountX);
 			}

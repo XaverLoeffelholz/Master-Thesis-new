@@ -239,7 +239,7 @@ public class ModelingObject : MonoBehaviour
 
                         Vector3[] bottomCoordinates = new Vector3[bottomFace.vertexBundles.Length];
 
-                        for (int j = 0; j <= bottomFace.vertexBundles.Length; j++)
+                        for (int j = 0; j < bottomFace.vertexBundles.Length; j++)
                         {
                             bottomCoordinates[j] = bottomFace.vertexBundles[j].transform.GetChild(0).position;
                         }
@@ -692,6 +692,7 @@ public class ModelingObject : MonoBehaviour
 			UiCanvasGroup.Instance.OpenMainMenu(this, controller);
 
 			ShowOutline(true);
+			ShowBoundingBox ();
 		}      
     }
 		
@@ -723,15 +724,15 @@ public class ModelingObject : MonoBehaviour
         if (value)
         {
 			// distance to object should be adapted to scale of
-			transform.GetChild(0).GetComponent<Renderer>().material.SetColor("_OutlineColor", Color.white);
-			transform.GetChild (0).GetComponent<Renderer> ().material.SetFloat ("_Outline", 0.005f * this.transform.lossyScale.x);
+			//transform.GetChild(0).GetComponent<Renderer>().material.SetColor("_OutlineColor", Color.white);
+			//transform.GetChild (0).GetComponent<Renderer> ().material.SetFloat ("_Outline", 0.005f * this.transform.lossyScale.x);
 
 			//DisplayOutlineOfGroundFace ();
         }
         else
         {
-			transform.GetChild(0).GetComponent<Renderer>().material.SetColor("_OutlineColor", new Color(1f,1f,1f,0f));
-			transform.GetChild (0).GetComponent<Renderer> ().material.SetFloat ("_Outline", 0.00f);
+			//transform.GetChild(0).GetComponent<Renderer>().material.SetColor("_OutlineColor", new Color(1f,1f,1f,0f));
+			//transform.GetChild (0).GetComponent<Renderer> ().material.SetFloat ("_Outline", 0.00f);
 
 			if (DistanceVisualisation != null) {
 				// destroy previous distance vis
@@ -745,25 +746,25 @@ public class ModelingObject : MonoBehaviour
 
     public void CalculateBoundingBox()
     {
-        if (boundingBox.coordinates == null)
-        {
-            boundingBox.coordinates = new Vector3[8];
-        }
+		boundingBox.coordinates = new Vector3[8];
 
         // get highest and lowest values for x,y,z
-		Vector3 minima = ObjectsManager.Instance.transform.TransformPoint(GetBoundingBoxMinima());
-		Vector3 maxima = ObjectsManager.Instance.transform.TransformPoint(GetBoundingBoxMaxima());
+		Vector3 minima = GetBoundingBoxMinima();
+		Vector3 maxima = GetBoundingBoxMaxima();
+
+	//	minima = transform.TransformPoint (minima);
+	//	maxima = transform.TransformPoint (maxima);
 
         // set all points
-        boundingBox.coordinates[0] = new Vector3(maxima.x, maxima.y, maxima.z);
-        boundingBox.coordinates[1] = new Vector3(maxima.x, maxima.y, minima.z);
-        boundingBox.coordinates[2] = new Vector3(minima.x, maxima.y, minima.z);
-        boundingBox.coordinates[3] = new Vector3(minima.x, maxima.y, maxima.z);
+		boundingBox.coordinates[0] = transform.TransformPoint (new Vector3(maxima.x, maxima.y, maxima.z));
+		boundingBox.coordinates[1] = transform.TransformPoint (new Vector3(maxima.x, maxima.y, minima.z));
+		boundingBox.coordinates[2] = transform.TransformPoint (new Vector3(minima.x, maxima.y, minima.z));
+		boundingBox.coordinates[3] = transform.TransformPoint (new Vector3(minima.x, maxima.y, maxima.z));
 
-        boundingBox.coordinates[4] = new Vector3(maxima.x, minima.y, maxima.z);
-        boundingBox.coordinates[5] = new Vector3(maxima.x, minima.y, minima.z);
-        boundingBox.coordinates[6] = new Vector3(minima.x, minima.y, minima.z);
-        boundingBox.coordinates[7] = new Vector3(minima.x, minima.y, maxima.z);
+		boundingBox.coordinates[4] = transform.TransformPoint (new Vector3(maxima.x, minima.y, maxima.z));
+		boundingBox.coordinates[5] = transform.TransformPoint (new Vector3(maxima.x, minima.y, minima.z));
+		boundingBox.coordinates[6] = transform.TransformPoint (new Vector3(minima.x, minima.y, minima.z));
+		boundingBox.coordinates[7] = transform.TransformPoint (new Vector3(minima.x, minima.y, maxima.z));
     }
 
     public void ShowBoundingBox()
@@ -771,6 +772,11 @@ public class ModelingObject : MonoBehaviour
         CalculateBoundingBox();
         boundingBox.DrawBoundingBox();
     }
+
+	public void HideBoundingBox()
+	{
+		boundingBox.ClearBoundingBox ();
+	}
 
     public void AssignVertexBundlesToFaces()
     {
@@ -814,10 +820,9 @@ public class ModelingObject : MonoBehaviour
 	public void DisplayOutlineOfGroundFace(){
 		// Display outline of groundface
 
-
         Vector3[] bottomCoordinates = new Vector3[bottomFace.vertexBundles.Length];
 
-        for (int j = 0; j <= bottomFace.vertexBundles.Length; j++)
+        for (int j = 0; j < bottomFace.vertexBundles.Length; j++)
         {
             bottomCoordinates[j] = bottomFace.vertexBundles[j].transform.GetChild(0).position;
         }

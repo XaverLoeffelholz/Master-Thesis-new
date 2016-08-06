@@ -7,10 +7,10 @@ Material:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_Name: Object1Material
-  m_Shader: {fileID: 4800000, guid: 840920052dad9054a87910f4f68626ce, type: 3}
+  m_Shader: {fileID: 46, guid: 0000000000000000f000000000000000, type: 0}
   m_ShaderKeywords: _COLOR_ON _TEX_ON
   m_LightmapFlags: 5
-  m_CustomRenderQueue: 2000
+  m_CustomRenderQueue: -1
   stringTagMap: {}
   m_SavedProperties:
     serializedVersion: 2
@@ -21,7 +21,7 @@ Material:
         second:
           m_Texture: {fileID: 0}
           m_Scale: {x: 1, y: 1}
-          m_Offset: {x: 0, y: 0}
+          m_Offset: {x: 1, y: 0}
       data:
         first:
           name: _BumpMap
@@ -63,7 +63,7 @@ Material:
         second:
           m_Texture: {fileID: 0}
           m_Scale: {x: 1, y: 1}
-          m_Offset: {x: 0, y: 0}
+          m_Offset: {x: 1, y: 0}
       data:
         first:
           name: _DetailMask
@@ -112,11 +112,11 @@ Material:
       data:
         first:
           name: _Glossiness
-        second: 0.733
+        second: 0.567
       data:
         first:
           name: _Metallic
-        second: 0
+        second: 0.14
       data:
         first:
           name: _BumpScale

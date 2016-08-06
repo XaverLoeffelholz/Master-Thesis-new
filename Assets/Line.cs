@@ -19,9 +19,9 @@ public class Line : MonoBehaviour {
         line.transform.position = centerBetween;
 
         Quaternion newRotation = Quaternion.LookRotation(p1.transform.position - p2.transform.position);
-        line.transform.localRotation = newRotation;
+        line.transform.rotation = newRotation;
 
-        line.transform.localScale = new Vector3(line.transform.localScale.x, line.transform.localScale.y, (p1.transform.position - p2.transform.position).magnitude + line.transform.localScale.x);
+		line.transform.localScale = new Vector3(line.transform.localScale.x, line.transform.localScale.y, (p1.transform.localPosition - p2.transform.localPosition).magnitude + line.transform.localScale.x);
     }
 
     public void DrawLineWorldCoord(Vector3 pos1, Vector3 pos2)

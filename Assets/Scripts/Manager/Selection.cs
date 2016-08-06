@@ -281,7 +281,9 @@ public class Selection : MonoBehaviour
 						CreatePointOfCollisionPrefab();
 					}
 					currentFocus.GetComponent<handle>().ApplyChanges(pointOfCollisionGO);
+					currentFocus.GetComponent<handle> ().connectedObject.GetComponent<ModelingObject> ().HideBoundingBox ();
 					movingHandle = true;
+
 				}
 			}
 
@@ -373,9 +375,12 @@ public class Selection : MonoBehaviour
 					}
 					else if (currentFocus.CompareTag("Handle"))
 					{
-						currentFocus.GetComponent<handle>().ResetLastPosition();
-						currentFocus.GetComponent<handle>().UnLock();
-						currentFocus.GetComponent<handle>().UnFocus(this);
+						handle currentHandle = currentFocus.GetComponent<handle> ();
+						
+						currentHandle.ResetLastPosition();
+						currentHandle.UnLock();
+						currentHandle.UnFocus(this);
+						currentHandle.connectedObject.GetComponent<ModelingObject> ().ShowBoundingBox ();
 					} 
 					else if (currentFocus.CompareTag("UiElement"))
 					{

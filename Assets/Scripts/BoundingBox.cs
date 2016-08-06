@@ -33,6 +33,7 @@ public class BoundingBox : MonoBehaviour {
 		lines.DrawLinesWorldCoordinate(new Vector3[] {coordinates[1],coordinates[5]});
 		lines.DrawLinesWorldCoordinate(new Vector3[] {coordinates[2],coordinates[6]});
 		lines.DrawLinesWorldCoordinate(new Vector3[] {coordinates[3],coordinates[7]});
+
     }
 
     public void ClearBoundingBox()
