@@ -235,18 +235,20 @@ public class ModelingObject : MonoBehaviour
 						CenterVisual2.transform.SetParent(DistanceVisualisation);
 						CenterVisual2.transform.localEulerAngles = new Vector3(0f, 0f, 0f);
 						CenterVisual2.transform.localScale = new Vector3(1f, 1f, 1f);
-						CenterVisual2.transform.position = bottomFace.center.transform.GetChild(0).position;
+						CenterVisual2.transform.position = 0.25f * boundingBox.coordinates[4] + 0.25f * boundingBox.coordinates[5] + 0.25f * boundingBox.coordinates[6] + 0.25f * boundingBox.coordinates[7];
 
+                        /*
                         Vector3[] bottomCoordinates = new Vector3[bottomFace.vertexBundles.Length];
 
                         for (int j = 0; j < bottomFace.vertexBundles.Length; j++)
                         {
                             bottomCoordinates[j] = bottomFace.vertexBundles[j].transform.GetChild(0).position;
                         }
+                        */
 
                         GameObject lines = Instantiate(linesPrefab);
                         lines.transform.SetParent(DistanceVisualisation);
-                        lines.GetComponent<Lines>().DrawLinesWorldCoordinate(bottomCoordinates);
+                        lines.GetComponent<Lines>().DrawLinesWorldCoordinate(new Vector3[] { boundingBox.coordinates[4], boundingBox.coordinates[5], boundingBox.coordinates[6], boundingBox.coordinates[7] });
 
                         /*
                         // Display outline of groundface
@@ -434,8 +436,6 @@ public class ModelingObject : MonoBehaviour
         InitializeVertexBundles();
         InitializeVertices();
 
-        // if this is a square, we want to rotate it's coordinate system
-      //  RotateAround(new Vector3(0f, 1f, 0f), 45f);
 		initialPosition = transform.position;
 
 		ShowOutline (false);
@@ -570,9 +570,24 @@ public class ModelingObject : MonoBehaviour
         handles.HeightTop.transform.localPosition = topFace.centerPosition;
         handles.HeightBottom.transform.localPosition = bottomFace.centerPosition;
 
-       // handles.RotationX.transform.localPosition = this.transform.localPosition;
-       // handles.RotationY.transform.localPosition = this.transform.localPosition;
-       // handles.RotationZ.transform.localPosition = this.transform.localPosition;
+        handles.RotateUp0.transform.position = 0.5f * boundingBox.coordinates[0] + 0.5f * boundingBox.coordinates[1];
+        handles.RotateUp1.transform.position = 0.5f * boundingBox.coordinates[1] + 0.5f * boundingBox.coordinates[2];
+        handles.RotateUp2.transform.position = 0.5f * boundingBox.coordinates[2] + 0.5f * boundingBox.coordinates[3];
+        handles.RotateUp3.transform.position = 0.5f * boundingBox.coordinates[3] + 0.5f * boundingBox.coordinates[0];
+
+        handles.RotateDown0.transform.position = 0.5f * boundingBox.coordinates[4] + 0.5f * boundingBox.coordinates[5];
+        handles.RotateDown1.transform.position = 0.5f * boundingBox.coordinates[5] + 0.5f * boundingBox.coordinates[6];
+        handles.RotateDown2.transform.position = 0.5f * boundingBox.coordinates[6] + 0.5f * boundingBox.coordinates[7];
+        handles.RotateDown3.transform.position = 0.5f * boundingBox.coordinates[7] + 0.5f * boundingBox.coordinates[4];
+
+        handles.RotateSide0.transform.position = 0.5f * boundingBox.coordinates[0] + 0.5f * boundingBox.coordinates[4];
+        handles.RotateSide1.transform.position = 0.5f * boundingBox.coordinates[1] + 0.5f * boundingBox.coordinates[5];
+        handles.RotateSide2.transform.position = 0.5f * boundingBox.coordinates[2] + 0.5f * boundingBox.coordinates[6];
+        handles.RotateSide3.transform.position = 0.5f * boundingBox.coordinates[3] + 0.5f * boundingBox.coordinates[7];
+
+        // handles.RotationX.transform.localPosition = this.transform.localPosition;
+        // handles.RotationY.transform.localPosition = this.transform.localPosition;
+        // handles.RotationZ.transform.localPosition = this.transform.localPosition;
     }
 
     public void RotateHandles()
@@ -586,8 +601,38 @@ public class ModelingObject : MonoBehaviour
 		handles.HeightBottom.transform.localRotation = Quaternion.FromToRotation(transform.InverseTransformDirection(handles.HeightBottom.transform.up), transform.TransformDirection(bottomFace.normal));
 
         // use Bounding Box to rotate rotation Handles
+        handles.RotateUp0.transform.rotation = Quaternion.LookRotation(boundingBox.coordinates[0] - boundingBox.coordinates[1]);
+        handles.RotateUp1.transform.rotation = Quaternion.LookRotation(boundingBox.coordinates[1] - boundingBox.coordinates[2]);
+        handles.RotateUp2.transform.rotation = Quaternion.LookRotation(boundingBox.coordinates[2] - boundingBox.coordinates[3]);
+        handles.RotateUp3.transform.rotation = Quaternion.LookRotation(boundingBox.coordinates[3] - boundingBox.coordinates[0]);
+
+        handles.RotateDown0.transform.rotation = Quaternion.LookRotation(boundingBox.coordinates[4] - boundingBox.coordinates[5]);
+        handles.RotateDown1.transform.rotation = Quaternion.LookRotation(boundingBox.coordinates[5] - boundingBox.coordinates[6]);
+        handles.RotateDown2.transform.rotation = Quaternion.LookRotation(boundingBox.coordinates[6] - boundingBox.coordinates[7]);
+        handles.RotateDown3.transform.rotation = Quaternion.LookRotation(boundingBox.coordinates[7] - boundingBox.coordinates[4]);
+
+        handles.RotateSide0.transform.rotation = Quaternion.LookRotation(boundingBox.coordinates[0] - boundingBox.coordinates[4]);
+        handles.RotateSide1.transform.rotation = Quaternion.LookRotation(boundingBox.coordinates[1] - boundingBox.coordinates[5]);
+        handles.RotateSide2.transform.rotation = Quaternion.LookRotation(boundingBox.coordinates[2] - boundingBox.coordinates[6]);
+        handles.RotateSide3.transform.rotation = Quaternion.LookRotation(boundingBox.coordinates[3] - boundingBox.coordinates[7]);
+
+       
+        handles.RotateUp0.transform.RotateAround(boundingBox.coordinates[0] - boundingBox.coordinates[1], Vector3.AngleBetween(handles.RotateUp0.transform.up, handles.RotateUp0.transform.position - transform.position));
+        handles.RotateUp1.transform.RotateAround(boundingBox.coordinates[1] - boundingBox.coordinates[2], Vector3.AngleBetween(handles.RotateUp1.transform.up, handles.RotateUp1.transform.position - transform.position));
+        handles.RotateUp2.transform.RotateAround(boundingBox.coordinates[2] - boundingBox.coordinates[3], Vector3.AngleBetween(handles.RotateUp2.transform.up, handles.RotateUp2.transform.position - transform.position));
+        handles.RotateUp3.transform.RotateAround(boundingBox.coordinates[3] - boundingBox.coordinates[0], Vector3.AngleBetween(handles.RotateUp3.transform.up, handles.RotateUp3.transform.position - transform.position));
+
+        handles.RotateDown0.transform.RotateAround(boundingBox.coordinates[4] - boundingBox.coordinates[5], (-1f) * Vector3.AngleBetween(handles.RotateDown0.transform.right, handles.RotateDown0.transform.position - transform.position));
+        handles.RotateDown1.transform.RotateAround(boundingBox.coordinates[5] - boundingBox.coordinates[6], (-1f) * Vector3.AngleBetween(handles.RotateDown1.transform.right, handles.RotateDown1.transform.position - transform.position));
+        handles.RotateDown2.transform.RotateAround(boundingBox.coordinates[6] - boundingBox.coordinates[7], (-1f) * Vector3.AngleBetween(handles.RotateDown2.transform.right, handles.RotateDown2.transform.position - transform.position));
+        handles.RotateDown3.transform.RotateAround(boundingBox.coordinates[7] - boundingBox.coordinates[4], (-1f) * Vector3.AngleBetween(handles.RotateDown3.transform.right, handles.RotateDown3.transform.position - transform.position));
 
 
+        handles.RotateSide0.transform.RotateAround(boundingBox.coordinates[0] - boundingBox.coordinates[4], (-1f) * Vector3.AngleBetween(handles.RotateSide0.transform.right, handles.RotateSide0.transform.position - transform.position));
+        handles.RotateSide1.transform.RotateAround(boundingBox.coordinates[1] - boundingBox.coordinates[5], Vector3.AngleBetween(handles.RotateSide1.transform.right, handles.RotateSide1.transform.position - transform.position));
+        handles.RotateSide2.transform.RotateAround(boundingBox.coordinates[2] - boundingBox.coordinates[6], Vector3.AngleBetween(handles.RotateSide2.transform.right, handles.RotateSide2.transform.position - transform.position));
+        handles.RotateSide3.transform.RotateAround(boundingBox.coordinates[3] - boundingBox.coordinates[7], (-1f) * Vector3.AngleBetween(handles.RotateSide3.transform.right, handles.RotateSide3.transform.position - transform.position));
+        
     }
 
     public void InitiateHandles()
@@ -612,8 +657,7 @@ public class ModelingObject : MonoBehaviour
         bottomFace.heightHandle = handles.HeightBottom.GetComponent<handle>();
         bottomFace.scaleHandle = handles.faceBottomScale.GetComponent<handle>();
 
-        // use Bounding Box to position rotation Handles
-
+        handles.DisableHandles();
 
     }
 
@@ -752,9 +796,6 @@ public class ModelingObject : MonoBehaviour
 		Vector3 minima = GetBoundingBoxMinima();
 		Vector3 maxima = GetBoundingBoxMaxima();
 
-	//	minima = transform.TransformPoint (minima);
-	//	maxima = transform.TransformPoint (maxima);
-
         // set all points
 		boundingBox.coordinates[0] = transform.TransformPoint (new Vector3(maxima.x, maxima.y, maxima.z));
 		boundingBox.coordinates[1] = transform.TransformPoint (new Vector3(maxima.x, maxima.y, minima.z));
@@ -809,9 +850,10 @@ public class ModelingObject : MonoBehaviour
         controllerForMovement = controller;
         lastPositionController = controller.pointOfCollisionGO.transform.position;
 		initialPositionController = controller.pointOfCollisionGO.transform.position;
-        PositionOnMovementStart = transform.TransformPoint(bottomFace.center.coordinates);
+        PositionOnMovementStart = 0.25f * boundingBox.coordinates[4] + 0.25f * boundingBox.coordinates[5] + 0.25f * boundingBox.coordinates[6] + 0.25f * boundingBox.coordinates[7];
+        //  PositionOnMovementStart = transform.TransformPoint(bottomFace.center.coordinates);
 
-		bottomFace.center.possibleSnappingVertexBundle = null;
+        bottomFace.center.possibleSnappingVertexBundle = null;
 
 		DisplayOutlineOfGroundFace ();
 		objectSelector.HideSelectionButton ();
@@ -1163,6 +1205,8 @@ public class ModelingObject : MonoBehaviour
 
         // update inner coordinate system
         coordinateSystem.transform.RotateAround(new Vector3(0f, 0f, 0f), angleAxis, angle);
+
+        CalculateBoundingBox();
     }
 
     public void SetVertexBundlePositions(ModelingObject otherObject)

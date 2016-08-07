@@ -10,9 +10,22 @@ public class handles : MonoBehaviour {
     public GameObject HeightTop;
     public GameObject HeightBottom;
 
-    public GameObject RotateX;
-    public GameObject RotateY;
-    public GameObject RotateZ;
+    public Transform RotationHandles;
+
+    public GameObject RotateUp0;
+    public GameObject RotateUp1;
+    public GameObject RotateUp2;
+    public GameObject RotateUp3;
+
+    public GameObject RotateDown0;
+    public GameObject RotateDown1;
+    public GameObject RotateDown2;
+    public GameObject RotateDown3;
+
+    public GameObject RotateSide0;
+    public GameObject RotateSide1;
+    public GameObject RotateSide2;
+    public GameObject RotateSide3;
 
     public GameObject TopHandles;
     public GameObject BottomHandles;
@@ -34,15 +47,31 @@ public class handles : MonoBehaviour {
         foreach (Transform handle in transform.GetChild(0)) {
             handle.gameObject.SetActive(false);
         }
+
+        foreach (Transform handle in RotationHandles)
+        {
+            handle.gameObject.SetActive(false);
+        }
     }
 
     public void ShowRotationHandles()
     {
         DisableHandles();
 
-        RotateX.SetActive(true);
-        RotateY.SetActive(true);
-        RotateZ.SetActive(true);
+        RotateUp0.SetActive(true);
+        RotateUp1.SetActive(true);
+        RotateUp2.SetActive(true);
+        RotateUp3.SetActive(true);
+
+        RotateDown0.SetActive(true);
+        RotateDown1.SetActive(true);
+        RotateDown2.SetActive(true);
+        RotateDown3.SetActive(true);
+
+        RotateSide0.SetActive(true);
+        RotateSide1.SetActive(true);
+        RotateSide2.SetActive(true);
+        RotateSide3.SetActive(true);
     }
 
     public void ShowFrustumHandles()

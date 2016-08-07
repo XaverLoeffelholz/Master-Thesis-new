@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEditor;
 using System.Collections;
 
 public class handle : MonoBehaviour {
@@ -8,12 +9,10 @@ public class handle : MonoBehaviour {
         ScaleFace,
         PositionCenter,
         Height,
+        Rotation,
         RotationX,
         RotationY,
-        RotationZ,
-        RotationXstepwise,
-        RotationYstepwise,
-        RotationZstepwise
+        RotationZ
     };
 
     public GameObject connectedObject;
@@ -33,6 +32,7 @@ public class handle : MonoBehaviour {
     private Vector3 initialPositionHandle;
     private Vector3 initialDistancceCenterScaler;
     private bool resetLastPosition = true;
+
     public Transform RotationAxis;
 
     private Vector3 directionHandle;
@@ -45,6 +45,9 @@ public class handle : MonoBehaviour {
 	private Vector3 initialScaleCircle;
 
 	public GameObject arrow;
+    private bool rotating = false;
+    private bool newRotation = false;
+    private float prevRotationAmount;
 
     // Use this for initialization
     void Start () {
@@ -132,7 +135,7 @@ public class handle : MonoBehaviour {
         return DistanceVector;
     }
 
-    public void ApplyChanges(GameObject pointOfCollision)
+    public void ApplyChanges(GameObject pointOfCollision, bool alreadyMoving)
     {
         switch (typeOfHandle)
         {
@@ -145,23 +148,12 @@ public class handle : MonoBehaviour {
             case handleType.Height:
                 ChangeHeight(pointOfCollision);
                 break;
-            case handleType.RotationX:
-                RotateX(pointOfCollision);
-                break;
-            case handleType.RotationY:
-                RotateY(pointOfCollision);
-                break;
-            case handleType.RotationZ:
-                RotateZ(pointOfCollision);
-                break;
-            case handleType.RotationXstepwise:
-                SetRotateStepTrue();
-                break;
-            case handleType.RotationYstepwise:
-                SetRotateStepTrue();
-                break;
-            case handleType.RotationZstepwise:
-                SetRotateStepTrue();
+            case handleType.Rotation:
+                if (!alreadyMoving)
+                {
+                    newRotation = true;
+                }                
+                Rotate(pointOfCollision);
                 break;
         }
 
@@ -231,58 +223,34 @@ public class handle : MonoBehaviour {
 
     private void Rotate(GameObject pointOfCollision)
     {
-        float input = CalculateInputFromPoint(pointOfCollision.transform.position);
+        // get vector from handle to center of object
+        Vector3 HandleToCenter = transform.position - connectedModelingObject.transform.position;
 
-        transform.position = initialPositionHandle + (input * 0.5f * directionHandle);
+        // get vector form direction of handle
+        Vector3 handleDirection = transform.up;
 
-        input = RasterManager.Instance.RasterAngle(input);
-        connectedModelingObject.RotateAround((RotationAxis.transform.position - connectedObject.transform.position), input*0.5f);
+        // cross product
+        Vector3 crossProduct = Vector3.Cross(HandleToCenter, handleDirection) * (-1f);
 
-    }
-
-    private void RotateX(GameObject pointOfCollision)
-    {
-        // calculate input
-
-
-        // move handle
+        float newRotationAmount = 15f * HandleUtility.PointOnLineParameter(pointOfCollision.transform.position, transform.position, crossProduct);
+        newRotationAmount = RasterManager.Instance.RasterAngle(newRotationAmount);
 
 
-        // apply rotation
+        if (newRotation)
+        {
+            prevRotationAmount = newRotationAmount;
+            newRotation = false;
+        }
 
+        //parentGO.transform.Rotate(new Vector3(newRotationAmount - prevRotationAmountX, 0f, 0f));
 
-        //update Bounding box
+        // define rotation axis
+        Vector3 rotationAxis = connectedModelingObject.transform.position + (p1.transform.position - p2.transform.position);
 
-    }
+        // rotate around this axis
+        connectedModelingObject.RotateAround(rotationAxis, newRotationAmount);
 
-    private void RotateY(GameObject pointOfCollision)
-    {
-        // calculate input
-
-
-        // move handle
-
-
-        // apply rotation
-
-
-        //update Bounding box
-
-    }
-
-    private void RotateZ(GameObject pointOfCollision)
-    {
-        // calculate input
-
-
-        // move handle
-
-
-        // apply rotation
-
-
-        //update Bounding box
-
+        prevRotationAmount = newRotationAmount;
     }
 
     private void SetRotateStepTrue()

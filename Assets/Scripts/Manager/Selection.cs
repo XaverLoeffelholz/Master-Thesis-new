@@ -280,7 +280,7 @@ public class Selection : MonoBehaviour
 					{
 						CreatePointOfCollisionPrefab();
 					}
-					currentFocus.GetComponent<handle>().ApplyChanges(pointOfCollisionGO);
+					currentFocus.GetComponent<handle>().ApplyChanges(pointOfCollisionGO, movingHandle);
 					currentFocus.GetComponent<handle> ().connectedObject.GetComponent<ModelingObject> ().HideBoundingBox ();
 					movingHandle = true;
 

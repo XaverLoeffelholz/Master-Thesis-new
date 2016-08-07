@@ -3,7 +3,6 @@ using System.Collections;
 
 public class BoundingBox : MonoBehaviour {
 
-	[HideInInspector]
 	public Vector3[] coordinates;
 
     public GameObject linesPrefab;
