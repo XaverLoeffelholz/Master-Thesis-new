@@ -56,4 +56,22 @@ public class VertexBundle : MonoBehaviour {
             vert.gameObject.GetComponent<MeshRenderer>().enabled = false;
         }
     }
+
+	public void ActivateCollisionDetection(){
+		Vertex[] vertices = transform.GetComponentsInChildren<Vertex>();
+
+		foreach (Vertex vert in vertices)
+		{
+			vert.gameObject.GetComponent<SphereCollider>().enabled = true;
+		}
+	}
+
+	public void DeactivateCollisionDetection(){
+		Vertex[] vertices = transform.GetComponentsInChildren<Vertex>();
+
+		foreach (Vertex vert in vertices)
+		{
+			vert.gameObject.GetComponent<SphereCollider>().enabled = false;
+		}
+	}
 }

@@ -55,6 +55,7 @@ public class ModelingObject : MonoBehaviour
 	private GameObject GroundVisualOnStartMovingTop;
 	private GameObject GroundVisualOnStartMovingBottom;
     private Transform DistanceVisualisation;
+	private Vector3[] initialCoordinatesBoundingBox;
 
     private Vector3 lastPositionX;
     private Vector3 lastPositionY;
@@ -84,7 +85,7 @@ public class ModelingObject : MonoBehaviour
     public BoundingBox boundingBox;
 
 	private bool trashed = false;
-
+	public Transform rotationObject;
 
 
     // Use this for initialization
@@ -170,19 +171,18 @@ public class ModelingObject : MonoBehaviour
 				this.transform.localPosition = RasterManager.Instance.Raster(this.transform.localPosition);
 
 				// here check for possible snappings
-				if (bottomFace.center.possibleSnappingVertexBundle != null && !bottomFace.center.possibleSnappingVertexBundle.usedForSnapping)
+				if (bottomFace.center.possibleSnappingVertexBundle != null)
 				{
 					if (!snapped) {
-						controllerForMovement.TriggerIfPressed (1500);
+						controllerForMovement.TriggerIfPressed (2500);
 						bottomFace.center.possibleSnappingVertexBundle.usedForSnapping = true;
 						snapped = true;
 
 						Vector3 distanceCurrentBottomSnap = bottomFace.center.possibleSnappingVertexBundle.transform.GetChild (0).position - bottomFace.center.transform.GetChild (0).position;
 						this.transform.position = this.transform.position + distanceCurrentBottomSnap;
 
-					} else {
-						
-						if ((snapped && Mathf.Abs((newPositionCollider - lastPositionController).magnitude) < 0.3f * transform.lossyScale.x)) {
+					} else {						
+						if ((snapped && Mathf.Abs((newPositionCollider - lastPositionController).magnitude) < 0.4f * transform.lossyScale.x)) {
 							Vector3 distanceCurrentBottomSnap = bottomFace.center.possibleSnappingVertexBundle.transform.GetChild (0).position - bottomFace.center.transform.GetChild (0).position;
 							this.transform.position = this.transform.position + distanceCurrentBottomSnap;
 						} else {
@@ -210,14 +210,16 @@ public class ModelingObject : MonoBehaviour
 
 			}
 			          
-
+			/*
 			// show amount of movement on x
 			if (bottomFace.center.coordinates.x != transform.InverseTransformPoint(PositionOnMovementStart).x)
 			{
-				// maybe check local positon
-				int count = RasterManager.Instance.getNumberOfGridUnits(bottomFace.center.coordinates.x, transform.InverseTransformPoint(PositionOnMovementStart).x);
+				*/
 
-				for (int i = 0; i <= Mathf.Abs(count); i++)
+				// maybe check local positon
+				int countX = RasterManager.Instance.getNumberOfGridUnits(bottomFace.center.coordinates.x, transform.InverseTransformPoint(PositionOnMovementStart).x);
+
+				for (int i = 0; i <= Mathf.Abs(countX); i++)
 				{
 					if (i == 0)
 					{
@@ -235,6 +237,9 @@ public class ModelingObject : MonoBehaviour
 						CenterVisual2.transform.SetParent(DistanceVisualisation);
 						CenterVisual2.transform.localEulerAngles = new Vector3(0f, 0f, 0f);
 						CenterVisual2.transform.localScale = new Vector3(1f, 1f, 1f);
+
+						// not very efficient
+						CalculateBoundingBox ();
 						CenterVisual2.transform.position = 0.25f * boundingBox.coordinates[4] + 0.25f * boundingBox.coordinates[5] + 0.25f * boundingBox.coordinates[6] + 0.25f * boundingBox.coordinates[7];
 
                         /*
@@ -246,9 +251,16 @@ public class ModelingObject : MonoBehaviour
                         }
                         */
 
+						// prev position
                         GameObject lines = Instantiate(linesPrefab);
                         lines.transform.SetParent(DistanceVisualisation);
-                        lines.GetComponent<Lines>().DrawLinesWorldCoordinate(new Vector3[] { boundingBox.coordinates[4], boundingBox.coordinates[5], boundingBox.coordinates[6], boundingBox.coordinates[7] });
+						lines.GetComponent<Lines>().DrawLinesWorldCoordinate(new Vector3[] { boundingBox.coordinates[4], boundingBox.coordinates[5], boundingBox.coordinates[6], boundingBox.coordinates[7]});
+
+						// new position
+						GameObject lines2 = Instantiate(linesPrefab);
+						lines2.transform.SetParent(DistanceVisualisation);
+						lines2.GetComponent<Lines>().DrawLinesWorldCoordinate(initialCoordinatesBoundingBox);
+
 
                         /*
                         // Display outline of groundface
@@ -300,7 +312,7 @@ public class ModelingObject : MonoBehaviour
 					lastPositionY = DistanceVisualX.transform.position;
 				}
 
-			}
+			//}
 
 
 
@@ -308,9 +320,9 @@ public class ModelingObject : MonoBehaviour
 			if (bottomFace.center.coordinates.y != transform.InverseTransformPoint(PositionOnMovementStart).y)
 			{
 				// use raster manager
-				int count = RasterManager.Instance.getNumberOfGridUnits(bottomFace.center.coordinates.y, transform.InverseTransformPoint(PositionOnMovementStart).y);
+				int countY = RasterManager.Instance.getNumberOfGridUnits(bottomFace.center.coordinates.y, transform.InverseTransformPoint(PositionOnMovementStart).y);
 
-				for (int i = 0; i <= Mathf.Abs(count); i++)
+				for (int i = 0; i <= Mathf.Abs(countY); i++)
 				{
 					GameObject DistanceVisualY = Instantiate(DistanceVisualPrefab);
 					DistanceVisualY.transform.SetParent(DistanceVisualisation);
@@ -337,9 +349,9 @@ public class ModelingObject : MonoBehaviour
 			if (bottomFace.center.coordinates.z != transform.InverseTransformPoint(PositionOnMovementStart).z)
 			{
 				// use raster manager
-				int count = RasterManager.Instance.getNumberOfGridUnits(bottomFace.center.coordinates.z, transform.InverseTransformPoint(PositionOnMovementStart).z);
+				int countZ = RasterManager.Instance.getNumberOfGridUnits(bottomFace.center.coordinates.z, transform.InverseTransformPoint(PositionOnMovementStart).z);
 
-				for (int i = 0; i <= Mathf.Abs(count); i++)
+				for (int i = 0; i <= Mathf.Abs(countZ); i++)
 				{
 					GameObject DistanceVisualZ = Instantiate(DistanceVisualPrefab);
 					DistanceVisualZ.transform.SetParent(DistanceVisualisation);
@@ -592,11 +604,11 @@ public class ModelingObject : MonoBehaviour
 
     public void RotateHandles()
     {
-		handles.faceTopScale.transform.localRotation = Quaternion.FromToRotation(transform.InverseTransformDirection(handles.faceTopScale.transform.up), transform.TransformDirection(handles.faceTopScale.transform.localPosition - topFace.centerPosition));
+		handles.faceTopScale.transform.localRotation = Quaternion.FromToRotation(transform.InverseTransformDirection(handles.faceTopScale.transform.up), transform.TransformDirection(handles.faceTopScale.transform.localPosition - topFace.center.coordinates));
 		handles.CenterTopPosition.transform.localRotation = Quaternion.FromToRotation(transform.InverseTransformDirection(handles.CenterTopPosition.transform.up), transform.TransformDirection(topFace.normal));
 		handles.HeightTop.transform.localRotation = Quaternion.FromToRotation(transform.InverseTransformDirection(handles.HeightTop.transform.up), transform.TransformDirection(topFace.normal));
 
-		handles.faceBottomScale.transform.localRotation = Quaternion.FromToRotation(transform.InverseTransformDirection(handles.faceBottomScale.transform.up), transform.TransformDirection(handles.faceBottomScale.transform.localPosition - bottomFace.centerPosition));
+		handles.faceBottomScale.transform.localRotation = Quaternion.FromToRotation(transform.InverseTransformDirection(handles.faceBottomScale.transform.up), transform.TransformDirection(handles.faceBottomScale.transform.localPosition - bottomFace.center.coordinates));
 		handles.CenterBottomPosition.transform.localRotation = Quaternion.FromToRotation(transform.InverseTransformDirection(handles.CenterBottomPosition.transform.up), transform.TransformDirection(bottomFace.normal));
 		handles.HeightBottom.transform.localRotation = Quaternion.FromToRotation(transform.InverseTransformDirection(handles.HeightBottom.transform.up), transform.TransformDirection(bottomFace.normal));
 
@@ -752,7 +764,6 @@ public class ModelingObject : MonoBehaviour
 			selected = false;
 			ShowOutline(false);
 
-			objectSelector.RePosition (controller);
 			objectSelector.DeSelect (controller);
 			controller.DeAssignCurrentSelection(transform.gameObject);
 			handles.DisableHandles();
@@ -845,33 +856,34 @@ public class ModelingObject : MonoBehaviour
 
     public void StartMoving(Selection controller, ModelingObject initiater)
     {
-        moving = true;
-		initialBlocking = true;
-        controllerForMovement = controller;
-        lastPositionController = controller.pointOfCollisionGO.transform.position;
-		initialPositionController = controller.pointOfCollisionGO.transform.position;
-        PositionOnMovementStart = 0.25f * boundingBox.coordinates[4] + 0.25f * boundingBox.coordinates[5] + 0.25f * boundingBox.coordinates[6] + 0.25f * boundingBox.coordinates[7];
-        //  PositionOnMovementStart = transform.TransformPoint(bottomFace.center.coordinates);
+		if (!moving) {
+			CalculateBoundingBox ();
+			moving = true;
+			initialBlocking = true;
+			controllerForMovement = controller;
+			lastPositionController = controller.pointOfCollisionGO.transform.position;
+			initialPositionController = controller.pointOfCollisionGO.transform.position;
+			PositionOnMovementStart = 0.25f * boundingBox.coordinates[4] + 0.25f * boundingBox.coordinates[5] + 0.25f * boundingBox.coordinates[6] + 0.25f * boundingBox.coordinates[7];
 
-        bottomFace.center.possibleSnappingVertexBundle = null;
-
-		DisplayOutlineOfGroundFace ();
-		objectSelector.HideSelectionButton ();
+			bottomFace.center.possibleSnappingVertexBundle = null;
+			objectSelector.HideSelectionButton ();
+			DisplayOutlineOfGroundFace ();
+		}
     }
 
 	public void DisplayOutlineOfGroundFace(){
 		// Display outline of groundface
 
-        Vector3[] bottomCoordinates = new Vector3[bottomFace.vertexBundles.Length];
+		initialCoordinatesBoundingBox = new Vector3[4];
 
-        for (int j = 0; j < bottomFace.vertexBundles.Length; j++)
+        for (int j = 0; j < 4; j++)
         {
-            bottomCoordinates[j] = bottomFace.vertexBundles[j].transform.GetChild(0).position;
+			initialCoordinatesBoundingBox[j] = boundingBox.coordinates[j+4];
         }
 
         GameObject lines = Instantiate(linesPrefab);
         lines.transform.SetParent(DistanceVisualisation);
-        lines.GetComponent<Lines>().DrawLinesWorldCoordinate(bottomCoordinates);
+		lines.GetComponent<Lines>().DrawLinesWorldCoordinate(initialCoordinatesBoundingBox);
 
         /*
         GroundVisualOnStartMoving = Instantiate(GroundVisualPrefab);
@@ -911,6 +923,8 @@ public class ModelingObject : MonoBehaviour
 		if (!transform.parent.CompareTag ("Library")) {
 			//objectSelector.ShowSelectionButton (controller);
 		}
+
+		CalculateBoundingBox ();
     }
 
 
@@ -1131,6 +1145,13 @@ public class ModelingObject : MonoBehaviour
 		currentColor = color;
     }
 
+	public void SetRotation(Vector3 newRotation){
+		Quaternion difference = Quaternion.FromToRotation (rotationObject.transform.localRotation.eulerAngles, newRotation);
+
+		rotationObject.transform.localRotation = Quaternion.Euler(newRotation);
+		Rotate (difference);
+	}
+
 
     public void Rotate(Quaternion rotation)
     {
@@ -1165,10 +1186,9 @@ public class ModelingObject : MonoBehaviour
         handles.HeightBottom.transform.Rotate(rotation.eulerAngles);
         handles.faceTopScale.transform.Rotate(rotation.eulerAngles);
         handles.faceBottomScale.transform.Rotate(rotation.eulerAngles);
-
-        // update inner coordinate system
-        coordinateSystem.transform.Rotate(rotation.eulerAngles);
     }
+
+
 
     public void RotateAround(Vector3 angleAxis, float angle)
     {
@@ -1203,10 +1223,8 @@ public class ModelingObject : MonoBehaviour
         handles.faceTopScale.transform.RotateAround(new Vector3(0f, 0f, 0f), angleAxis, angle);
         handles.faceBottomScale.transform.RotateAround(new Vector3(0f, 0f, 0f), angleAxis, angle);
 
-        // update inner coordinate system
-        coordinateSystem.transform.RotateAround(new Vector3(0f, 0f, 0f), angleAxis, angle);
-
         CalculateBoundingBox();
+		PositionHandles ();
     }
 
     public void SetVertexBundlePositions(ModelingObject otherObject)
@@ -1236,11 +1254,12 @@ public class ModelingObject : MonoBehaviour
             faces[i].UpdateSpecialVertexCoordinates();
         }
 
-		//PositionHandles ();
+		CalculateBoundingBox ();
+		PositionHandles ();
 
 		// later we could need this for rotation
 
-		//RotateHandles ();     
+		// RotateHandles ();     
     }
 
     public Vector3 GetBoundingBoxTopCenter()
@@ -1412,38 +1431,22 @@ public class ModelingObject : MonoBehaviour
 
 
 
-	public Vector3 GetPosOfClosestVertex(Vector3 position, Face.faceType typeOfFace){
+	public Vector3 GetPosOfClosestVertex(Vector3 position, Vector3[] coordinates){
 
         Vector3 closestVertex = bottomFace.vertexBundles[0].coordinates;
         float shortestDistance = 999999f;
 
-        if (typeOfFace == Face.faceType.BottomFace)
+		for (int i = 0; i < coordinates.Length; i++)
         {
-            for (int i = 0; i < bottomFace.vertexBundles.Length; i++)
-            {
-                Vector3 newCoordinate = transform.TransformPoint(bottomFace.vertexBundles[i].coordinates);
+			Vector3 newCoordinate = coordinates[i];
 
-                if (Vector3.Distance(position, newCoordinate) < shortestDistance)
-                {
-                    closestVertex = newCoordinate;
-                    shortestDistance = Vector3.Distance(position, newCoordinate);
-                }
+            if (Vector3.Distance(position, newCoordinate) < shortestDistance)
+            {
+               closestVertex = newCoordinate;
+               shortestDistance = Vector3.Distance(position, newCoordinate);
             }
         }
-        else if (typeOfFace == Face.faceType.TopFace)
-        {
-            for (int i = 0; i < topFace.vertexBundles.Length; i++)
-            {
-                Vector3 newCoordinate = transform.TransformPoint(topFace.vertexBundles[i].coordinates);
-
-                if (Vector3.Distance(position, newCoordinate) < shortestDistance)
-                {
-                    closestVertex = newCoordinate;
-                    shortestDistance = Vector3.Distance(position, newCoordinate);
-                }
-            }
-        }
-
+      
         return closestVertex;
 
 	}

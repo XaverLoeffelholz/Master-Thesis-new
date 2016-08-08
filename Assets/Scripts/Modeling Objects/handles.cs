@@ -60,18 +60,18 @@ public class handles : MonoBehaviour {
 
         RotateUp0.SetActive(true);
         RotateUp1.SetActive(true);
-        RotateUp2.SetActive(true);
-        RotateUp3.SetActive(true);
+     //   RotateUp2.SetActive(true);
+     //   RotateUp3.SetActive(true);
 
-        RotateDown0.SetActive(true);
-        RotateDown1.SetActive(true);
-        RotateDown2.SetActive(true);
-        RotateDown3.SetActive(true);
+    //  RotateDown0.SetActive(true);
+     // RotateDown1.SetActive(true);
+    //  RotateDown2.SetActive(true);
+// 		RotateDown3.SetActive(true);
 
-        RotateSide0.SetActive(true);
+      //  RotateSide0.SetActive(true);
         RotateSide1.SetActive(true);
-        RotateSide2.SetActive(true);
-        RotateSide3.SetActive(true);
+      //  RotateSide2.SetActive(true);
+      //  RotateSide3.SetActive(true);
     }
 
     public void ShowFrustumHandles()

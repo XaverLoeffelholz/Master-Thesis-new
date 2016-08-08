@@ -20,7 +20,7 @@ public class ObjectCreator : Singleton<ObjectCreator> {
     // Use this for initialization
     void Start () {
 		//createNewObject(triangle, ModelingObject.ObjectType.triangle, null, null, new Vector3(-2, 0.3f, 0f), true, null, standardColor);
-		createNewObject(square, ModelingObject.ObjectType.square, null, null, new Vector3(0, 0.3f, 0f), true, null, standardColor);
+		createNewObject(square, ModelingObject.ObjectType.square, null, null, new Vector3(0f, 0f, 0f), true, null, standardColor);
 		//createNewObject(octagon, ModelingObject.ObjectType.octagon, null, null, new Vector3(2, 0.3f, 0f), true, null, standardColor);
         ObjectCreator.Instance.createSetofObjects();
     }
@@ -83,7 +83,7 @@ public class ObjectCreator : Singleton<ObjectCreator> {
                 newObject.transform.localScale = new Vector3(1f, 1f, 1f);
                 newObject.transform.localEulerAngles = new Vector3(0f, 0f, 0f);
                 newObject.transform.localPosition = new Vector3(0f, 0f, 0f);
-                newObject.transform.localPosition = newObject.transform.localPosition + offSet;
+				newObject.transform.localPosition = newObject.transform.localPosition + new Vector3(0, 0.3f, 0f);
             } else
             {
 				newObject.transform.position = offSet;
@@ -95,6 +95,7 @@ public class ObjectCreator : Singleton<ObjectCreator> {
         if (original != null)
         {
             newModelingObject.SetVertexBundlePositions(original);
+			newObject.transform.position = offSet;
         }
 
         // newModelingObject.CorrectOffset();
@@ -103,6 +104,7 @@ public class ObjectCreator : Singleton<ObjectCreator> {
 
         if (group != null) {
             ObjectsManager.Instance.AddObjectToGroup(group, newModelingObject);
+			newObject.transform.position = offSet;
         }
 
 		newModelingObject.ChangeColor(color, true);
@@ -134,23 +136,24 @@ public class ObjectCreator : Singleton<ObjectCreator> {
 
     public void DuplicateObject(ModelingObject original, Group group)
     {
-        Vector3 localPosition = original.topFace.centerPosition;
-        localPosition = localPosition + (original.transform.localPosition - original.bottomFace.centerPosition);
+		// when we have rotation we need to update this
+		Vector3 position = 0.25f * original.boundingBox.coordinates[0] + 0.25f * original.boundingBox.coordinates[1] + 0.25f * original.boundingBox.coordinates[2] + 0.25f *original.boundingBox.coordinates[3];
+		position = position + (position - original.transform.position);
 
         if (original.typeOfObject == ModelingObject.ObjectType.triangle)
         {
-			createNewObject(triangle, original.typeOfObject, null, original, localPosition, true, group, original.currentColor);
+			createNewObject(triangle, original.typeOfObject, null, original, position, true, group, original.currentColor);
         } else if (original.typeOfObject == ModelingObject.ObjectType.square)
         {
-			createNewObject(square, original.typeOfObject, null, original, localPosition, true, group, original.currentColor);
+			createNewObject(square, original.typeOfObject, null, original, position, true, group, original.currentColor);
         }
         else if (original.typeOfObject == ModelingObject.ObjectType.hexagon)
         {
-			createNewObject(hexagon, original.typeOfObject, null, original, localPosition, true, group, original.currentColor);
+			createNewObject(hexagon, original.typeOfObject, null, original, position, true, group, original.currentColor);
         }
         else if (original.typeOfObject == ModelingObject.ObjectType.octagon)
         {
-			createNewObject(octagon, original.typeOfObject, null, original, localPosition, true, group, original.currentColor);
+			createNewObject(octagon, original.typeOfObject, null, original, position, true, group, original.currentColor);
         }
     }
 

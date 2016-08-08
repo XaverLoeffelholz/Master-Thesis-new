@@ -189,6 +189,7 @@ public class Face : MonoBehaviour {
         } else {
 			center.name = "Center Side";
             center.centerVertex = true;
+			center.DeactivateCollisionDetection ();
         }
 
 		center.Initialize ();

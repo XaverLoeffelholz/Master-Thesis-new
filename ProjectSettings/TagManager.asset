@@ -25,6 +25,7 @@ TagManager:
   - Library
   - HeightControl
   - InfoPanel
+  - UIElementNotInUse
   layers:
   - Default
   - TransparentFX

@@ -16,6 +16,8 @@ public class ObjectSelecter : MonoBehaviour {
     public bool active;
 	private Vector3 initialScaleButtonGO;
 
+	public GameObject ExtraCollider;
+
 	// Use this for initialization
 	void Start () {
         active = false;
@@ -33,6 +35,9 @@ public class ObjectSelecter : MonoBehaviour {
 	void FixedUpdate () {
         if (active)
         {
+			connectedObject.CalculateBoundingBox ();
+			RePosition (userCamera.transform.position);
+			
             Plane plane = new Plane(userCamera.transform.forward, userCamera.transform.position);
 			float dist = Mathf.Abs(plane.GetDistanceToPoint(transform.position));
 			transform.localScale = initialScale * (Mathf.Sqrt(dist) / stageScaler.localScale.x);
@@ -42,17 +47,28 @@ public class ObjectSelecter : MonoBehaviour {
 			}
 
 			transform.LookAt (userCamera.transform);
+
+			ExtraCollider.transform.position = connectedObject.transform.position * 0.4f + transform.position * 0.6f;
+		
+			Quaternion newRotation = Quaternion.LookRotation(connectedObject.transform.position - transform.position);
+			ExtraCollider.transform.rotation = newRotation;
+
+			ExtraCollider.transform.localScale = new Vector3(ExtraCollider.transform.localScale.x, ExtraCollider.transform.localScale.y, (connectedObject.transform.position - transform.position).magnitude + ExtraCollider.transform.localScale.x);
+
         }
 
 
     }
 
 	public void ShowSelectionButton(Selection controller){
+		RePosition (userCamera.transform.position);
+
 		if (!active) {
+			connectedObject.ShowBoundingBox ();
 			buttonGameObject.SetActive (true);
-			RePosition (controller);
 			active = true;
 			Collider.SetActive (true);
+			ExtraCollider.SetActive (true);
 		}
 
 		LeanTween.alpha (buttonGameObject, 1f, 0.15f);
@@ -60,8 +76,10 @@ public class ObjectSelecter : MonoBehaviour {
 
 	public void HideSelectionButton(){
 		if (active) {
+			connectedObject.HideBoundingBox ();
 			active = false;
 			Collider.SetActive (false);
+			ExtraCollider.SetActive (false);
 		}
 
 		LeanTween.alpha (buttonGameObject, 0f, 0.2f);
@@ -91,6 +109,9 @@ public class ObjectSelecter : MonoBehaviour {
 			controller.otherController.currentSelection.GetComponent<ModelingObject> ().DeSelect (controller);
 		}
 
+		Collider.SetActive (false);
+		ExtraCollider.SetActive (false);
+
         connectedObject.Select(controller, uiPosition);
 		Highlighter.SetActive (true);
     }
@@ -101,9 +122,9 @@ public class ObjectSelecter : MonoBehaviour {
 		Highlighter.SetActive (false);
 	}
 
-	public void RePosition(Selection controller)
+	public void RePosition(Vector3 position)
     {
-		transform.position = connectedObject.GetPosOfClosestVertex (controller.transform.position, Face.faceType.BottomFace);
+		transform.position = connectedObject.GetPosOfClosestVertex (position, new Vector3[] {connectedObject.boundingBox.coordinates[4], connectedObject.boundingBox.coordinates[5],connectedObject.boundingBox.coordinates[6],connectedObject.boundingBox.coordinates[7] });
     }
 
 	public void MoveAndFace (Vector3 position){

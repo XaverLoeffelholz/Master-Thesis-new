@@ -1,5 +1,5 @@
 ﻿using UnityEngine;
-using UnityEditor;
+//using UnityEditor;
 using System.Collections;
 
 public class RotationTest2 : MonoBehaviour {
@@ -30,6 +30,9 @@ public class RotationTest2 : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
+
+		/*
+
         if (Input.GetMouseButtonDown(0))
         {
             rotating = true;
@@ -114,6 +117,6 @@ public class RotationTest2 : MonoBehaviour {
             }
 
 
-        }
+        } */
     }
 }

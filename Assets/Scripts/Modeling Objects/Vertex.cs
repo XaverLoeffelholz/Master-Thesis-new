@@ -59,6 +59,14 @@ public class Vertex : MonoBehaviour {
 
 	}
 
+	public void DeactivateCollisionDetection(){
+		gameObject.GetComponent<SphereCollider> ().enabled = false;
+	}
+
+	public void ActivateCollisionDetection(){
+		gameObject.GetComponent<SphereCollider> ().enabled = true;
+	}
+
     void OnCollisionEnter(Collision col)
     {
         if (parentObject.moving)
@@ -67,7 +75,7 @@ public class Vertex : MonoBehaviour {
             {
                 VertexBundle colliderVertBundle = col.collider.transform.parent.GetComponent<VertexBundle>();
 
-                if (colliderVertBundle.centerVertex)
+				if (colliderVertBundle.centerVertex && colliderVertBundle.possibleSnappingVertexBundle == null)
                 {
                     parentVertexBundle.possibleSnappingVertexBundle = colliderVertBundle;
                 }
@@ -91,7 +99,7 @@ public class Vertex : MonoBehaviour {
             {
 				VertexBundle colliderVertBundle = col.collider.transform.parent.GetComponent<VertexBundle>();
 				
-				if (colliderVertBundle.centerVertex)
+				if (colliderVertBundle.centerVertex && colliderVertBundle.possibleSnappingVertexBundle == parentVertexBundle)
                 {
                     parentVertexBundle.possibleSnappingVertexBundle = null;
 					colliderVertBundle.usedForSnapping = false;

@@ -78,8 +78,10 @@ public class UIMenu : MonoBehaviour {
 					child.gameObject.SetActive(true);
 					child.GetComponent<RectTransform>().anchoredPosition3D = new Vector3(500f, -50f, 0f);
 				} else {
-					child.gameObject.SetActive(true);
-					buttons.Add(child.gameObject);
+					if(!child.gameObject.CompareTag("UIElementNotInUse")){
+						child.gameObject.SetActive(true);
+						buttons.Add(child.gameObject);
+					}
 				}
             }
         }
@@ -92,7 +94,8 @@ public class UIMenu : MonoBehaviour {
         // Show the right handles
         switch (TypeOfMenu)
         {
-            case (menuType.Rotation):
+			case (menuType.Rotation):
+				parentCanvas.currentModelingObject.PositionHandles ();
                 parentCanvas.currentModelingObject.handles.ShowRotationHandles();
                 parentCanvas.currentModelingObject.ShowBoundingBox();
                 break;

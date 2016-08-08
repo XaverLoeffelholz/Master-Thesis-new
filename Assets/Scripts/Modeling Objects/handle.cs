@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using UnityEditor;
 using System.Collections;
 
 public class handle : MonoBehaviour {
@@ -45,6 +44,7 @@ public class handle : MonoBehaviour {
 	private Vector3 initialScaleCircle;
 
 	public GameObject arrow;
+	private Vector3 initialSizeArrow;
     private bool rotating = false;
     private bool newRotation = false;
     private float prevRotationAmount;
@@ -53,6 +53,10 @@ public class handle : MonoBehaviour {
     void Start () {
         ResetLastPosition();
         connectedModelingObject = connectedObject.GetComponent<ModelingObject>();
+
+		if (arrow != null) {
+			initialSizeArrow = arrow.transform.localScale;
+		}
     }
 	
 	// Update is called once per frame
@@ -63,12 +67,12 @@ public class handle : MonoBehaviour {
         }
     }
 
-    private float CalculateInputFromPoint(Vector3 pointOfCollision)
+	private float CalculateInputFromPoint(Vector3 pointOfCollision, Vector3 pos1, Vector3 pos2)
     {
 
         if (resetLastPosition)
         {
-            directionHandle = Vector3.Normalize(p2.transform.position - p1.transform.position);
+			directionHandle = Vector3.Normalize(pos2 - pos1);
 
             if (face != null)
             {
@@ -85,7 +89,7 @@ public class handle : MonoBehaviour {
 			}*/
         }
 
-        Vector3 pq = pointOfCollision - p1.transform.position;
+		Vector3 pq = pointOfCollision - pos1;
         Vector3 newPoint = p1.transform.position + (directionHandle * (Vector3.Dot(pq, directionHandle) / directionHandle.sqrMagnitude));
 
         if (resetLastPosition)
@@ -157,13 +161,15 @@ public class handle : MonoBehaviour {
                 break;
         }
 
-        connectedObject.GetComponent<ModelingObject>().RecalculateSideCenters();
-        connectedObject.GetComponent<ModelingObject>().RecalculateNormals();
+		connectedModelingObject.RecalculateSideCenters();
+		connectedModelingObject.RecalculateNormals();
+
+		connectedModelingObject.ShowBoundingBox ();
     }
 
     private void ScaleFace(GameObject pointOfCollision)
     {
-        float input = CalculateInputFromPoint(pointOfCollision.transform.position)*1.5f;
+		float input = CalculateInputFromPoint(pointOfCollision.transform.position, p1.transform.position, p2.transform.position)*1.5f;
 
         Vector3 positionScaler = initialLocalPositionFace + ((1f - input) * initialDistancceCenterScaler);
         Vector3 newDistanceCenterScaler = positionScaler - face.centerPosition;
@@ -204,7 +210,7 @@ public class handle : MonoBehaviour {
 
     private void ChangeHeight(GameObject pointOfCollision)
     {
-         float input = CalculateInputFromPoint(pointOfCollision.transform.position);
+		float input = CalculateInputFromPoint(pointOfCollision.transform.position, p1.transform.position, p2.transform.position);
 
          Vector3 position = initialLocalPositionHandle + ((-input * 1.4f) * face.normal);
          Vector3 positionFace = initialLocalPositionFace + ((-input * 1.4f) * face.normal);
@@ -227,30 +233,32 @@ public class handle : MonoBehaviour {
         Vector3 HandleToCenter = transform.position - connectedModelingObject.transform.position;
 
         // get vector form direction of handle
-        Vector3 handleDirection = transform.up;
+		Vector3 handleDirection = p1.transform.position - p2.transform.position;
 
         // cross product
         Vector3 crossProduct = Vector3.Cross(HandleToCenter, handleDirection) * (-1f);
 
-        float newRotationAmount = 15f * HandleUtility.PointOnLineParameter(pointOfCollision.transform.position, transform.position, crossProduct);
-        newRotationAmount = RasterManager.Instance.RasterAngle(newRotationAmount);
+		//float newRotationAmount = 25f*HandleUtility.PointOnLineParameter(pointOfCollision.transform.position, transform.position, crossProduct);
 
+		float newRotationAmount = 50f*CalculateInputFromPoint(pointOfCollision.transform.position, transform.position, transform.position + crossProduct);
+
+        //newRotationAmount = RasterManager.Instance.RasterAngle(newRotationAmount);
+
+		//Debug.Log ("rotaion amount:" + newRotationAmount);
 
         if (newRotation)
         {
-            prevRotationAmount = newRotationAmount;
+			prevRotationAmount =  RasterManager.Instance.RasterAngle(newRotationAmount);
             newRotation = false;
         }
-
-        //parentGO.transform.Rotate(new Vector3(newRotationAmount - prevRotationAmountX, 0f, 0f));
-
+			
         // define rotation axis
-        Vector3 rotationAxis = connectedModelingObject.transform.position + (p1.transform.position - p2.transform.position);
+		Vector3 rotationAxis = connectedModelingObject.transform.InverseTransformDirection(p1.transform.position - p2.transform.position);
 
         // rotate around this axis
-        connectedModelingObject.RotateAround(rotationAxis, newRotationAmount);
+		connectedModelingObject.RotateAround(rotationAxis, RasterManager.Instance.RasterAngle(newRotationAmount-prevRotationAmount));
 
-        prevRotationAmount = newRotationAmount;
+		prevRotationAmount =  RasterManager.Instance.RasterAngle(newRotationAmount);
     }
 
     private void SetRotateStepTrue()
@@ -279,7 +287,7 @@ public class handle : MonoBehaviour {
 				
 				if (arrow != null) {
 					// Hover effect: Scale bigger & change color
-					LeanTween.scale (arrow, new Vector3 (0.014f,0.014f, 0.014f), 0.1f);
+					LeanTween.scale (arrow, new Vector3 (initialSizeArrow.x * 1.4f, initialSizeArrow.y * 1.4f, initialSizeArrow.z * 1.4f), 0.1f);
 					LeanTween.color (arrow, new Color (0.7f, 0.8f, 1f, 1f), 0.1f);
 				}
 
@@ -299,7 +307,7 @@ public class handle : MonoBehaviour {
 			{
 				if (arrow != null) {
 					// Hover effect: Scale bigger & change color
-					LeanTween.scale(arrow, new Vector3(0.01f, 0.01f, 0.01f), 0.1f);
+					LeanTween.scale(arrow, new Vector3 (initialSizeArrow.x, initialSizeArrow.y, initialSizeArrow.z), 0.1f);
 					LeanTween.color(arrow, new Color(0.6f,0.6f,0.6f,1f), 0.1f);
 				}
 
