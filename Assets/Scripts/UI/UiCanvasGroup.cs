@@ -26,6 +26,8 @@ public class UiCanvasGroup : Singleton<UiCanvasGroup>{
 	public Color hoverColor;
 	public Color clickColor;
 
+	public CanvasGroup MenuBG;
+
     // Use this for initialization
     void Start () {
         visible = false;
@@ -78,11 +80,15 @@ public class UiCanvasGroup : Singleton<UiCanvasGroup>{
     public void Show()
     {
         LeanTween.alphaCanvas(canvGroup, 1f, 0.3f);
+		LeanTween.alphaCanvas(MenuBG, 1f, 0.3f);
         visible = true;
     }
 
 	public void CloseMenu(Selection controller){
+		
 		Hide();
+
+		ObjectsManager.Instance.EnableObjects ();
 
 		if (currentModelingObject != null)
 		{
@@ -94,6 +100,7 @@ public class UiCanvasGroup : Singleton<UiCanvasGroup>{
     public void Hide()
     {
         LeanTween.alphaCanvas(canvGroup, 0f, 0.3f).setOnComplete(DeactivateMenus);
+		LeanTween.alphaCanvas (MenuBG, 0f, 0.3f);
 		ObjectsManager.Instance.HideAllHandles();
 
         visible = false;

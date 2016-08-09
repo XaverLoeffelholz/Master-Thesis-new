@@ -96,6 +96,7 @@ public class UIMenu : MonoBehaviour {
         {
 			case (menuType.Rotation):
 				parentCanvas.currentModelingObject.PositionHandles ();
+				parentCanvas.currentModelingObject.RotateHandles ();
                 parentCanvas.currentModelingObject.handles.ShowRotationHandles();
                 parentCanvas.currentModelingObject.ShowBoundingBox();
                 break;
@@ -137,10 +138,6 @@ public class UIMenu : MonoBehaviour {
                 break;
 			case (buttonType.Duplicate):
 				Duplicate ();
-
-				//UiCanvasGroup.Instance.Hide ();
-                //controller.SelectLatestObject();
-                //parentCanvas.objectMenu.ActivateMenu();
                 break;
             case (buttonType.GroupStart):
                 StartGroup();

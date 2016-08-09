@@ -79,7 +79,7 @@ public class ModelingObject : MonoBehaviour
 	public GameObject trashIcon;
 	public Color currentColor;
 
-	private bool initialBlocking;
+	private bool initialBlocking = false;
 	private Vector3 initialPositionController;
 
     public BoundingBox boundingBox;
@@ -604,6 +604,18 @@ public class ModelingObject : MonoBehaviour
 
     public void RotateHandles()
     {
+			//Quaternion newRotation = Quaternion.LookRotation(p1.transform.position - p2.transform.position);
+			//line.transform.rotation = newRotation;
+
+		handles.faceTopScale.transform.rotation = Quaternion.LookRotation (handles.faceTopScale.transform.position - transform.TransformPoint (topFace.center.coordinates));
+		handles.HeightTop.transform.rotation = Quaternion.LookRotation (transform.TransformDirection(topFace.normal));
+
+		handles.faceBottomScale.transform.rotation = Quaternion.LookRotation (handles.faceBottomScale.transform.position -  transform.TransformPoint (bottomFace.center.coordinates));
+		handles.HeightBottom.transform.rotation = Quaternion.LookRotation(transform.TransformDirection(bottomFace.normal));
+
+		// old
+
+		/*
 		handles.faceTopScale.transform.localRotation = Quaternion.FromToRotation(transform.InverseTransformDirection(handles.faceTopScale.transform.up), transform.TransformDirection(handles.faceTopScale.transform.localPosition - topFace.center.coordinates));
 		handles.CenterTopPosition.transform.localRotation = Quaternion.FromToRotation(transform.InverseTransformDirection(handles.CenterTopPosition.transform.up), transform.TransformDirection(topFace.normal));
 		handles.HeightTop.transform.localRotation = Quaternion.FromToRotation(transform.InverseTransformDirection(handles.HeightTop.transform.up), transform.TransformDirection(topFace.normal));
@@ -611,6 +623,8 @@ public class ModelingObject : MonoBehaviour
 		handles.faceBottomScale.transform.localRotation = Quaternion.FromToRotation(transform.InverseTransformDirection(handles.faceBottomScale.transform.up), transform.TransformDirection(handles.faceBottomScale.transform.localPosition - bottomFace.center.coordinates));
 		handles.CenterBottomPosition.transform.localRotation = Quaternion.FromToRotation(transform.InverseTransformDirection(handles.CenterBottomPosition.transform.up), transform.TransformDirection(bottomFace.normal));
 		handles.HeightBottom.transform.localRotation = Quaternion.FromToRotation(transform.InverseTransformDirection(handles.HeightBottom.transform.up), transform.TransformDirection(bottomFace.normal));
+
+		*/
 
         // use Bounding Box to rotate rotation Handles
         handles.RotateUp0.transform.rotation = Quaternion.LookRotation(boundingBox.coordinates[0] - boundingBox.coordinates[1]);
@@ -644,7 +658,9 @@ public class ModelingObject : MonoBehaviour
         handles.RotateSide1.transform.RotateAround(boundingBox.coordinates[1] - boundingBox.coordinates[5], Vector3.AngleBetween(handles.RotateSide1.transform.right, handles.RotateSide1.transform.position - transform.position));
         handles.RotateSide2.transform.RotateAround(boundingBox.coordinates[2] - boundingBox.coordinates[6], Vector3.AngleBetween(handles.RotateSide2.transform.right, handles.RotateSide2.transform.position - transform.position));
         handles.RotateSide3.transform.RotateAround(boundingBox.coordinates[3] - boundingBox.coordinates[7], (-1f) * Vector3.AngleBetween(handles.RotateSide3.transform.right, handles.RotateSide3.transform.position - transform.position));
-        
+
+
+
     }
 
     public void InitiateHandles()
@@ -859,7 +875,7 @@ public class ModelingObject : MonoBehaviour
 		if (!moving) {
 			CalculateBoundingBox ();
 			moving = true;
-			initialBlocking = true;
+			//initialBlocking = true;
 			controllerForMovement = controller;
 			lastPositionController = controller.pointOfCollisionGO.transform.position;
 			initialPositionController = controller.pointOfCollisionGO.transform.position;
@@ -1100,6 +1116,8 @@ public class ModelingObject : MonoBehaviour
 		// Update handles for Frustum
 
 		PositionHandles ();
+		RotateHandles();
+
 	//	topFace.scaleHandle.circle.localScale = topFace.scaleHandle.circle.localScale * newScale;
 	//	bottomFace.scaleHandle.circle.localScale = topFace.scaleHandle.circle.localScale * newScale;
     }
@@ -1225,6 +1243,7 @@ public class ModelingObject : MonoBehaviour
 
         CalculateBoundingBox();
 		PositionHandles ();
+		RotateHandles();
     }
 
     public void SetVertexBundlePositions(ModelingObject otherObject)
@@ -1256,6 +1275,7 @@ public class ModelingObject : MonoBehaviour
 
 		CalculateBoundingBox ();
 		PositionHandles ();
+		RotateHandles();		
 
 		// later we could need this for rotation
 
@@ -1471,6 +1491,22 @@ public class ModelingObject : MonoBehaviour
 		LeanTween.alpha(trashIcon, 0f, 0.3f);
 	}
 
+	public void DeActivateCollider (){
+		meshCollider.enabled = false;
+	}
+
+	public void ActivateCollider (){
+		meshCollider.enabled = true;
+	}
+
+	public void DarkenColorObject (){
+		Color darkColor = new Color (currentColor.r * 0.5f, currentColor.g * 0.5f, currentColor.b * 0.5f);  
+		transform.GetChild(0).GetComponent<Renderer>().material.color = darkColor;
+	}
+
+	public void NormalColorObject (){
+		transform.GetChild(0).GetComponent<Renderer>().material.color = currentColor;
+	}
 
 
 }

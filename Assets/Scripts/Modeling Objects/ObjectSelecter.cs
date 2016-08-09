@@ -16,7 +16,6 @@ public class ObjectSelecter : MonoBehaviour {
     public bool active;
 	private Vector3 initialScaleButtonGO;
 
-	public GameObject ExtraCollider;
 
 	// Use this for initialization
 	void Start () {
@@ -35,40 +34,30 @@ public class ObjectSelecter : MonoBehaviour {
 	void FixedUpdate () {
         if (active)
         {
-			connectedObject.CalculateBoundingBox ();
-			RePosition (userCamera.transform.position);
-			
-            Plane plane = new Plane(userCamera.transform.forward, userCamera.transform.position);
-			float dist = Mathf.Abs(plane.GetDistanceToPoint(transform.position));
-			transform.localScale = initialScale * (Mathf.Sqrt(dist) / stageScaler.localScale.x);
-
-			if (stageScaler.localScale.x < 0.5f) {
-				transform.localScale = transform.localScale * 0.5f;
-			}
-
-			transform.LookAt (userCamera.transform);
-
-			ExtraCollider.transform.position = connectedObject.transform.position * 0.4f + transform.position * 0.6f;
-		
-			Quaternion newRotation = Quaternion.LookRotation(connectedObject.transform.position - transform.position);
-			ExtraCollider.transform.rotation = newRotation;
-
-			ExtraCollider.transform.localScale = new Vector3(ExtraCollider.transform.localScale.x, ExtraCollider.transform.localScale.y, (connectedObject.transform.position - transform.position).magnitude + ExtraCollider.transform.localScale.x);
-
+			RescaleButton ();
         }
-
-
     }
 
-	public void ShowSelectionButton(Selection controller){
+	public void RescaleButton(){
 		RePosition (userCamera.transform.position);
 
-		if (!active) {
+		Plane plane = new Plane(userCamera.transform.forward, userCamera.transform.position);
+		float dist = Mathf.Abs(plane.GetDistanceToPoint(transform.position));
+		transform.localScale = initialScale * (dist / Mathf.Max(stageScaler.localScale.x, 0.4f));
+
+		transform.LookAt (userCamera.transform);
+	}
+
+	public void ShowSelectionButton(Selection controller){
+		
+		RePosition (userCamera.transform.position);
+
+		if (!active) {			
 			connectedObject.ShowBoundingBox ();
 			buttonGameObject.SetActive (true);
 			active = true;
 			Collider.SetActive (true);
-			ExtraCollider.SetActive (true);
+			//RescaleButton ();
 		}
 
 		LeanTween.alpha (buttonGameObject, 1f, 0.15f);
@@ -79,7 +68,6 @@ public class ObjectSelecter : MonoBehaviour {
 			connectedObject.HideBoundingBox ();
 			active = false;
 			Collider.SetActive (false);
-			ExtraCollider.SetActive (false);
 		}
 
 		LeanTween.alpha (buttonGameObject, 0f, 0.2f);
@@ -110,9 +98,8 @@ public class ObjectSelecter : MonoBehaviour {
 		}
 
 		Collider.SetActive (false);
-		ExtraCollider.SetActive (false);
-
         connectedObject.Select(controller, uiPosition);
+		ObjectsManager.Instance.DisableObjectsExcept (connectedObject);
 		Highlighter.SetActive (true);
     }
 
@@ -125,7 +112,7 @@ public class ObjectSelecter : MonoBehaviour {
 	public void RePosition(Vector3 position)
     {
 		transform.position = connectedObject.GetPosOfClosestVertex (position, new Vector3[] {connectedObject.boundingBox.coordinates[4], connectedObject.boundingBox.coordinates[5],connectedObject.boundingBox.coordinates[6],connectedObject.boundingBox.coordinates[7] });
-    }
+	}
 
 	public void MoveAndFace (Vector3 position){
 		DeactivateCollider ();

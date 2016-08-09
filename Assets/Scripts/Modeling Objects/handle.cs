@@ -238,13 +238,7 @@ public class handle : MonoBehaviour {
         // cross product
         Vector3 crossProduct = Vector3.Cross(HandleToCenter, handleDirection) * (-1f);
 
-		//float newRotationAmount = 25f*HandleUtility.PointOnLineParameter(pointOfCollision.transform.position, transform.position, crossProduct);
-
-		float newRotationAmount = 50f*CalculateInputFromPoint(pointOfCollision.transform.position, transform.position, transform.position + crossProduct);
-
-        //newRotationAmount = RasterManager.Instance.RasterAngle(newRotationAmount);
-
-		//Debug.Log ("rotaion amount:" + newRotationAmount);
+		float newRotationAmount = 90f*CalculateInputFromPoint(pointOfCollision.transform.position, transform.position, transform.position + crossProduct);
 
         if (newRotation)
         {
@@ -308,7 +302,7 @@ public class handle : MonoBehaviour {
 				if (arrow != null) {
 					// Hover effect: Scale bigger & change color
 					LeanTween.scale(arrow, new Vector3 (initialSizeArrow.x, initialSizeArrow.y, initialSizeArrow.z), 0.1f);
-					LeanTween.color(arrow, new Color(0.6f,0.6f,0.6f,1f), 0.1f);
+					LeanTween.color(arrow, new Color(1f,1f,1f,1f), 0.1f);
 				}
 
                 controller.DeAssignCurrentFocus(transform.gameObject);

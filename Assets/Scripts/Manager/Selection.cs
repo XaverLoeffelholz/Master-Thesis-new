@@ -43,6 +43,17 @@ public class Selection : MonoBehaviour
 	public CircleAnimaton circleAnimation;
 	public Infopanel trashInfopanel;
 
+	public GameObject grabIconPrefab;
+	private GameObject grabIcon;
+	private Vector3 initialScaleGrabIcon;
+
+	public GameObject grabbedIconPrefab;
+	private GameObject grabbedIcon;
+	private Vector3 grabbedIconOffset;
+	private Vector3 initialScaleGrabbedIcon;
+
+	private Transform stageScaler;
+
     void Awake()
     {
         trackedObj = GetComponent<SteamVR_TrackedObject>();
@@ -54,12 +65,22 @@ public class Selection : MonoBehaviour
 		}
 
 		tempsUI = Time.time;
+
+		stageScaler = GameObject.Find ("StageScaler").transform;
+
+		initialScaleGrabIcon = new Vector3(0.005f,0.005f,0.005f);
+		initialScaleGrabbedIcon = new Vector3(0.005f,0.005f,0.005f);
     }
 
 
 	void DeFocusCurrent(GameObject newObject){
+
+		if (grabIcon != null) {
+			grabIcon.SetActive(false);
+		}
+
 		if (currentFocus != null) {
-			if (currentFocus.CompareTag ("ModelingObject")) {				
+			if (currentFocus.CompareTag ("ModelingObject")) {
 				// compare selection button and object
 				if (newObject.CompareTag ("SelectionButton")) {
 					if (newObject.GetComponent<ObjectSelecter> ().connectedObject != currentFocus.GetComponent<ModelingObject> ()) {
@@ -80,8 +101,7 @@ public class Selection : MonoBehaviour
 				currentFocus.GetComponent<StageHeightController> ().UnFocus (this);
 			}else if (currentFocus.CompareTag ("InfoPanel")) {
 				currentFocus.GetComponent<Infopanel> ().UnFocus (this);
-			} else if (currentFocus.CompareTag ("SelectionButton")) {
-				
+			} else if (currentFocus.CompareTag ("SelectionButton")) {				
 				// compare selection button and object
 				if (newObject.CompareTag ("ModelingObject")) {
 					if (currentFocus.GetComponent<ObjectSelecter> ().connectedObject != newObject.GetComponent<ModelingObject> ()) {
@@ -120,15 +140,23 @@ public class Selection : MonoBehaviour
     // maybe also try update?
 	void FixedUpdate () {
 
-        var device = SteamVR_Controller.Input((int)trackedObj.index);
-       
+        var device = SteamVR_Controller.Input((int)trackedObj.index);       
+
 		if (controllerActive) {
-			
+
+			if (movingObject && currentFocus != null) {
+				if (grabbedIcon != null && grabbedIcon.activeSelf) {
+					grabbedIcon.transform.position = currentFocus.transform.position + grabbedIconOffset;
+					Vector3 newScale = initialScaleGrabbedIcon * (transform.position-currentFocus.transform.position).magnitude;
+					grabbedIcon.transform.localScale = new Vector3(Mathf.Min(newScale.x, grabbedIcon.transform.localScale.x*1.3f), Mathf.Min(newScale.y, grabbedIcon.transform.localScale.y*1.3f), Mathf.Min(newScale.z, grabbedIcon.transform.localScale.z*1.3f)); 
+				}
+			}
+
 			RaycastHit hit;
 
 			// only change focus is the object is not moved at the moment
 			if (!movingObject && !movingHandle && !scalingObject && !triggerPressed) {
-				if (Physics.Raycast (LaserPointer.transform.position, LaserPointer.transform.forward, out hit)) {
+				if (Physics.Raycast (LaserPointer.transform.position, LaserPointer.transform.forward, out hit)) {					
 					if (currentFocus != null) {
 						Vector3 directionLaserPointerObject = (currentFocus.transform.position - LaserPointer.transform.position).normalized;
 						uiPositon = LaserPointer.transform.position + directionLaserPointerObject * 0.5f + Vector3.down * 0.27f;
@@ -136,14 +164,27 @@ public class Selection : MonoBehaviour
 
 					AdjustLengthPointer (hit.distance);
 
+					if (grabIcon != null && grabIcon.activeSelf) {
+						Vector3 newScale = initialScaleGrabIcon * hit.distance;
+						grabIcon.transform.localScale = new Vector3(Mathf.Min(newScale.x, grabIcon.transform.localScale.x*1.3f), Mathf.Min(newScale.y, grabIcon.transform.localScale.y*1.3f), Mathf.Min(newScale.z, grabIcon.transform.localScale.z*1.3f)); 
+					}
+
 					if (hit.rigidbody != null && hit.rigidbody.transform.parent != null) {
+
+						if (grabIcon == null) {
+							grabIcon = Instantiate (grabIconPrefab);
+						}
+
+
 						if (currentFocus != hit.rigidbody.transform.parent.gameObject) {
 							// focus of Object
-							if (!UiCanvasGroup.Instance.visible && hit.rigidbody.transform.parent.gameObject.CompareTag ("ModelingObject")) {
+							if (!UiCanvasGroup.Instance.visible && hit.rigidbody.transform.parent.gameObject.CompareTag ("ModelingObject")) {								
 								DeFocusCurrent (hit.rigidbody.transform.parent.gameObject);
 								currentFocus = hit.rigidbody.transform.parent.gameObject;
 								currentFocus.GetComponent<ModelingObject> ().Focus (this);
 								device.TriggerHapticPulse (300);
+								grabIcon.transform.localScale = initialScaleGrabIcon * hit.distance; 
+								grabIcon.SetActive (true);
 							} else if (hit.rigidbody.transform.parent.gameObject.CompareTag ("Handle")) {
 								DeFocusCurrent (hit.rigidbody.transform.parent.gameObject);
 								currentFocus = hit.rigidbody.transform.parent.gameObject;
@@ -175,11 +216,16 @@ public class Selection : MonoBehaviour
 								currentFocus = hit.rigidbody.transform.parent.gameObject;
 								library.Instance.Focus (this);
 								device.TriggerHapticPulse (600);
+								grabIcon.transform.localScale = initialScaleGrabIcon * hit.distance; 
+								grabIcon.SetActive (true);
 							} else if (!UiCanvasGroup.Instance.visible && hit.rigidbody.transform.parent.gameObject.CompareTag ("HeightControl")) {
 								DeFocusCurrent (hit.rigidbody.transform.parent.gameObject);
 								currentFocus = hit.rigidbody.transform.parent.gameObject;
 								currentFocus.GetComponent<StageHeightController> ().Focus (this);
 								device.TriggerHapticPulse (600);
+
+								grabIcon.transform.localScale = initialScaleGrabIcon * hit.distance; 
+								grabIcon.SetActive (true);
 							}
 							else if (!UiCanvasGroup.Instance.visible && hit.rigidbody.transform.parent.gameObject.CompareTag ("InfoPanel")) {
 								DeFocusCurrent (hit.rigidbody.transform.parent.gameObject);
@@ -187,10 +233,16 @@ public class Selection : MonoBehaviour
 								currentFocus.GetComponent<Infopanel> ().Focus (this);
 								device.TriggerHapticPulse (600);
 							}
+								
+
 						}
 
 						// Set position of collision
 						pointOfCollision = hit.point;
+
+						if (grabIcon != null && grabIcon.activeSelf) {
+							grabIcon.transform.position = pointOfCollision;
+						}
 
 						if (faceSelection) {
 							// highlight face that is selected
@@ -238,11 +290,23 @@ public class Selection : MonoBehaviour
 				{
 					if (!movingObject && !faceSelection && !groupItemSelection){
 
+						if (grabbedIcon == null) {
+							grabbedIcon = Instantiate (grabbedIconPrefab);
+						}
+
+						grabbedIcon.SetActive (true);
+
+						grabbedIconOffset = grabIcon.transform.position - currentFocus.transform.position; 
+						grabbedIcon.transform.position = currentFocus.transform.position + grabbedIconOffset;
+
+						grabIcon.SetActive (false);
+
 						CreatePointOfCollisionPrefab();
 						movingObject = true;
 						UiCanvasGroup.Instance.Hide();
 
 						if (currentFocus.CompareTag ("ModelingObject")) {
+
 							if (circleAnimation != null) {
 								circleAnimation.StartAnimation ();
 							}
@@ -296,6 +360,10 @@ public class Selection : MonoBehaviour
 				{
 					otherController.triggerPressed = false;
 					otherController.movingHandle = false;
+
+					if (grabbedIcon != null) {
+						grabbedIcon.SetActive (false);
+					}
 
 					if (currentFocus.CompareTag ("ModelingObject")) {	
 						if (circleAnimation != null) {

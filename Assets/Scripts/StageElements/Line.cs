@@ -12,7 +12,7 @@ public class Line : MonoBehaviour {
     void Start()
     {
 		initialscaleStage = ObjectsManager.Instance.transform.parent.parent.transform.localScale.x; 
-		initialscaleLine = 0.01f * ObjectsManager.Instance.transform.parent.parent.transform.localScale.x;
+		initialscaleLine = 0.006f * ObjectsManager.Instance.transform.parent.parent.transform.localScale.x;
     }
 
     // Update is called once per frame

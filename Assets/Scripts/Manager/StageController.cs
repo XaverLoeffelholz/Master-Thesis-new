@@ -142,7 +142,9 @@ public class StageController : MonoBehaviour {
 			LeanTween.scale (touchpad, touchpadInitialScale * 1.2f, 0.2f); 
 			LeanTween.moveLocalY (touchpad, touchpadInitialPos.y + 0.003f, 0.2f);
 
-			device.TriggerHapticPulse (2000);
+			if (currentControllerMode != controllerMode.pullPushObject) {
+				device.TriggerHapticPulse (2000);
+			}
         }
 
         if (device.GetTouchUp(SteamVR_Controller.ButtonMask.Touchpad))
@@ -180,7 +182,7 @@ public class StageController : MonoBehaviour {
 					selection.pointOfCollisionGO.transform.position = selection.pointOfCollisionGO.transform.position + ObjectToController * amountY*1.4f;
 
 					if (selection.currentFocus.CompareTag ("ModelingObject")) {
-						selection.pointOfCollisionGO.transform.position = RasterManager.Instance.Raster (selection.pointOfCollisionGO.transform.position);
+						selection.pointOfCollisionGO.transform.position = selection.pointOfCollisionGO.transform.position;
 					}
 
 					float distance = (selection.pointOfCollisionGO.transform.position - transform.position).magnitude;

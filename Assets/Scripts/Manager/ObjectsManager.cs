@@ -3,8 +3,6 @@ using System.Collections;
 
 public class ObjectsManager : Singleton<ObjectsManager>
 {
-    // restructure, create List of Objects
-
     public Transform DistanceVisualisation;
     public GameObject groupPrefab;
     public Group currentGroup;
@@ -87,4 +85,32 @@ public class ObjectsManager : Singleton<ObjectsManager>
     {
         currentGroup = group.GetComponent<Group>();
     }
+
+	public void DisableObjectsExcept(ModelingObject selectedObject){
+		foreach(Transform model in this.transform)
+		{
+			if (model.CompareTag("ModelingObject"))
+			{
+				ModelingObject currentModelingObject = model.GetComponent<ModelingObject> ();
+
+				if (currentModelingObject != selectedObject) {
+					currentModelingObject.DeActivateCollider ();
+					currentModelingObject.DarkenColorObject ();
+				}
+			}
+		}
+	}
+
+	public void EnableObjects(){
+		foreach(Transform model in this.transform)
+		{
+			if (model.CompareTag("ModelingObject"))
+			{
+				ModelingObject currentModelingObject = model.GetComponent<ModelingObject> ();
+
+				currentModelingObject.ActivateCollider ();
+				currentModelingObject.NormalColorObject ();
+			}
+		}
+	}
 }
