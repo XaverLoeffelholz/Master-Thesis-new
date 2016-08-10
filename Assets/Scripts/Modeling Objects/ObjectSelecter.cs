@@ -5,7 +5,6 @@ using System;
 public class ObjectSelecter : MonoBehaviour {
 
     public ModelingObject connectedObject;
-    public Camera userCamera;
     private Vector3 initialScale;
     private float objectScale = 0.25f;
 	public GameObject Highlighter;
@@ -24,9 +23,6 @@ public class ObjectSelecter : MonoBehaviour {
         initialScale = transform.localScale;
 		initialScaleButtonGO = buttonGameObject.transform.localScale;
 
-        if (userCamera == null)
-            userCamera = Camera.main;
-
 		stageScaler = GameObject.Find ("StageScaler").transform;
     }
 	
@@ -39,18 +35,18 @@ public class ObjectSelecter : MonoBehaviour {
     }
 
 	public void RescaleButton(){
-		RePosition (userCamera.transform.position);
+		RePosition (Camera.main.transform.position);
 
-		Plane plane = new Plane(userCamera.transform.forward, userCamera.transform.position);
+		Plane plane = new Plane(Camera.main.transform.forward, Camera.main.transform.position);
 		float dist = Mathf.Abs(plane.GetDistanceToPoint(transform.position));
 		transform.localScale = initialScale * (dist / Mathf.Max(stageScaler.localScale.x, 0.4f));
 
-		transform.LookAt (userCamera.transform);
+		transform.LookAt (Camera.main.transform);
 	}
 
 	public void ShowSelectionButton(Selection controller){
 		
-		RePosition (userCamera.transform.position);
+		RePosition (Camera.main.transform.position);
 
 		if (!active) {			
 			connectedObject.ShowBoundingBox ();

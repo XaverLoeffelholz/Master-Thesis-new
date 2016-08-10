@@ -23,22 +23,35 @@ public class BiManualOperations : Singleton<BiManualOperations> {
 	
 	// Update is called once per frame
 	void FixedUpdate() {
-		if (controller1.triggerPressed && controller2.triggerPressed && controller1.currentFocus == controller2.currentFocus && controller1.currentFocus.CompareTag("ModelingObject"))
-        {
-            if (!scalingStarted)
-            {
-                StartScalingRotating();
-            } else
-            {
-                ScaleOrRotateObject();
-            }
+		if (controller1.currentFocus != null && controller2.currentFocus != null) {
+			if (controller1.currentFocus == controller2.currentFocus && controller1.currentFocus.CompareTag ("ModelingObject")) {
 
-        } else
-        {
-            scalingStarted = false;
-            controller1.scalingObject = false;
-            controller2.scalingObject = false;
-        }
+				controller1.scalingMode = true;
+				controller2.scalingMode = true;
+				controller1.duplicateMode = false;
+				controller2.duplicateMode = false;
+
+				if (controller1.triggerPressed && controller2.triggerPressed) {
+					if (!scalingStarted) {
+						StartScalingRotating ();
+					} else {
+						ScaleOrRotateObject ();
+					}
+
+				} else {
+					scalingStarted = false;
+					controller1.scalingObject = false;
+					controller2.scalingObject = false;
+				}
+
+			} else {
+				controller1.scalingMode = false;
+				controller2.scalingMode = false;
+			}
+		} else {
+			controller1.scalingMode = false;
+			controller2.scalingMode = false;
+		}
 	}
 
     public void StartScalingRotating()

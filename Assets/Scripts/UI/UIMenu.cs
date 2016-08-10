@@ -201,7 +201,11 @@ public class UIMenu : MonoBehaviour {
 
     public void Duplicate()
     {
-        ObjectCreator.Instance.DuplicateObject(parentCanvas.currentModelingObject, null);
+		// when we have rotation we need to update this
+		Vector3 position = 0.25f * parentCanvas.currentModelingObject.boundingBox.coordinates[0] + 0.25f * parentCanvas.currentModelingObject.boundingBox.coordinates[1] + 0.25f * parentCanvas.currentModelingObject.boundingBox.coordinates[2] + 0.25f * parentCanvas.currentModelingObject.boundingBox.coordinates[3];
+		position = position + (position - parentCanvas.currentModelingObject.transform.position);
+
+		ObjectCreator.Instance.DuplicateObject(parentCanvas.currentModelingObject, null, position);
     }
 
     public void ChangeColor(UiElement button)

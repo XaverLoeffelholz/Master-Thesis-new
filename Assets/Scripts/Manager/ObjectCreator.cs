@@ -16,6 +16,8 @@ public class ObjectCreator : Singleton<ObjectCreator> {
 
     private int objectIDcount = 0;
 
+	public ModelingObject latestModelingObject;
+
 
     // Use this for initialization
     void Start () {
@@ -108,6 +110,8 @@ public class ObjectCreator : Singleton<ObjectCreator> {
         }
 
 		newModelingObject.ChangeColor(color, true);
+
+		latestModelingObject = newModelingObject;
     }
 
 
@@ -134,26 +138,22 @@ public class ObjectCreator : Singleton<ObjectCreator> {
 		}
 	}
 
-    public void DuplicateObject(ModelingObject original, Group group)
+	public void DuplicateObject(ModelingObject original, Group group, Vector3 objectPosition)
     {
-		// when we have rotation we need to update this
-		Vector3 position = 0.25f * original.boundingBox.coordinates[0] + 0.25f * original.boundingBox.coordinates[1] + 0.25f * original.boundingBox.coordinates[2] + 0.25f *original.boundingBox.coordinates[3];
-		position = position + (position - original.transform.position);
-
         if (original.typeOfObject == ModelingObject.ObjectType.triangle)
         {
-			createNewObject(triangle, original.typeOfObject, null, original, position, true, group, original.currentColor);
+			createNewObject(triangle, original.typeOfObject, null, original, objectPosition, true, group, original.currentColor);
         } else if (original.typeOfObject == ModelingObject.ObjectType.square)
         {
-			createNewObject(square, original.typeOfObject, null, original, position, true, group, original.currentColor);
+			createNewObject(square, original.typeOfObject, null, original, objectPosition, true, group, original.currentColor);
         }
         else if (original.typeOfObject == ModelingObject.ObjectType.hexagon)
         {
-			createNewObject(hexagon, original.typeOfObject, null, original, position, true, group, original.currentColor);
+			createNewObject(hexagon, original.typeOfObject, null, original, objectPosition, true, group, original.currentColor);
         }
         else if (original.typeOfObject == ModelingObject.ObjectType.octagon)
         {
-			createNewObject(octagon, original.typeOfObject, null, original, position, true, group, original.currentColor);
+			createNewObject(octagon, original.typeOfObject, null, original, objectPosition, true, group, original.currentColor);
         }
     }
 

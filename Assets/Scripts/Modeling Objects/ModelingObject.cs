@@ -113,7 +113,7 @@ public class ModelingObject : MonoBehaviour
 
             Vector3 prevPosition = transform.position;
 
-            // destroz previous distance vis
+            // destroy previous distance vis
             foreach (Transform visualObject in DistanceVisualisation)
             {
                 if (visualObject.gameObject != GroundVisualOnStartMoving)
@@ -242,15 +242,6 @@ public class ModelingObject : MonoBehaviour
 						CalculateBoundingBox ();
 						CenterVisual2.transform.position = 0.25f * boundingBox.coordinates[4] + 0.25f * boundingBox.coordinates[5] + 0.25f * boundingBox.coordinates[6] + 0.25f * boundingBox.coordinates[7];
 
-                        /*
-                        Vector3[] bottomCoordinates = new Vector3[bottomFace.vertexBundles.Length];
-
-                        for (int j = 0; j < bottomFace.vertexBundles.Length; j++)
-                        {
-                            bottomCoordinates[j] = bottomFace.vertexBundles[j].transform.GetChild(0).position;
-                        }
-                        */
-
 						// prev position
                         GameObject lines = Instantiate(linesPrefab);
                         lines.transform.SetParent(DistanceVisualisation);
@@ -260,36 +251,6 @@ public class ModelingObject : MonoBehaviour
 						GameObject lines2 = Instantiate(linesPrefab);
 						lines2.transform.SetParent(DistanceVisualisation);
 						lines2.GetComponent<Lines>().DrawLinesWorldCoordinate(initialCoordinatesBoundingBox);
-
-
-                        /*
-                        // Display outline of groundface
-                        GameObject GroundVisual = Instantiate(GroundVisualPrefab);
-						GroundVisual.transform.SetParent(DistanceVisualisation);
-						LineRenderer lines = GroundVisual.GetComponent<LineRenderer>();
-						lines.SetWidth (Mathf.Min(0.025f * transform.lossyScale.x, 0.03f), Mathf.Min(0.025f * transform.lossyScale.x, 0.03f));
-
-						if (snapped)
-						{
-							lines.SetColors(Color.green, Color.green);
-						}
-
-						lines.SetVertexCount(bottomFace.vertexBundles.Length + 1);
-
-						for (int j = 0; j <= bottomFace.vertexBundles.Length; j++)
-						{
-							if (j == bottomFace.vertexBundles.Length)
-							{
-								Vector3 pos = bottomFace.vertexBundles[0].transform.GetChild(0).position;
-								lines.SetPosition(j, pos);
-							}
-							else
-							{
-								Vector3 pos = bottomFace.vertexBundles[j].transform.GetChild(0).position;
-								lines.SetPosition(j, pos);
-							}
-
-						} */
 
 					}
 
@@ -311,10 +272,6 @@ public class ModelingObject : MonoBehaviour
 					lastPositionX = DistanceVisualX.transform.position;
 					lastPositionY = DistanceVisualX.transform.position;
 				}
-
-			//}
-
-
 
 			// show amount of movement on y
 			if (bottomFace.center.coordinates.y != transform.InverseTransformPoint(PositionOnMovementStart).y)
@@ -572,9 +529,6 @@ public class ModelingObject : MonoBehaviour
 
     public void PositionHandles()
     {
-        //handles.faceTopScale.transform.position = GetPosOfClosestVertex(Teleportation.Instance.transform.position, Face.faceType.TopFace);
-        //handles.faceBottomScale.transform.position = GetPosOfClosestVertex(Teleportation.Instance.transform.position, Face.faceType.BottomFace);
-        
 		handles.faceTopScale.transform.position = transform.TransformPoint(topFace.scaler.coordinates);
 		handles.faceBottomScale.transform.position = transform.TransformPoint(bottomFace.scaler.coordinates);
 		handles.CenterTopPosition.transform.localPosition = topFace.centerPosition;
@@ -596,10 +550,6 @@ public class ModelingObject : MonoBehaviour
         handles.RotateSide1.transform.position = 0.5f * boundingBox.coordinates[1] + 0.5f * boundingBox.coordinates[5];
         handles.RotateSide2.transform.position = 0.5f * boundingBox.coordinates[2] + 0.5f * boundingBox.coordinates[6];
         handles.RotateSide3.transform.position = 0.5f * boundingBox.coordinates[3] + 0.5f * boundingBox.coordinates[7];
-
-        // handles.RotationX.transform.localPosition = this.transform.localPosition;
-        // handles.RotationY.transform.localPosition = this.transform.localPosition;
-        // handles.RotationZ.transform.localPosition = this.transform.localPosition;
     }
 
     public void RotateHandles()
@@ -883,19 +833,19 @@ public class ModelingObject : MonoBehaviour
 
 			bottomFace.center.possibleSnappingVertexBundle = null;
 			objectSelector.HideSelectionButton ();
-			DisplayOutlineOfGroundFace ();
+			//DisplayOutlineOfGroundFace ();
+
+			initialCoordinatesBoundingBox = new Vector3[4];
+
+			for (int j = 0; j < 4; j++)
+			{
+				initialCoordinatesBoundingBox[j] = boundingBox.coordinates[j+4];
+			}
 		}
     }
 
 	public void DisplayOutlineOfGroundFace(){
 		// Display outline of groundface
-
-		initialCoordinatesBoundingBox = new Vector3[4];
-
-        for (int j = 0; j < 4; j++)
-        {
-			initialCoordinatesBoundingBox[j] = boundingBox.coordinates[j+4];
-        }
 
         GameObject lines = Instantiate(linesPrefab);
         lines.transform.SetParent(DistanceVisualisation);

@@ -54,6 +54,16 @@ public class Selection : MonoBehaviour
 
 	private Transform stageScaler;
 
+	public bool duplicateMode;
+	public bool scalingMode;
+
+	public Material normalGrabIconMat;
+	public Material duplicateGrabIconMat;
+	public Material scaleGrabIconMat;
+
+	public Material grabbedIconMat;
+	public Material scaleGrabbedIconMat;
+
     void Awake()
     {
         trackedObj = GetComponent<SteamVR_TrackedObject>();
@@ -68,8 +78,8 @@ public class Selection : MonoBehaviour
 
 		stageScaler = GameObject.Find ("StageScaler").transform;
 
-		initialScaleGrabIcon = new Vector3(0.005f,0.005f,0.005f);
-		initialScaleGrabbedIcon = new Vector3(0.005f,0.005f,0.005f);
+		initialScaleGrabIcon = new Vector3(0.006f,0.006f,0.006f);
+		initialScaleGrabbedIcon = new Vector3(0.006f,0.006f,0.006f);
     }
 
 
@@ -147,8 +157,8 @@ public class Selection : MonoBehaviour
 			if (movingObject && currentFocus != null) {
 				if (grabbedIcon != null && grabbedIcon.activeSelf) {
 					grabbedIcon.transform.position = currentFocus.transform.position + grabbedIconOffset;
-					Vector3 newScale = initialScaleGrabbedIcon * (transform.position-currentFocus.transform.position).magnitude;
-					grabbedIcon.transform.localScale = new Vector3(Mathf.Min(newScale.x, grabbedIcon.transform.localScale.x*1.3f), Mathf.Min(newScale.y, grabbedIcon.transform.localScale.y*1.3f), Mathf.Min(newScale.z, grabbedIcon.transform.localScale.z*1.3f)); 
+					Vector3 newScale = initialScaleGrabbedIcon * (transform.position - currentFocus.transform.position).magnitude;
+					grabbedIcon.transform.localScale = new Vector3 (Mathf.Min (newScale.x, grabbedIcon.transform.localScale.x * 1.3f), Mathf.Min (newScale.y, grabbedIcon.transform.localScale.y * 1.3f), Mathf.Min (newScale.z, grabbedIcon.transform.localScale.z * 1.3f)); 
 				}
 			}
 
@@ -165,8 +175,22 @@ public class Selection : MonoBehaviour
 					AdjustLengthPointer (hit.distance);
 
 					if (grabIcon != null && grabIcon.activeSelf) {
-						Vector3 newScale = initialScaleGrabIcon * hit.distance;
-						grabIcon.transform.localScale = new Vector3(Mathf.Min(newScale.x, grabIcon.transform.localScale.x*1.3f), Mathf.Min(newScale.y, grabIcon.transform.localScale.y*1.3f), Mathf.Min(newScale.z, grabIcon.transform.localScale.z*1.3f)); 
+						if (duplicateMode) {
+							grabIcon.GetComponent<Renderer>().material = duplicateGrabIconMat;
+							Vector3 newScale = initialScaleGrabIcon * hit.distance * 1.3f;
+							grabIcon.transform.localScale = new Vector3 (Mathf.Min (newScale.x, grabIcon.transform.localScale.x * 1.4f), Mathf.Min (newScale.y, grabIcon.transform.localScale.y * 1.4f), Mathf.Min (newScale.z, grabIcon.transform.localScale.z * 1.4f)); 
+
+						} else if (scalingMode) {
+							grabIcon.GetComponent<Renderer>().material = scaleGrabIconMat;
+							Vector3 newScale = initialScaleGrabIcon * hit.distance * 1.3f;
+							grabIcon.transform.localScale = new Vector3 (Mathf.Min (newScale.x, grabIcon.transform.localScale.x * 1.4f), Mathf.Min (newScale.y, grabIcon.transform.localScale.y * 1.4f), Mathf.Min (newScale.z, grabIcon.transform.localScale.z * 1.4f)); 
+
+						} else {
+							grabIcon.GetComponent<Renderer>().material = normalGrabIconMat;
+							Vector3 newScale = initialScaleGrabIcon * hit.distance;
+							grabIcon.transform.localScale = new Vector3 (Mathf.Min (newScale.x, grabIcon.transform.localScale.x * 1.4f), Mathf.Min (newScale.y, grabIcon.transform.localScale.y * 1.4f), Mathf.Min (newScale.z, grabIcon.transform.localScale.z * 1.4f)); 
+						}
+
 					}
 
 					if (hit.rigidbody != null && hit.rigidbody.transform.parent != null) {
@@ -183,8 +207,6 @@ public class Selection : MonoBehaviour
 								currentFocus = hit.rigidbody.transform.parent.gameObject;
 								currentFocus.GetComponent<ModelingObject> ().Focus (this);
 								device.TriggerHapticPulse (300);
-								grabIcon.transform.localScale = initialScaleGrabIcon * hit.distance; 
-								grabIcon.SetActive (true);
 							} else if (hit.rigidbody.transform.parent.gameObject.CompareTag ("Handle")) {
 								DeFocusCurrent (hit.rigidbody.transform.parent.gameObject);
 								currentFocus = hit.rigidbody.transform.parent.gameObject;
@@ -226,8 +248,7 @@ public class Selection : MonoBehaviour
 
 								grabIcon.transform.localScale = initialScaleGrabIcon * hit.distance; 
 								grabIcon.SetActive (true);
-							}
-							else if (!UiCanvasGroup.Instance.visible && hit.rigidbody.transform.parent.gameObject.CompareTag ("InfoPanel")) {
+							} else if (!UiCanvasGroup.Instance.visible && hit.rigidbody.transform.parent.gameObject.CompareTag ("InfoPanel")) {
 								DeFocusCurrent (hit.rigidbody.transform.parent.gameObject);
 								currentFocus = hit.rigidbody.transform.parent.gameObject;
 								currentFocus.GetComponent<Infopanel> ().Focus (this);
@@ -235,6 +256,13 @@ public class Selection : MonoBehaviour
 							}
 								
 
+						}
+
+						if (!UiCanvasGroup.Instance.visible && hit.rigidbody.transform.parent.gameObject.CompareTag ("ModelingObject")) {
+							if (!grabIcon.activeSelf) {
+								grabIcon.transform.localScale = initialScaleGrabIcon * hit.distance; 
+								grabIcon.SetActive (true);
+							}
 						}
 
 						// Set position of collision
@@ -276,19 +304,16 @@ public class Selection : MonoBehaviour
 			} 
 
 
-			if (currentFocus != null)
-			{
-				if (device.GetTouchDown(SteamVR_Controller.ButtonMask.Trigger))
-				{
+			if (currentFocus != null) {
+				if (device.GetTouchDown (SteamVR_Controller.ButtonMask.Trigger)) {
 					triggerPressed = true;
 					temps = Time.time;
 				}
 
-				if (triggerPressed && temps > 0.1f 
-					&& (currentFocus.CompareTag("ModelingObject") || currentFocus.CompareTag("TeleportPosition") || currentFocus.CompareTag("Library") || currentFocus.CompareTag("HeightControl") )
-					&& typeOfController == controllerType.mainController)
-				{
-					if (!movingObject && !faceSelection && !groupItemSelection){
+				if (triggerPressed && temps > 0.1f
+				    && (currentFocus.CompareTag ("ModelingObject") || currentFocus.CompareTag ("TeleportPosition") || currentFocus.CompareTag ("Library") || currentFocus.CompareTag ("HeightControl"))
+				    && typeOfController == controllerType.mainController) {
+					if (!movingObject && !faceSelection && !groupItemSelection) {
 
 						if (grabbedIcon == null) {
 							grabbedIcon = Instantiate (grabbedIconPrefab);
@@ -301,68 +326,72 @@ public class Selection : MonoBehaviour
 
 						grabIcon.SetActive (false);
 
-						CreatePointOfCollisionPrefab();
+						CreatePointOfCollisionPrefab ();
 						movingObject = true;
-						UiCanvasGroup.Instance.Hide();
+						UiCanvasGroup.Instance.Hide ();
 
 						if (currentFocus.CompareTag ("ModelingObject")) {
-
 							if (circleAnimation != null) {
 								circleAnimation.StartAnimation ();
 							}
-
 							this.GetComponent<StageController> ().ShowPullVisual (true);
-							//otherController.transform.GetComponent<StageController> ().ShowScaleRotationToggle (true);	
-							currentFocus.GetComponent<ModelingObject>().StartMoving(this, currentFocus.GetComponent<ModelingObject>());
 							device.TriggerHapticPulse (1800);
+							otherController.ActivateController (true);
 
-							otherController.ActivateController(true);
+							if (!duplicateMode) {			
+								currentFocus.GetComponent<ModelingObject> ().StartMoving (this, currentFocus.GetComponent<ModelingObject> ());
+							} else {
+								ObjectCreator.Instance.DuplicateObject (currentFocus.GetComponent<ModelingObject> (), null, pointOfCollision);
+								ModelingObject duplicatedObject = ObjectCreator.Instance.latestModelingObject;
+
+								DeFocusCurrent (duplicatedObject.gameObject);
+								currentFocus = duplicatedObject.gameObject;
+								duplicatedObject.Focus (this);
+								duplicatedObject.StartMoving (this, duplicatedObject);
+							}
+
 						} else if (currentFocus.CompareTag ("TeleportPosition")) {
 							if (circleAnimation != null) {
 								circleAnimation.StartAnimation ();
 							}
 							this.GetComponent<StageController> ().ShowPullVisual (true);
 							//otherController.transform.GetComponent<StageController> ().ShowScaleRotationToggle (true);
-							currentFocus.GetComponent<TeleportationPosition>().StartMoving(this);
+							currentFocus.GetComponent<TeleportationPosition> ().StartMoving (this);
 						} else if (currentFocus.CompareTag ("Library")) {
 							if (circleAnimation != null) {
 								circleAnimation.StartAnimation ();
 							}
 							this.GetComponent<StageController> ().ShowPullVisual (true);
 							//otherController.transform.GetComponent<StageController> ().ShowScaleRotationToggle (true);
-							library.Instance.StartMoving(this);
+							library.Instance.StartMoving (this);
 						} else if (currentFocus.CompareTag ("HeightControl")) {
-							currentFocus.GetComponent<StageHeightController>().StartMoving(this);
+							currentFocus.GetComponent<StageHeightController> ().StartMoving (this);
 						}
 					}
 
 
-				} 
-				else if (triggerPressed && (movingHandle || currentFocus.CompareTag("Handle")))
-				{
-					if (pointOfCollisionGO == null)
-					{
-						CreatePointOfCollisionPrefab();
+				} else if (triggerPressed && (movingHandle || currentFocus.CompareTag ("Handle"))) {
+					if (pointOfCollisionGO == null) {
+						CreatePointOfCollisionPrefab ();
 					}
-					currentFocus.GetComponent<handle>().ApplyChanges(pointOfCollisionGO, movingHandle);
+					currentFocus.GetComponent<handle> ().ApplyChanges (pointOfCollisionGO, movingHandle);
 					//currentFocus.GetComponent<handle> ().connectedObject.GetComponent<ModelingObject> ().HideBoundingBox ();
 					movingHandle = true;
 
 				}
 			}
 
-			if (device.GetTouchUp(SteamVR_Controller.ButtonMask.Trigger))
-			{
+			if (device.GetTouchUp (SteamVR_Controller.ButtonMask.Trigger)) {
 				triggerPressed = false;
 				movingHandle = false;
 
-				if (movingObject && typeOfController == controllerType.mainController)
-				{
+				if (movingObject && typeOfController == controllerType.mainController) {
 					otherController.triggerPressed = false;
 					otherController.movingHandle = false;
 
 					if (grabbedIcon != null) {
 						grabbedIcon.SetActive (false);
+
 					}
 
 					if (currentFocus.CompareTag ("ModelingObject")) {	
@@ -371,107 +400,88 @@ public class Selection : MonoBehaviour
 						}
 
 						device.TriggerHapticPulse (1800);
-						currentFocus.GetComponent<ModelingObject>().StopMoving(this, currentFocus.GetComponent<ModelingObject>());
+						currentFocus.GetComponent<ModelingObject> ().StopMoving (this, currentFocus.GetComponent<ModelingObject> ());
 						otherController.ActivateController (false);
-
 						this.GetComponent<StageController> ().ShowPullVisual (false);
-						//otherController.transform.GetComponent<StageController> ().ShowScaleRotationToggle (false);
 
-						if (currentFocus.GetComponent<ModelingObject>().inTrashArea)
-						{
-							currentFocus.GetComponent<ModelingObject>().TrashObject(true);
+						if (currentFocus.GetComponent<ModelingObject> ().inTrashArea) {
+							currentFocus.GetComponent<ModelingObject> ().TrashObject (true);
 							trashInfopanel.CloseInfoPanel ();
 
 							//currentFocus = null;
-							device.TriggerHapticPulse(1000);
+							device.TriggerHapticPulse (1000);
 						}
 
 						currentFocus.GetComponent<ModelingObject> ().DeSelect (this);
 					} else if (currentFocus.CompareTag ("TeleportPosition")) {
-						currentFocus.GetComponent<TeleportationPosition>().StopMoving(this);
+						currentFocus.GetComponent<TeleportationPosition> ().StopMoving (this);
 
 						this.GetComponent<StageController> ().ShowPullVisual (false);
 						//otherController.transform.GetComponent<StageController> ().ShowScaleRotationToggle (false);
 
-						Teleportation.Instance.JumpToPos(5);
+						Teleportation.Instance.JumpToPos (5);
 					} else if (currentFocus.CompareTag ("Library")) {
 						this.GetComponent<StageController> ().ShowPullVisual (false);
 						//otherController.transform.GetComponent<StageController> ().ShowScaleRotationToggle (false);
 
-						library.Instance.StopMoving(this);
+						library.Instance.StopMoving (this);
 					} else if (currentFocus.CompareTag ("HeightControl")) {
-						currentFocus.GetComponent<StageHeightController>().StopMoving(this);
+						currentFocus.GetComponent<StageHeightController> ().StopMoving (this);
 					}
 
 
 				}
 
-				Destroy(pointOfCollisionGO);
+				Destroy (pointOfCollisionGO);
 				movingObject = false;
 
-				if (currentFocus != null)
-				{
-					if (currentFocus.CompareTag("ModelingObject"))
-					{
-						if (!groupItemSelection && currentSelection != null && currentSelection != currentFocus)
-						{
-							UiCanvasGroup.Instance.CloseMenu(this);
-							this.enableFaceSelection(false);
+				if (currentFocus != null) {
+					if (currentFocus.CompareTag ("ModelingObject")) {
+						if (!groupItemSelection && currentSelection != null && currentSelection != currentFocus) {
+							UiCanvasGroup.Instance.CloseMenu (this);
+							this.enableFaceSelection (false);
 						}
 
-						if (groupItemSelection)
-						{
-							ObjectsManager.Instance.AddObjectToGroup(ObjectsManager.Instance.currentGroup, currentFocus.GetComponent<ModelingObject>());  
+						if (groupItemSelection) {
+							ObjectsManager.Instance.AddObjectToGroup (ObjectsManager.Instance.currentGroup, currentFocus.GetComponent<ModelingObject> ());  
 							currentFocus.GetComponent<ModelingObject> ().ShowOutline (true);
 
 						} else if (faceSelection) {
-							if (collidingFace != null)
-							{
-								this.enableFaceSelection(false);
-								otherController.enableFaceSelection(false);
-								collidingFace.CreateNewModelingObject();
-								SelectLatestObject();
-								UiCanvasGroup.Instance.shapeMenu.ActivateMenu();
+							if (collidingFace != null) {
+								this.enableFaceSelection (false);
+								otherController.enableFaceSelection (false);
+								collidingFace.CreateNewModelingObject ();
+								SelectLatestObject ();
+								UiCanvasGroup.Instance.shapeMenu.ActivateMenu ();
 								collidingFace = null;
 							}
 						}
-					}
-					else if (currentFocus.CompareTag("SelectionButton"))
-					{
-						UiCanvasGroup.Instance.Show();
-						currentFocus.GetComponent<ObjectSelecter>().Select(this, uiPositon);
-					}
-					else if (currentFocus.CompareTag("Handle"))
-					{
+					} else if (currentFocus.CompareTag ("SelectionButton")) {
+						UiCanvasGroup.Instance.Show ();
+						currentFocus.GetComponent<ObjectSelecter> ().Select (this, uiPositon);
+					} else if (currentFocus.CompareTag ("Handle")) {
 						handle currentHandle = currentFocus.GetComponent<handle> ();
 						
-						currentHandle.ResetLastPosition();
-						currentHandle.UnLock();
-						currentHandle.UnFocus(this);
+						currentHandle.ResetLastPosition ();
+						currentHandle.UnLock ();
+						currentHandle.UnFocus (this);
 						currentHandle.connectedObject.GetComponent<ModelingObject> ().ShowBoundingBox ();
-					} 
-					else if (currentFocus.CompareTag("UiElement"))
-					{
+					} else if (currentFocus.CompareTag ("UiElement")) {
 						if (Time.time - tempsUI > 0.1f) {
 							device.TriggerHapticPulse (1000);
 
 							tempsUI = Time.time;
-							currentFocus.GetComponent<UiElement>().goal.ActivateMenu();
-							currentFocus.GetComponent<UiElement>().PerformAction(this);
+							currentFocus.GetComponent<UiElement> ().goal.ActivateMenu ();
+							currentFocus.GetComponent<UiElement> ().PerformAction (this);
 						}
-					}					
-					else if (currentFocus.CompareTag("InfoPanel"))
-					{
+					} else if (currentFocus.CompareTag ("InfoPanel")) {
 						device.TriggerHapticPulse (1000);
 						currentFocus.GetComponent<Infopanel> ().CloseInfoPanel ();
-					}
-					else if (currentFocus.CompareTag("TeleportTrigger"))
-					{
-						Teleportation.Instance.JumpToPos(currentFocus.GetComponent<TeleportationTrigger>().triggerPos);
+					} else if (currentFocus.CompareTag ("TeleportTrigger")) {
+						Teleportation.Instance.JumpToPos (currentFocus.GetComponent<TeleportationTrigger> ().triggerPos);
 					}
 
-				} else
-				{
+				} else {
 					// user is clicking somewhere outside to close the menu
 					// test how it is if we not use that
 
@@ -489,6 +499,17 @@ public class Selection : MonoBehaviour
 				}
 
 				temps = 0;
+			}
+		} 
+
+
+		if (typeOfController == controllerType.SecondaryController) {
+			if (device.GetTouchDown (SteamVR_Controller.ButtonMask.Trigger) && !scalingMode) {
+				otherController.duplicateMode = true;
+			}
+
+			if (device.GetTouchUp (SteamVR_Controller.ButtonMask.Trigger)) {
+				otherController.duplicateMode = false;
 			}
 		}
         

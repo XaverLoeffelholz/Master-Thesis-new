@@ -207,7 +207,7 @@ public class Group : MonoBehaviour {
         // Go through all objects, duplicate each
         for (int i = 0; i < objectList.Count; i++)
         {
-            ObjectCreator.Instance.DuplicateObject(objectList[i], newGroup);
+          //  ObjectCreator.Instance.DuplicateObject(objectList[i], newGroup);
         }
 
         // problem: Objects all just on top of other elements

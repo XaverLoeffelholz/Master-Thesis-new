@@ -7821,6 +7821,13 @@ MonoBehaviour:
   trashInfopanel: {fileID: 1787501836}
   grabIconPrefab: {fileID: 115114, guid: 726803eead8af9d4b9fe53af1e389d73, type: 2}
   grabbedIconPrefab: {fileID: 115114, guid: 0180538ae57e08249a1691ee2ccf0df9, type: 2}
+  duplicateMode: 0
+  normalGrabIconMat: {fileID: 2100000, guid: 007dfdcb04d2a6e458ec1b1362fb73fd, type: 2}
+  duplicateGrabIconMat: {fileID: 2100000, guid: 33de998143cdc504b90c99c71756d6ef,
+    type: 2}
+  scaleGrabIconMat: {fileID: 2100000, guid: 3b85bbf25fd7ecd44ad328cdb282a376, type: 2}
+  grabbedIconMat: {fileID: 2100000, guid: b9d397ae3e24ef444a4ecef8c4164b25, type: 2}
+  scaleGrabbedIconMat: {fileID: 2100000, guid: 4d31bb55d31b3ee46b63d3e559ad92c9, type: 2}
 --- !u!114 &951711492
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -15276,6 +15283,13 @@ MonoBehaviour:
   trashInfopanel: {fileID: 1787501836}
   grabIconPrefab: {fileID: 115114, guid: 726803eead8af9d4b9fe53af1e389d73, type: 2}
   grabbedIconPrefab: {fileID: 115114, guid: 0180538ae57e08249a1691ee2ccf0df9, type: 2}
+  duplicateMode: 0
+  normalGrabIconMat: {fileID: 2100000, guid: 007dfdcb04d2a6e458ec1b1362fb73fd, type: 2}
+  duplicateGrabIconMat: {fileID: 2100000, guid: 33de998143cdc504b90c99c71756d6ef,
+    type: 2}
+  scaleGrabIconMat: {fileID: 2100000, guid: 3b85bbf25fd7ecd44ad328cdb282a376, type: 2}
+  grabbedIconMat: {fileID: 2100000, guid: b9d397ae3e24ef444a4ecef8c4164b25, type: 2}
+  scaleGrabbedIconMat: {fileID: 2100000, guid: 4d31bb55d31b3ee46b63d3e559ad92c9, type: 2}
 --- !u!114 &1876272101
 MonoBehaviour:
   m_ObjectHideFlags: 0
