@@ -7,10 +7,10 @@ Material:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_Name: NormalTexture
-  m_Shader: {fileID: 46, guid: 0000000000000000f000000000000000, type: 0}
+  m_Shader: {fileID: 10101, guid: 0000000000000000e000000000000000, type: 0}
   m_ShaderKeywords: 
   m_LightmapFlags: 5
-  m_CustomRenderQueue: -1
+  m_CustomRenderQueue: 3000
   stringTagMap: {}
   m_SavedProperties:
     serializedVersion: 2
@@ -38,7 +38,7 @@ Material:
           m_Offset: {x: 0, y: 0}
       data:
         first:
-          name: _EmissionMap
+          name: _MetallicGlossMap
         second:
           m_Texture: {fileID: 0}
           m_Scale: {x: 1, y: 1}
@@ -46,6 +46,20 @@ Material:
       data:
         first:
           name: _ParallaxMap
+        second:
+          m_Texture: {fileID: 0}
+          m_Scale: {x: 1, y: 1}
+          m_Offset: {x: 0, y: 0}
+      data:
+        first:
+          name: _OcclusionMap
+        second:
+          m_Texture: {fileID: 0}
+          m_Scale: {x: 1, y: 1}
+          m_Offset: {x: 0, y: 0}
+      data:
+        first:
+          name: _EmissionMap
         second:
           m_Texture: {fileID: 0}
           m_Scale: {x: 1, y: 1}
@@ -60,20 +74,6 @@ Material:
       data:
         first:
           name: _DetailAlbedoMap
-        second:
-          m_Texture: {fileID: 0}
-          m_Scale: {x: 1, y: 1}
-          m_Offset: {x: 0, y: 0}
-      data:
-        first:
-          name: _OcclusionMap
-        second:
-          m_Texture: {fileID: 0}
-          m_Scale: {x: 1, y: 1}
-          m_Offset: {x: 0, y: 0}
-      data:
-        first:
-          name: _MetallicGlossMap
         second:
           m_Texture: {fileID: 0}
           m_Scale: {x: 1, y: 1}
@@ -93,10 +93,6 @@ Material:
         second: 0.5
       data:
         first:
-          name: _Parallax
-        second: 0.02
-      data:
-        first:
           name: _ZWrite
         second: 1
       data:
@@ -105,8 +101,16 @@ Material:
         second: 0.5
       data:
         first:
+          name: _Metallic
+        second: 0
+      data:
+        first:
           name: _BumpScale
         second: 1
+      data:
+        first:
+          name: _Parallax
+        second: 0.02
       data:
         first:
           name: _OcclusionStrength
@@ -125,8 +129,28 @@ Material:
         second: 0
       data:
         first:
-          name: _Metallic
+          name: _Phi0
         second: 0
+      data:
+        first:
+          name: _Phi1
+        second: 1
+      data:
+        first:
+          name: _Theta0
+        second: 0
+      data:
+        first:
+          name: _Theta1
+        second: 1
+      data:
+        first:
+          name: _UScale
+        second: 1
+      data:
+        first:
+          name: _VScale
+        second: 1
     m_Colors:
       data:
         first:
@@ -135,4 +159,28 @@ Material:
       data:
         first:
           name: _Color
-        second: {r: 1, g: 0, b: 0, a: 1}
+        second: {r: 0.97794116, g: 0.27324829, b: 0.27324829, a: 1}
+      data:
+        first:
+          name: _N
+        second: {r: 0, g: 0, b: 0, a: 0}
+      data:
+        first:
+          name: _UAxis
+        second: {r: 0, g: 0, b: 0, a: 0}
+      data:
+        first:
+          name: _VAxis
+        second: {r: 0, g: 0, b: 0, a: 0}
+      data:
+        first:
+          name: _UOrigin
+        second: {r: 0, g: 0, b: 0, a: 0}
+      data:
+        first:
+          name: _VOrigin
+        second: {r: 0, g: 0, b: 0, a: 0}
+      data:
+        first:
+          name: _BaseScale
+        second: {r: 1, g: 1, b: 1, a: 0}

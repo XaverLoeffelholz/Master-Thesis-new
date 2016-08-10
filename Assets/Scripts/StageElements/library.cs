@@ -3,8 +3,6 @@ using System.Collections;
 
 public class library : Singleton<library>{
 
-	private Vector3 initialPosition;
-
 	private Selection controllerForMovement;
 	private Vector3 lastPositionController;
 	private bool moving = false;
@@ -23,7 +21,7 @@ public class library : Singleton<library>{
 
     // Use this for initialization
     void Start () {
-		initialPosition = transform.position;
+
 	}
 	
 	// Update is called once per frame

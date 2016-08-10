@@ -51,20 +51,17 @@ public class Vertex : MonoBehaviour {
 
 	public void ShowNormal()
     {
-		if (normal != null) {
-			GameObject normalVisualisation = Instantiate (normalPrefab);
-			normalVisualisation.transform.SetParent (this.transform);
-			normalVisualisation.transform.localPosition = transform.localPosition + normal*1.3f;
-		}
-
+		GameObject normalVisualisation = Instantiate (normalPrefab);
+		normalVisualisation.transform.SetParent (this.transform);
+		normalVisualisation.transform.localPosition = transform.localPosition + normal*1.3f;
 	}
 
 	public void DeactivateCollisionDetection(){
-		gameObject.GetComponent<SphereCollider> ().enabled = false;
+		gameObject.GetComponent<BoxCollider> ().enabled = false;
 	}
 
 	public void ActivateCollisionDetection(){
-		gameObject.GetComponent<SphereCollider> ().enabled = true;
+		gameObject.GetComponent<BoxCollider> ().enabled = true;
 	}
 
     void OnCollisionEnter(Collision col)
@@ -73,7 +70,7 @@ public class Vertex : MonoBehaviour {
         {
             if (parentVertexBundle.centerVertex && col.collider.gameObject.CompareTag("Vertex") && col.collider.transform.parent != transform.parent)
             {
-                VertexBundle colliderVertBundle = col.collider.transform.parent.GetComponent<VertexBundle>();
+				VertexBundle colliderVertBundle = col.collider.transform.parent.GetComponent<VertexBundle>();
 
 				if (colliderVertBundle.centerVertex && colliderVertBundle.possibleSnappingVertexBundle == null)
                 {
@@ -97,6 +94,7 @@ public class Vertex : MonoBehaviour {
 				if (colliderVertBundle.centerVertex && colliderVertBundle.possibleSnappingVertexBundle == parentVertexBundle)
                 {
                     parentVertexBundle.possibleSnappingVertexBundle = null;
+					colliderVertBundle.possibleSnappingVertexBundle = null;
 					colliderVertBundle.usedForSnapping = false;
                 }
 

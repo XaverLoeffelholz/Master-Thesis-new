@@ -25,11 +25,11 @@ public class BiManualOperations : Singleton<BiManualOperations> {
 	void FixedUpdate() {
 		if (controller1.currentFocus != null && controller2.currentFocus != null) {
 			if (controller1.currentFocus == controller2.currentFocus && controller1.currentFocus.CompareTag ("ModelingObject")) {
+				controller1.duplicateMode = false;
+				controller2.duplicateMode = false;
 
 				controller1.scalingMode = true;
 				controller2.scalingMode = true;
-				controller1.duplicateMode = false;
-				controller2.duplicateMode = false;
 
 				if (controller1.triggerPressed && controller2.triggerPressed) {
 					if (!scalingStarted) {
@@ -37,7 +37,6 @@ public class BiManualOperations : Singleton<BiManualOperations> {
 					} else {
 						ScaleOrRotateObject ();
 					}
-
 				} else {
 					scalingStarted = false;
 					controller1.scalingObject = false;
@@ -59,11 +58,9 @@ public class BiManualOperations : Singleton<BiManualOperations> {
 		if (controller1.currentFocus != null) {
 
 			if (controller1.currentFocus.CompareTag("ModelingObject")){
-				controller1.CreatePointOfCollisionPrefab();
-				controller2.CreatePointOfCollisionPrefab();
 
-				controller1.scalingObject = true;
-				controller2.scalingObject = true;
+				controller1.StartScaling ();
+				controller2.StartScaling ();
 
 				scalingStarted = true;
 
@@ -75,31 +72,6 @@ public class BiManualOperations : Singleton<BiManualOperations> {
 
 				initialDistance = controller2.pointOfCollisionGO.transform.position - controller1.pointOfCollisionGO.transform.position;
 				lastDistance = initialDistance;
-
-
-				/* one way
-				 * 
-                // get current rotation and raster it
-                lastRotation = Quaternion.LookRotation(controller2.pointOfCollisionGO.transform.position - controller1.pointOfCollisionGO.transform.position);
-
-                float x = RasterManager.Instance.RasterAngle(lastRotation.eulerAngles.x);
-                float y = RasterManager.Instance.RasterAngle(lastRotation.eulerAngles.y);
-                float z = RasterManager.Instance.RasterAngle(lastRotation.eulerAngles.z);
-
-                lastRotation = Quaternion.Euler(new Vector3(x, y, z));
-
-				*/
-
-				// other way
-
-				// get rotation of controller
-				lastRotation = controller2.transform.rotation;
-
-				float x = RasterManager.Instance.RasterAngle(lastRotation.eulerAngles.x);
-				float y = RasterManager.Instance.RasterAngle(lastRotation.eulerAngles.y);
-				float z = RasterManager.Instance.RasterAngle(lastRotation.eulerAngles.z);
-
-				lastRotation = Quaternion.Euler(new Vector3(x, y, z));
             }
 		}  
     }
@@ -115,12 +87,12 @@ public class BiManualOperations : Singleton<BiManualOperations> {
 
             ModelingObject modObject = controller1.currentFocus.GetComponent<ModelingObject>();
 
-			if (newScale > 5f) {
-				newScale = 5f;
+			if (newScale > 3f) {
+				newScale = 3f;
 			}
 
-			if (newScale < 0f) {
-				newScale = 0f;
+			if (newScale < 0.1f) {
+				newScale = 0.1f;
 			}
 
             modObject.ScaleBy(newScale, true);

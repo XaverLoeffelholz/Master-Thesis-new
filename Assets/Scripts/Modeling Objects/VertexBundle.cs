@@ -29,7 +29,7 @@ public class VertexBundle : MonoBehaviour {
 			vert.Initialize ();
             if (!centerVertex)
             {
-                Collider col = vert.GetComponent<SphereCollider>();
+				Collider col = vert.GetComponent<BoxCollider>();
                 col.enabled = false;
 
                 Rigidbody rig = vert.GetComponent<Rigidbody>();
@@ -62,7 +62,7 @@ public class VertexBundle : MonoBehaviour {
 
 		foreach (Vertex vert in vertices)
 		{
-			vert.gameObject.GetComponent<SphereCollider>().enabled = true;
+			vert.gameObject.GetComponent<BoxCollider>().enabled = true;
 		}
 	}
 
@@ -71,7 +71,7 @@ public class VertexBundle : MonoBehaviour {
 
 		foreach (Vertex vert in vertices)
 		{
-			vert.gameObject.GetComponent<SphereCollider>().enabled = false;
+			vert.gameObject.GetComponent<BoxCollider>().enabled = false;
 		}
 	}
 }

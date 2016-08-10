@@ -57,7 +57,7 @@ public class Teleportation : Singleton<Teleportation> {
 		float distance = Vector3.Distance(MovingObject.position, transform.position);
 
 		// get angle between
-		float angle = Quaternion.Angle(MovingObject.rotation, transform.rotation);
+		//float angle = Quaternion.Angle(MovingObject.rotation, transform.rotation);
 
 		// define time variable
 		float time = distance * 0.3f;

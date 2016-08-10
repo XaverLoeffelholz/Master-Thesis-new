@@ -44,8 +44,7 @@ public class ObjectSelecter : MonoBehaviour {
 		transform.LookAt (Camera.main.transform);
 	}
 
-	public void ShowSelectionButton(Selection controller){
-		
+	public void ShowSelectionButton(Selection controller){		
 		RePosition (Camera.main.transform.position);
 
 		if (!active) {			
@@ -56,12 +55,14 @@ public class ObjectSelecter : MonoBehaviour {
 			//RescaleButton ();
 		}
 
+		connectedObject.boundingBox.ActivateBoundingBoxCollider ();
 		LeanTween.alpha (buttonGameObject, 1f, 0.15f);
     }
 
 	public void HideSelectionButton(){
 		if (active) {
 			connectedObject.HideBoundingBox ();
+			connectedObject.boundingBox.DeActivateBoundingBoxCollider ();
 			active = false;
 			Collider.SetActive (false);
 		}

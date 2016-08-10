@@ -154,11 +154,20 @@ public class Selection : MonoBehaviour
 
 		if (controllerActive) {
 
-			if (movingObject && currentFocus != null) {
+			if ((movingObject || scalingObject) && currentFocus != null) {
 				if (grabbedIcon != null && grabbedIcon.activeSelf) {
-					grabbedIcon.transform.position = currentFocus.transform.position + grabbedIconOffset;
-					Vector3 newScale = initialScaleGrabbedIcon * (transform.position - currentFocus.transform.position).magnitude;
-					grabbedIcon.transform.localScale = new Vector3 (Mathf.Min (newScale.x, grabbedIcon.transform.localScale.x * 1.3f), Mathf.Min (newScale.y, grabbedIcon.transform.localScale.y * 1.3f), Mathf.Min (newScale.z, grabbedIcon.transform.localScale.z * 1.3f)); 
+					if (scalingMode) {
+						grabbedIcon.GetComponent<Renderer> ().material = scaleGrabbedIconMat;
+						grabbedIcon.transform.position = pointOfCollisionGO.transform.position;
+						Vector3 newScale = initialScaleGrabbedIcon * (transform.position - currentFocus.transform.position).magnitude;
+						grabbedIcon.transform.localScale = new Vector3 (Mathf.Min (newScale.x, grabbedIcon.transform.localScale.x * 1.4f), Mathf.Min (newScale.y, grabbedIcon.transform.localScale.y * 1.4f), Mathf.Min (newScale.z, grabbedIcon.transform.localScale.z * 1.4f)); 
+
+					} else {
+						grabbedIcon.GetComponent<Renderer> ().material = grabbedIconMat;
+						grabbedIcon.transform.position = currentFocus.transform.position + grabbedIconOffset;
+						Vector3 newScale = initialScaleGrabbedIcon * (transform.position - currentFocus.transform.position).magnitude;
+						grabbedIcon.transform.localScale = new Vector3 (Mathf.Min (newScale.x, grabbedIcon.transform.localScale.x * 1.4f), Mathf.Min (newScale.y, grabbedIcon.transform.localScale.y * 1.4f), Mathf.Min (newScale.z, grabbedIcon.transform.localScale.z * 1.4f)); 
+					}
 				}
 			}
 
@@ -176,17 +185,15 @@ public class Selection : MonoBehaviour
 
 					if (grabIcon != null && grabIcon.activeSelf) {
 						if (duplicateMode) {
-							grabIcon.GetComponent<Renderer>().material = duplicateGrabIconMat;
+							grabIcon.GetComponent<Renderer> ().material = duplicateGrabIconMat;
 							Vector3 newScale = initialScaleGrabIcon * hit.distance * 1.3f;
 							grabIcon.transform.localScale = new Vector3 (Mathf.Min (newScale.x, grabIcon.transform.localScale.x * 1.4f), Mathf.Min (newScale.y, grabIcon.transform.localScale.y * 1.4f), Mathf.Min (newScale.z, grabIcon.transform.localScale.z * 1.4f)); 
-
 						} else if (scalingMode) {
-							grabIcon.GetComponent<Renderer>().material = scaleGrabIconMat;
-							Vector3 newScale = initialScaleGrabIcon * hit.distance * 1.3f;
+							grabIcon.GetComponent<Renderer> ().material = scaleGrabIconMat;
+							Vector3 newScale = initialScaleGrabIcon * hit.distance;
 							grabIcon.transform.localScale = new Vector3 (Mathf.Min (newScale.x, grabIcon.transform.localScale.x * 1.4f), Mathf.Min (newScale.y, grabIcon.transform.localScale.y * 1.4f), Mathf.Min (newScale.z, grabIcon.transform.localScale.z * 1.4f)); 
-
 						} else {
-							grabIcon.GetComponent<Renderer>().material = normalGrabIconMat;
+							grabIcon.GetComponent<Renderer> ().material = normalGrabIconMat;
 							Vector3 newScale = initialScaleGrabIcon * hit.distance;
 							grabIcon.transform.localScale = new Vector3 (Mathf.Min (newScale.x, grabIcon.transform.localScale.x * 1.4f), Mathf.Min (newScale.y, grabIcon.transform.localScale.y * 1.4f), Mathf.Min (newScale.z, grabIcon.transform.localScale.z * 1.4f)); 
 						}
@@ -319,10 +326,12 @@ public class Selection : MonoBehaviour
 							grabbedIcon = Instantiate (grabbedIconPrefab);
 						}
 
-						grabbedIcon.SetActive (true);
+						if (!grabbedIcon.activeSelf) {
+							grabbedIcon.SetActive (true);
 
-						grabbedIconOffset = grabIcon.transform.position - currentFocus.transform.position; 
-						grabbedIcon.transform.position = currentFocus.transform.position + grabbedIconOffset;
+							grabbedIconOffset = grabIcon.transform.position - currentFocus.transform.position; 
+							grabbedIcon.transform.position = currentFocus.transform.position + grabbedIconOffset;
+						}
 
 						grabIcon.SetActive (false);
 
@@ -389,11 +398,6 @@ public class Selection : MonoBehaviour
 					otherController.triggerPressed = false;
 					otherController.movingHandle = false;
 
-					if (grabbedIcon != null) {
-						grabbedIcon.SetActive (false);
-
-					}
-
 					if (currentFocus.CompareTag ("ModelingObject")) {	
 						if (circleAnimation != null) {
 							circleAnimation.StartAnimation ();
@@ -401,7 +405,11 @@ public class Selection : MonoBehaviour
 
 						device.TriggerHapticPulse (1800);
 						currentFocus.GetComponent<ModelingObject> ().StopMoving (this, currentFocus.GetComponent<ModelingObject> ());
-						otherController.ActivateController (false);
+
+						if (!duplicateMode) {
+							otherController.ActivateController (false);
+						}
+
 						this.GetComponent<StageController> ().ShowPullVisual (false);
 
 						if (currentFocus.GetComponent<ModelingObject> ().inTrashArea) {
@@ -500,7 +508,21 @@ public class Selection : MonoBehaviour
 
 				temps = 0;
 			}
-		} 
+		} else {
+			if (grabbedIcon != null) {
+				grabbedIcon.SetActive (false);
+			}
+
+			if (grabIcon != null) {
+				grabIcon.SetActive (false);
+			}
+		}
+
+		if (device.GetTouchUp (SteamVR_Controller.ButtonMask.Trigger)) {
+			if (grabbedIcon != null) {
+				grabbedIcon.SetActive (false);
+			}
+		}
 
 
 		if (typeOfController == controllerType.SecondaryController) {
@@ -587,4 +609,21 @@ public class Selection : MonoBehaviour
         return movingObject;
     }
 
+	public void StartScaling(){
+		CreatePointOfCollisionPrefab();
+		scalingObject = true;
+
+		if (grabbedIcon == null) {
+			grabbedIcon = Instantiate (grabbedIconPrefab);
+			grabbedIcon.SetActive (false);
+		}
+
+		if (!grabbedIcon.activeSelf) {
+			grabbedIcon.SetActive (true);
+			grabIcon.SetActive (false);
+
+			grabbedIconOffset = grabIcon.transform.position - currentFocus.transform.position; 
+			grabbedIcon.transform.position = currentFocus.transform.position + grabbedIconOffset;
+		}
+	}
 }

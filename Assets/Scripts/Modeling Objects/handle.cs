@@ -176,7 +176,7 @@ public class handle : MonoBehaviour {
 
         if (newDistanceCenterScaler.magnitude >= 0.1f && Vector3.Dot(initialDistancceCenterScaler, newDistanceCenterScaler)>0)
         {
-			Vector3 position = initialLocalPositionHandle + (-input * (initialLocalPositionHandle-face.centerPosition).normalized * 0.5f);
+			//Vector3 position = initialLocalPositionHandle + (-input * (initialLocalPositionHandle-face.centerPosition).normalized * 0.5f);
 
 			positionScaler = RasterManager.Instance.Raster(positionScaler);
 			transform.position = connectedModelingObject.transform.TransformPoint(positionScaler);

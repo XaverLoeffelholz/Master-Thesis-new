@@ -3,7 +3,7 @@ using System.Collections;
 
 public class Infopanel : MonoBehaviour {
 
-	public GameObject collider;
+	public GameObject colliderInfoPanel;
 	public CanvasGroup inside;
 	private bool focused = false;
 
@@ -42,7 +42,7 @@ public class Infopanel : MonoBehaviour {
 	}
 
 	public void CloseInfoPanel(){
-		collider.SetActive (false);
+		colliderInfoPanel.SetActive (false);
 		LeanTween.alpha (gameObject.GetComponent<RectTransform> (), 0f, 0.4f).setEase (LeanTweenType.easeInOutCubic);
 		LeanTween.alphaCanvas (inside, 0f, 0.4f).setEase (LeanTweenType.easeInOutCubic);
 

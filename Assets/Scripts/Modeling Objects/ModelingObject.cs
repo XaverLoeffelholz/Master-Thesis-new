@@ -73,7 +73,9 @@ public class ModelingObject : MonoBehaviour
     public ObjectSelecter objectSelector;
 
     private Vector3 relativeTo;
-	private Vector3 initialPosition;
+	private Vector3[] vectorsTopOnScalingBegin;
+	private Vector3[] vectorsBottomOnScalingBegin;
+	private Vector3 boundingBoxTopToCenterOnScalingBegin;
 
 	private Transform player;
 	public GameObject trashIcon;
@@ -137,21 +139,11 @@ public class ModelingObject : MonoBehaviour
 			if (!BiManualOperations.Instance.IsScalingStarted ()) {
 				
 				Vector3 newPositionCollider = transform.TransformPoint(RasterManager.Instance.Raster(transform.InverseTransformPoint(controllerForMovement.pointOfCollisionGO.transform.position)));
+				Vector3 newPositionWorld = this.transform.position + (newPositionCollider - lastPositionController);
+				transform.position = newPositionWorld;				
 
-				Vector3 newPositionWorld = this.transform.position + (newPositionCollider - initialPositionController);
-
-				if (!initialBlocking) {
-					newPositionWorld = this.transform.position + (newPositionCollider - lastPositionController);
-					transform.position = newPositionWorld;
-				}
-
-				if (initialBlocking && (newPositionCollider - initialPositionController).sqrMagnitude > 0.05f) {
-					initialBlocking = false;
-					newPositionWorld = this.transform.position + (newPositionCollider - initialPositionController);
-					transform.position = newPositionWorld;
-				}
-
-				float lowestPoint =  transform.TransformPoint(GetBoundingBoxBottomCenter ()).y;
+				this.transform.localPosition = RasterManager.Instance.Raster(this.transform.localPosition);
+				float lowestPoint =  GetBoundingBoxBottomCenter ().y;
 
 				// here we need to check for the whole group if there is an object touching 0
 				if (group != null) {
@@ -162,13 +154,9 @@ public class ModelingObject : MonoBehaviour
 				if (lowestPoint <= ObjectsManager.Instance.stageScaler.transform.position.y) {					
 					// check how far it is belowfadd
 					float belowZero = ObjectsManager.Instance.stageScaler.transform.position.y - lowestPoint;
-					//Debug.Log ("below zero:" + belowZero);
 					transform.position = new Vector3 (transform.position.x, transform.position.y + belowZero, transform.position.z);
+					this.transform.localPosition = RasterManager.Instance.Raster(this.transform.localPosition);
 				}
-
-				//LeanTween.moveLocal (gameObject, RasterManager.Instance.Raster (this.transform.localPosition), 0.1f);
-
-				this.transform.localPosition = RasterManager.Instance.Raster(this.transform.localPosition);
 
 				// here check for possible snappings
 				if (bottomFace.center.possibleSnappingVertexBundle != null)
@@ -188,8 +176,8 @@ public class ModelingObject : MonoBehaviour
 						} else {
 							snapped = false;	
 							bottomFace.center.possibleSnappingVertexBundle.usedForSnapping = false;
-							bottomFace.center.possibleSnappingVertexBundle.possibleSnappingVertexBundle = null;
-							bottomFace.center.possibleSnappingVertexBundle = null;
+							//bottomFace.center.possibleSnappingVertexBundle.possibleSnappingVertexBundle = null;
+							//bottomFace.center.possibleSnappingVertexBundle = null;
 						}
 					}
 				}
@@ -217,7 +205,7 @@ public class ModelingObject : MonoBehaviour
 				*/
 
 				// maybe check local positon
-				int countX = RasterManager.Instance.getNumberOfGridUnits(bottomFace.center.coordinates.x, transform.InverseTransformPoint(PositionOnMovementStart).x);
+				int countX = RasterManager.Instance.getNumberOfGridUnits(transform.InverseTransformPoint(GetBoundingBoxBottomCenter()).x, transform.InverseTransformPoint(PositionOnMovementStart).x);
 
 				for (int i = 0; i <= Mathf.Abs(countX); i++)
 				{
@@ -277,7 +265,7 @@ public class ModelingObject : MonoBehaviour
 			if (bottomFace.center.coordinates.y != transform.InverseTransformPoint(PositionOnMovementStart).y)
 			{
 				// use raster manager
-				int countY = RasterManager.Instance.getNumberOfGridUnits(bottomFace.center.coordinates.y, transform.InverseTransformPoint(PositionOnMovementStart).y);
+					int countY = RasterManager.Instance.getNumberOfGridUnits(transform.InverseTransformPoint(GetBoundingBoxBottomCenter()).y, transform.InverseTransformPoint(PositionOnMovementStart).y);
 
 				for (int i = 0; i <= Mathf.Abs(countY); i++)
 				{
@@ -306,7 +294,7 @@ public class ModelingObject : MonoBehaviour
 			if (bottomFace.center.coordinates.z != transform.InverseTransformPoint(PositionOnMovementStart).z)
 			{
 				// use raster manager
-				int countZ = RasterManager.Instance.getNumberOfGridUnits(bottomFace.center.coordinates.z, transform.InverseTransformPoint(PositionOnMovementStart).z);
+				int countZ = RasterManager.Instance.getNumberOfGridUnits(transform.InverseTransformPoint(GetBoundingBoxBottomCenter()).z, transform.InverseTransformPoint(PositionOnMovementStart).z);
 
 				for (int i = 0; i <= Mathf.Abs(countZ); i++)
 				{
@@ -404,8 +392,6 @@ public class ModelingObject : MonoBehaviour
 
         InitializeVertexBundles();
         InitializeVertices();
-
-		initialPosition = transform.position;
 
 		ShowOutline (false);
     }
@@ -563,18 +549,6 @@ public class ModelingObject : MonoBehaviour
 		handles.faceBottomScale.transform.rotation = Quaternion.LookRotation (handles.faceBottomScale.transform.position -  transform.TransformPoint (bottomFace.center.coordinates));
 		handles.HeightBottom.transform.rotation = Quaternion.LookRotation(transform.TransformDirection(bottomFace.normal));
 
-		// old
-
-		/*
-		handles.faceTopScale.transform.localRotation = Quaternion.FromToRotation(transform.InverseTransformDirection(handles.faceTopScale.transform.up), transform.TransformDirection(handles.faceTopScale.transform.localPosition - topFace.center.coordinates));
-		handles.CenterTopPosition.transform.localRotation = Quaternion.FromToRotation(transform.InverseTransformDirection(handles.CenterTopPosition.transform.up), transform.TransformDirection(topFace.normal));
-		handles.HeightTop.transform.localRotation = Quaternion.FromToRotation(transform.InverseTransformDirection(handles.HeightTop.transform.up), transform.TransformDirection(topFace.normal));
-
-		handles.faceBottomScale.transform.localRotation = Quaternion.FromToRotation(transform.InverseTransformDirection(handles.faceBottomScale.transform.up), transform.TransformDirection(handles.faceBottomScale.transform.localPosition - bottomFace.center.coordinates));
-		handles.CenterBottomPosition.transform.localRotation = Quaternion.FromToRotation(transform.InverseTransformDirection(handles.CenterBottomPosition.transform.up), transform.TransformDirection(bottomFace.normal));
-		handles.HeightBottom.transform.localRotation = Quaternion.FromToRotation(transform.InverseTransformDirection(handles.HeightBottom.transform.up), transform.TransformDirection(bottomFace.normal));
-
-		*/
 
         // use Bounding Box to rotate rotation Handles
         handles.RotateUp0.transform.rotation = Quaternion.LookRotation(boundingBox.coordinates[0] - boundingBox.coordinates[1]);
@@ -591,26 +565,21 @@ public class ModelingObject : MonoBehaviour
         handles.RotateSide1.transform.rotation = Quaternion.LookRotation(boundingBox.coordinates[1] - boundingBox.coordinates[5]);
         handles.RotateSide2.transform.rotation = Quaternion.LookRotation(boundingBox.coordinates[2] - boundingBox.coordinates[6]);
         handles.RotateSide3.transform.rotation = Quaternion.LookRotation(boundingBox.coordinates[3] - boundingBox.coordinates[7]);
-
-       
+			       
         handles.RotateUp0.transform.RotateAround(boundingBox.coordinates[0] - boundingBox.coordinates[1], Vector3.AngleBetween(handles.RotateUp0.transform.up, handles.RotateUp0.transform.position - transform.position));
-        handles.RotateUp1.transform.RotateAround(boundingBox.coordinates[1] - boundingBox.coordinates[2], Vector3.AngleBetween(handles.RotateUp1.transform.up, handles.RotateUp1.transform.position - transform.position));
-        handles.RotateUp2.transform.RotateAround(boundingBox.coordinates[2] - boundingBox.coordinates[3], Vector3.AngleBetween(handles.RotateUp2.transform.up, handles.RotateUp2.transform.position - transform.position));
-        handles.RotateUp3.transform.RotateAround(boundingBox.coordinates[3] - boundingBox.coordinates[0], Vector3.AngleBetween(handles.RotateUp3.transform.up, handles.RotateUp3.transform.position - transform.position));
+		handles.RotateUp1.transform.RotateAround(boundingBox.coordinates[1] - boundingBox.coordinates[2], Vector3.AngleBetween(handles.RotateUp1.transform.up, handles.RotateUp1.transform.position - transform.position));
+		handles.RotateUp2.transform.RotateAround(boundingBox.coordinates[2] - boundingBox.coordinates[3], Vector3.AngleBetween(handles.RotateUp2.transform.up, handles.RotateUp2.transform.position - transform.position));
+		handles.RotateUp3.transform.RotateAround(boundingBox.coordinates[3] - boundingBox.coordinates[0], Vector3.AngleBetween(handles.RotateUp3.transform.up, handles.RotateUp3.transform.position - transform.position));
 
-        handles.RotateDown0.transform.RotateAround(boundingBox.coordinates[4] - boundingBox.coordinates[5], (-1f) * Vector3.AngleBetween(handles.RotateDown0.transform.right, handles.RotateDown0.transform.position - transform.position));
-        handles.RotateDown1.transform.RotateAround(boundingBox.coordinates[5] - boundingBox.coordinates[6], (-1f) * Vector3.AngleBetween(handles.RotateDown1.transform.right, handles.RotateDown1.transform.position - transform.position));
-        handles.RotateDown2.transform.RotateAround(boundingBox.coordinates[6] - boundingBox.coordinates[7], (-1f) * Vector3.AngleBetween(handles.RotateDown2.transform.right, handles.RotateDown2.transform.position - transform.position));
-        handles.RotateDown3.transform.RotateAround(boundingBox.coordinates[7] - boundingBox.coordinates[4], (-1f) * Vector3.AngleBetween(handles.RotateDown3.transform.right, handles.RotateDown3.transform.position - transform.position));
+		handles.RotateDown0.transform.RotateAround(boundingBox.coordinates[4] - boundingBox.coordinates[5], (-1f) * Vector3.AngleBetween(handles.RotateDown0.transform.right, handles.RotateDown0.transform.position - transform.position));
+		handles.RotateDown1.transform.RotateAround(boundingBox.coordinates[5] - boundingBox.coordinates[6], (-1f) * Vector3.AngleBetween(handles.RotateDown1.transform.right, handles.RotateDown1.transform.position - transform.position));
+		handles.RotateDown2.transform.RotateAround(boundingBox.coordinates[6] - boundingBox.coordinates[7], (-1f) * Vector3.AngleBetween(handles.RotateDown2.transform.right, handles.RotateDown2.transform.position - transform.position));
+		handles.RotateDown3.transform.RotateAround(boundingBox.coordinates[7] - boundingBox.coordinates[4], (-1f) * Vector3.AngleBetween(handles.RotateDown3.transform.right, handles.RotateDown3.transform.position - transform.position));
 
-
-        handles.RotateSide0.transform.RotateAround(boundingBox.coordinates[0] - boundingBox.coordinates[4], (-1f) * Vector3.AngleBetween(handles.RotateSide0.transform.right, handles.RotateSide0.transform.position - transform.position));
-        handles.RotateSide1.transform.RotateAround(boundingBox.coordinates[1] - boundingBox.coordinates[5], Vector3.AngleBetween(handles.RotateSide1.transform.right, handles.RotateSide1.transform.position - transform.position));
-        handles.RotateSide2.transform.RotateAround(boundingBox.coordinates[2] - boundingBox.coordinates[6], Vector3.AngleBetween(handles.RotateSide2.transform.right, handles.RotateSide2.transform.position - transform.position));
-        handles.RotateSide3.transform.RotateAround(boundingBox.coordinates[3] - boundingBox.coordinates[7], (-1f) * Vector3.AngleBetween(handles.RotateSide3.transform.right, handles.RotateSide3.transform.position - transform.position));
-
-
-
+		handles.RotateSide0.transform.RotateAround(boundingBox.coordinates[0] - boundingBox.coordinates[4], (-1f) * Vector3.AngleBetween(handles.RotateSide0.transform.right, handles.RotateSide0.transform.position - transform.position));
+		handles.RotateSide1.transform.RotateAround(boundingBox.coordinates[1] - boundingBox.coordinates[5], Vector3.AngleBetween(handles.RotateSide1.transform.right, handles.RotateSide1.transform.position - transform.position));
+		handles.RotateSide2.transform.RotateAround(boundingBox.coordinates[2] - boundingBox.coordinates[6], Vector3.AngleBetween(handles.RotateSide2.transform.right, handles.RotateSide2.transform.position - transform.position));
+		handles.RotateSide3.transform.RotateAround(boundingBox.coordinates[3] - boundingBox.coordinates[7], (-1f) * Vector3.AngleBetween(handles.RotateSide3.transform.right, handles.RotateSide3.transform.position - transform.position));
     }
 
     public void InitiateHandles()
@@ -656,6 +625,8 @@ public class ModelingObject : MonoBehaviour
 
             controller.AssignCurrentFocus(transform.gameObject);
             focused = true;
+
+
         }
     }
 
@@ -715,6 +686,7 @@ public class ModelingObject : MonoBehaviour
 
 			ShowOutline(true);
 			ShowBoundingBox ();
+			boundingBox.DeActivateBoundingBoxCollider ();
 		}      
     }
 		
@@ -1027,10 +999,27 @@ public class ModelingObject : MonoBehaviour
 
     public void StartScaling(bool initiater)
     {
+		boundingBox.DeActivateBoundingBoxCollider ();
+
         if (group == null)
         {
             relativeTo = GetBoundingBoxBottomCenter();
             initialDistancceCenterBottomScaler = scalerObject.coordinates - relativeTo;
+			
+			boundingBoxTopToCenterOnScalingBegin = GetBoundingBoxTopCenter () - GetBoundingBoxBottomCenter ();
+
+			vectorsTopOnScalingBegin = new Vector3[topFace.vertexBundles.Length];
+			vectorsBottomOnScalingBegin = new Vector3[bottomFace.vertexBundles.Length];
+			Vector3 boundingBoxBottomLocal = transform.InverseTransformPoint (GetBoundingBoxBottomCenter ());
+
+			for (int i = 0; i < topFace.vertexBundles.Length; i++) {
+				vectorsTopOnScalingBegin[i] = topFace.vertexBundles [i].coordinates - boundingBoxBottomLocal;
+			}
+
+			for (int i = 0; i < bottomFace.vertexBundles.Length; i++) {
+				vectorsBottomOnScalingBegin[i] = bottomFace.vertexBundles [i].coordinates - boundingBoxBottomLocal;
+			}
+
         } else
         {
             if (initiater)
@@ -1046,30 +1035,52 @@ public class ModelingObject : MonoBehaviour
 
 
     public void ScaleBy(float newScale, bool initiater)
-    {      
-        if (group != null && initiater)
+    {     
+		// first calculate scaling with top center
+		Vector3 newBoundingBoxTopCenter = GetBoundingBoxBottomCenter() + newScale * (boundingBoxTopToCenterOnScalingBegin);
+
+		// raster that value
+		newBoundingBoxTopCenter = transform.TransformPoint(RasterManager.Instance.Raster (transform.InverseTransformPoint(newBoundingBoxTopCenter)));
+		float rasteredScalingValue = (newBoundingBoxTopCenter - GetBoundingBoxBottomCenter ()).magnitude / boundingBoxTopToCenterOnScalingBegin.magnitude;
+
+		Vector3 boundingBoxBottomLocal = transform.InverseTransformPoint (GetBoundingBoxBottomCenter ());
+
+		for (int i = 0; i < topFace.vertexBundles.Length; i++) {
+			topFace.vertexBundles [i].coordinates = boundingBoxBottomLocal + rasteredScalingValue * (vectorsTopOnScalingBegin[i]);
+		}
+
+		for (int i = 0; i < bottomFace.vertexBundles.Length; i++) {
+			bottomFace.vertexBundles [i].coordinates = boundingBoxBottomLocal + rasteredScalingValue * (vectorsBottomOnScalingBegin[i]);
+		}
+				
+		for (int i = 0; i < faces.Length; i++) {
+			faces [i].UpdateCenter ();
+		}
+
+		topFace.UpdateSpecialVertexCoordinates ();
+		bottomFace.UpdateSpecialVertexCoordinates ();
+
+		CalculateBoundingBox ();
+		PositionHandles ();
+		RotateHandles ();
+
+		/*
+
+		if (group != null && initiater)
         { 
             group.ScaleBy(newScale, this);
         }
 
         Vector3 positionScalerObject = RasterManager.Instance.Raster(relativeTo + ((newScale) * initialDistancceCenterBottomScaler));
-        Vector3 newDistanceCenterBottomScaler = positionScalerObject - relativeTo;
 
         float amount = (positionScalerObject - relativeTo).magnitude / (scalerObject.coordinates - relativeTo).magnitude;
 
-        // get difference to last state to adjust other vertexbundles accordingly
         scalerObject.coordinates = positionScalerObject;
 
         bottomFace.ReplaceFacefromObjectScaler(relativeTo, amount);
         topFace.ReplaceFacefromObjectScaler(relativeTo, amount);
 
-		// Update handles for Frustum
-
-		PositionHandles ();
-		RotateHandles();
-
-	//	topFace.scaleHandle.circle.localScale = topFace.scaleHandle.circle.localScale * newScale;
-	//	bottomFace.scaleHandle.circle.localScale = topFace.scaleHandle.circle.localScale * newScale;
+		*/
     }
 
     public void UpDateObjectFromCorner()
@@ -1232,87 +1243,30 @@ public class ModelingObject : MonoBehaviour
 		// RotateHandles ();     
     }
 
-    public Vector3 GetBoundingBoxTopCenter()
-    {
-        Vector3 boundingBoxTopCenter = Vector3.zero;
-        float highestYvalue = -9999f;
 
-        // Calculate Center of Vertices
-        Vector3 center = GetBoundingBoxCenter();
-
-        // find Vertex with highest y value
-        for (int i = 0; i < topFace.vertexBundles.Length; i++)
-        {
-            if (topFace.vertexBundles[i].coordinates.y > highestYvalue)
-            {
-                highestYvalue = topFace.vertexBundles[i].coordinates.y;
-            }
-        }
-
-        for (int i = 0; i < bottomFace.vertexBundles.Length; i++)
-        {
-            if (bottomFace.vertexBundles[i].coordinates.y > highestYvalue)
-            {
-                highestYvalue = bottomFace.vertexBundles[i].coordinates.y;
-            }
-        }
-
-        // return point with highest y value and x/z of center
-        Vector3 boundingBoxBottomCenter = new Vector3(center.x, highestYvalue, center.z);
-
-        return boundingBoxTopCenter;
-    }
-
-    public Vector3 GetBoundingBoxBottomCenter()
-    {        
-        float lowestYvalue = 9999f;
-
-        // Calculate Center of Vertices
-        Vector3 center = GetBoundingBoxCenter();
-
-        // find Vertex with lowest y value
-        for (int i = 0; i < topFace.vertexBundles.Length; i++)
-        {
-            if (topFace.vertexBundles[i].coordinates.y < lowestYvalue)
-            {
-                lowestYvalue = topFace.vertexBundles[i].coordinates.y;
-            }
-        }
-
-        for (int i = 0; i < bottomFace.vertexBundles.Length; i++)
-        {
-            if (bottomFace.vertexBundles[i].coordinates.y < lowestYvalue)
-            {
-                lowestYvalue = bottomFace.vertexBundles[i].coordinates.y;
-            }
-        }
-
-        // return point with lowest y value and x/z of center
-        Vector3 boundingBoxBottomCenter = new Vector3(center.x, lowestYvalue, center.z);
-
-        return boundingBoxBottomCenter;
-    }
-
-    public Vector3 GetBoundingBoxCenter()
-    {
-        Vector3 boundingBoxCenter = Vector3.zero;
-
-        for (int i = 0; i < topFace.vertexBundles.Length; i++)
-        {
-            boundingBoxCenter += topFace.vertexBundles[i].coordinates;
-        }
-
-        for (int i = 0; i < bottomFace.vertexBundles.Length; i++)
-        {
-            boundingBoxCenter += bottomFace.vertexBundles[i].coordinates;
-        }
-
-        boundingBoxCenter = boundingBoxCenter / (topFace.vertexBundles.Length + bottomFace.vertexBundles.Length);
-
-        return boundingBoxCenter;
-    }
+	public Vector3 GetBoundingBoxBottomCenter()
+	{ 
+		CalculateBoundingBox ();
+		Vector3 boundingBoxBottomCenter = 0.25f * boundingBox.coordinates [4] + 0.25f * boundingBox.coordinates [5] + 0.25f * boundingBox.coordinates [6] + 0.25f * boundingBox.coordinates [7];
+		return boundingBoxBottomCenter;
+	}
 
 
+	public Vector3 GetBoundingBoxTopCenter()
+	{ 
+		CalculateBoundingBox ();
+		Vector3 boundingBoxBottomCenter = 0.25f * boundingBox.coordinates [0] + 0.25f * boundingBox.coordinates [1] + 0.25f * boundingBox.coordinates [2] + 0.25f * boundingBox.coordinates [3];
+		return boundingBoxBottomCenter;
+	}
+
+
+	public Vector3 GetBoundingBoxCenter()
+	{
+		Vector3 boundingBoxCenter = 0.5f * GetBoundingBoxBottomCenter () + 0.5f * GetBoundingBoxTopCenter ();
+		return boundingBoxCenter;
+	}
+
+  
 	public Vector3 GetBoundingBoxMinima()
 	{
 		Vector3 minima = new Vector3 (9999f, 9999f, 9999f);

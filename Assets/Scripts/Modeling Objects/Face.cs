@@ -199,15 +199,16 @@ public class Face : MonoBehaviour {
 
 		// Quick fix for Octagon
 		if (parentModelingObject.typeOfObject == ModelingObject.ObjectType.octagon) {
-			
-			VertexBundle[] OrderedVertexBundles = new VertexBundle[vertexBundles.Length];
 
-			for (int i = 0; i < OrderedVertexBundles.Length; i++) {
-				OrderedVertexBundles [i] = vertexBundles [vertexBundles.Length - i - 1];
-			}
+			if (typeOfFace == faceType.TopFace) {
+				VertexBundle[] OrderedVertexBundles = new VertexBundle[vertexBundles.Length];
 
-			vertexBundles = OrderedVertexBundles;
+				for (int i = 0; i < OrderedVertexBundles.Length; i++) {
+					OrderedVertexBundles [i] = vertexBundles [vertexBundles.Length - i - 1];
+				}
 
+				vertexBundles = OrderedVertexBundles;
+			} 
 		} else {
 			VertexBundle[] OrderedVertexBundles = new VertexBundle[vertexBundles.Length];
 			VertexBundle[] LeftVertexBundles = vertexBundles;
