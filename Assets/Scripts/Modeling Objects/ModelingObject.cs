@@ -393,7 +393,7 @@ public class ModelingObject : MonoBehaviour
         InitializeVertexBundles();
         InitializeVertices();
 
-		ShowOutline (false);
+	//	ShowOutline (false);
     }
 
     public void RecalculateNormals()
@@ -614,18 +614,17 @@ public class ModelingObject : MonoBehaviour
         {
             Highlight();
 
-            if (group != null)
+			if (group != null && !group.focused)
             {
-                group.FocusGroup(this);
+				group.FocusGroup(this, controller);
             }
 
-			if (!transform.parent.CompareTag("Library") && !controller.groupItemSelection && !moving && !selected){
+			if (group == null && !transform.parent.CompareTag("Library") && !controller.groupItemSelection && !moving && !selected ){
 				objectSelector.ShowSelectionButton (controller);
 			}
 
             controller.AssignCurrentFocus(transform.gameObject);
             focused = true;
-
 
         }
     }
@@ -637,9 +636,9 @@ public class ModelingObject : MonoBehaviour
             // ObjectSelector.SetActive(false);
 			UnHighlight();
 
-            if (group != null)
+			if (group != null && group.focused)
             {
-                group.UnFocusGroup(this);
+                group.UnFocusGroup(this, controller);
             }
 
 			objectSelector.HideSelectionButton ();
@@ -684,7 +683,7 @@ public class ModelingObject : MonoBehaviour
 			UiCanvasGroup.Instance.transform.position = uiPosition;
 			UiCanvasGroup.Instance.OpenMainMenu(this, controller);
 
-			ShowOutline(true);
+			//ShowOutline(true);
 			ShowBoundingBox ();
 			boundingBox.DeActivateBoundingBoxCollider ();
 		}      
@@ -700,7 +699,7 @@ public class ModelingObject : MonoBehaviour
 			}
 			
 			selected = false;
-			ShowOutline(false);
+			//ShowOutline(false);
 
 			objectSelector.DeSelect (controller);
 			controller.DeAssignCurrentSelection(transform.gameObject);
@@ -712,30 +711,7 @@ public class ModelingObject : MonoBehaviour
 
     }
 
-    public void ShowOutline(bool value)
-    {
-        if (value)
-        {
-			// distance to object should be adapted to scale of
-			//transform.GetChild(0).GetComponent<Renderer>().material.SetColor("_OutlineColor", Color.white);
-			//transform.GetChild (0).GetComponent<Renderer> ().material.SetFloat ("_Outline", 0.005f * this.transform.lossyScale.x);
-
-			//DisplayOutlineOfGroundFace ();
-        }
-        else
-        {
-			//transform.GetChild(0).GetComponent<Renderer>().material.SetColor("_OutlineColor", new Color(1f,1f,1f,0f));
-			//transform.GetChild (0).GetComponent<Renderer> ().material.SetFloat ("_Outline", 0.00f);
-
-			if (DistanceVisualisation != null) {
-				// destroy previous distance vis
-				foreach (Transform visualObject in DistanceVisualisation)
-				{
-					Destroy(visualObject.gameObject);
-				}
-			}
-        }
-    }
+  
 
     public void CalculateBoundingBox()
     {
@@ -759,13 +735,22 @@ public class ModelingObject : MonoBehaviour
 
     public void ShowBoundingBox()
     {
-        CalculateBoundingBox();
-        boundingBox.DrawBoundingBox();
+		if (group == null) {
+			CalculateBoundingBox ();
+			boundingBox.DrawBoundingBox ();
+		} else {
+			group.DrawBoundingBox ();
+		}
+
     }
 
 	public void HideBoundingBox()
 	{
-		boundingBox.ClearBoundingBox ();
+		if (group == null) {
+			boundingBox.ClearBoundingBox ();
+		} else {
+			group.boundingBox.ClearBoundingBox ();
+		}
 	}
 
     public void AssignVertexBundlesToFaces()

@@ -89,7 +89,7 @@ public class ObjectCreator : Singleton<ObjectCreator> {
             } else
             {
 				newObject.transform.position = offSet;
-                newObject.transform.localScale = new Vector3(0.6f, 0.6f, 0.6f);
+                newObject.transform.localScale = new Vector3(0.8f, 0.8f, 0.8f);
             }
 
         }

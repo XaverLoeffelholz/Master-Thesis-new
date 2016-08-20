@@ -12,6 +12,9 @@ public class UiCanvasGroup : Singleton<UiCanvasGroup>{
     public float positioningHeight;
     public ModelingObject currentModelingObject;
 
+	public Selection controller1;
+	public Selection controller2;
+
     public GameObject MainMenu;
     private float distanceUserObject;
 
@@ -85,7 +88,12 @@ public class UiCanvasGroup : Singleton<UiCanvasGroup>{
     }
 
 	public void CloseMenu(Selection controller){
-		
+
+
+
+		controller1.groupItemSelection = false;
+		controller2.groupItemSelection = false;
+
 		Hide();
 
 		ObjectsManager.Instance.EnableObjects ();

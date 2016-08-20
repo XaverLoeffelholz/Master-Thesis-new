@@ -17,6 +17,7 @@ public class Selection : MonoBehaviour
     public Selection otherController;
 
     public bool triggerPressed = false;
+	public bool menuButtonPressed = false;
     [HideInInspector]
     public bool scalingObject = false;
     private bool movingObject = false;
@@ -109,6 +110,8 @@ public class Selection : MonoBehaviour
 				library.Instance.UnFocus (this);
 			} else if (currentFocus.CompareTag ("HeightControl")) {
 				currentFocus.GetComponent<StageHeightController> ().UnFocus (this);
+			} else if (currentFocus.CompareTag ("DistanceControl")) {
+				currentFocus.GetComponent<StageDistanceController> ().UnFocus (this);
 			}else if (currentFocus.CompareTag ("InfoPanel")) {
 				currentFocus.GetComponent<Infopanel> ().UnFocus (this);
 			} else if (currentFocus.CompareTag ("SelectionButton")) {				
@@ -153,7 +156,6 @@ public class Selection : MonoBehaviour
         var device = SteamVR_Controller.Input((int)trackedObj.index);       
 
 		if (controllerActive) {
-
 			if ((movingObject || scalingObject) && currentFocus != null) {
 				if (grabbedIcon != null && grabbedIcon.activeSelf) {
 					if (scalingMode) {
@@ -209,7 +211,7 @@ public class Selection : MonoBehaviour
 
 						if (currentFocus != hit.rigidbody.transform.parent.gameObject) {
 							// focus of Object
-							if (!UiCanvasGroup.Instance.visible && hit.rigidbody.transform.parent.gameObject.CompareTag ("ModelingObject")) {								
+							if ((!UiCanvasGroup.Instance.visible || groupItemSelection) && hit.rigidbody.transform.parent.gameObject.CompareTag ("ModelingObject")) {								
 								DeFocusCurrent (hit.rigidbody.transform.parent.gameObject);
 								currentFocus = hit.rigidbody.transform.parent.gameObject;
 								currentFocus.GetComponent<ModelingObject> ().Focus (this);
@@ -233,7 +235,12 @@ public class Selection : MonoBehaviour
 								DeFocusCurrent (hit.rigidbody.transform.parent.gameObject);
 								currentFocus = hit.rigidbody.transform.parent.gameObject;
 								currentFocus.GetComponent<ObjectSelecter> ().Focus (this);
-								currentFocus.GetComponent<ObjectSelecter> ().connectedObject.Focus (this);
+								if (currentFocus.GetComponent<ObjectSelecter> ().connectedObject != null) {
+									currentFocus.GetComponent<ObjectSelecter> ().connectedObject.Focus (this);
+								} else if (currentFocus.GetComponent<ObjectSelecter> ().connectedGroup != null) {
+									currentFocus.GetComponent<ObjectSelecter> ().connectedGroup.FocusGroup (null, this);
+								}
+
 								device.TriggerHapticPulse (600);
 							} else if (!UiCanvasGroup.Instance.visible && hit.rigidbody.transform.parent.gameObject.CompareTag ("TeleportPosition")) {
 								DeFocusCurrent (hit.rigidbody.transform.parent.gameObject);
@@ -252,7 +259,13 @@ public class Selection : MonoBehaviour
 								currentFocus = hit.rigidbody.transform.parent.gameObject;
 								currentFocus.GetComponent<StageHeightController> ().Focus (this);
 								device.TriggerHapticPulse (600);
-
+								grabIcon.transform.localScale = initialScaleGrabIcon * hit.distance; 
+								grabIcon.SetActive (true);
+							} else if (!UiCanvasGroup.Instance.visible && hit.rigidbody.transform.parent.gameObject.CompareTag ("DistanceControl")) {
+								DeFocusCurrent (hit.rigidbody.transform.parent.gameObject);
+								currentFocus = hit.rigidbody.transform.parent.gameObject;
+								currentFocus.GetComponent<StageDistanceController> ().Focus (this);
+								device.TriggerHapticPulse (600);
 								grabIcon.transform.localScale = initialScaleGrabIcon * hit.distance; 
 								grabIcon.SetActive (true);
 							} else if (!UiCanvasGroup.Instance.visible && hit.rigidbody.transform.parent.gameObject.CompareTag ("InfoPanel")) {
@@ -311,14 +324,34 @@ public class Selection : MonoBehaviour
 			} 
 
 
+			if (device.GetTouchDown (SteamVR_Controller.ButtonMask.ApplicationMenu)) {
+				if (!UiCanvasGroup.Instance.visible && currentFocus != null) {
+
+					if (currentFocus.CompareTag ("ModelingObject")) {
+						UiCanvasGroup.Instance.Show ();
+						currentFocus.GetComponent<ModelingObject> ().objectSelector.Select (this, uiPositon);
+					}
+
+					if (currentFocus.CompareTag ("SelectionButton")) {
+						UiCanvasGroup.Instance.Show ();
+						currentFocus.GetComponent<ObjectSelecter> ().Select (this, uiPositon);
+					}
+				} else if (UiCanvasGroup.Instance.visible) {
+					
+					UiCanvasGroup.Instance.CloseMenu (this);
+				}
+			}
+
+
+
 			if (currentFocus != null) {
 				if (device.GetTouchDown (SteamVR_Controller.ButtonMask.Trigger)) {
 					triggerPressed = true;
 					temps = Time.time;
 				}
 
-				if (triggerPressed && temps > 0.1f
-				    && (currentFocus.CompareTag ("ModelingObject") || currentFocus.CompareTag ("TeleportPosition") || currentFocus.CompareTag ("Library") || currentFocus.CompareTag ("HeightControl"))
+
+				if (triggerPressed && (currentFocus.CompareTag ("ModelingObject") || currentFocus.CompareTag ("TeleportPosition") || currentFocus.CompareTag ("Library") || currentFocus.CompareTag ("DistanceControl") || currentFocus.CompareTag ("HeightControl"))
 				    && typeOfController == controllerType.mainController) {
 					if (!movingObject && !faceSelection && !groupItemSelection) {
 
@@ -344,6 +377,8 @@ public class Selection : MonoBehaviour
 								circleAnimation.StartAnimation ();
 							}
 							this.GetComponent<StageController> ().ShowPullVisual (true);
+							otherController.transform.GetComponent<StageController> ().ShowRotateObjectVisual (true);
+
 							device.TriggerHapticPulse (1800);
 							otherController.ActivateController (true);
 
@@ -364,6 +399,8 @@ public class Selection : MonoBehaviour
 								circleAnimation.StartAnimation ();
 							}
 							this.GetComponent<StageController> ().ShowPullVisual (true);
+							otherController.transform.GetComponent<StageController> ().ShowRotateObjectVisual (true);
+
 							//otherController.transform.GetComponent<StageController> ().ShowScaleRotationToggle (true);
 							currentFocus.GetComponent<TeleportationPosition> ().StartMoving (this);
 						} else if (currentFocus.CompareTag ("Library")) {
@@ -371,10 +408,19 @@ public class Selection : MonoBehaviour
 								circleAnimation.StartAnimation ();
 							}
 							this.GetComponent<StageController> ().ShowPullVisual (true);
-							//otherController.transform.GetComponent<StageController> ().ShowScaleRotationToggle (true);
 							library.Instance.StartMoving (this);
 						} else if (currentFocus.CompareTag ("HeightControl")) {
+							if (circleAnimation != null) {
+								circleAnimation.StartAnimation ();
+							}
+							this.GetComponent<StageController> ().ShowPullVisual (true);
 							currentFocus.GetComponent<StageHeightController> ().StartMoving (this);
+						} else if (currentFocus.CompareTag ("DistanceControl")) {
+							if (circleAnimation != null) {
+								circleAnimation.StartAnimation ();
+							}
+							this.GetComponent<StageController> ().ShowPullVisual (true);
+							currentFocus.GetComponent<StageDistanceController> ().StartMoving (this);
 						}
 					}
 
@@ -390,9 +436,15 @@ public class Selection : MonoBehaviour
 				}
 			}
 
+
 			if (device.GetTouchUp (SteamVR_Controller.ButtonMask.Trigger)) {
 				triggerPressed = false;
-				movingHandle = false;
+
+				if (movingHandle){
+					currentFocus.GetComponent<handle> ().FinishUsingHandle ();
+					movingHandle = false;
+				}
+
 
 				if (movingObject && typeOfController == controllerType.mainController) {
 					otherController.triggerPressed = false;
@@ -411,6 +463,7 @@ public class Selection : MonoBehaviour
 						}
 
 						this.GetComponent<StageController> ().ShowPullVisual (false);
+						otherController.transform.GetComponent<StageController> ().ShowRotateObjectVisual (false);
 
 						if (currentFocus.GetComponent<ModelingObject> ().inTrashArea) {
 							currentFocus.GetComponent<ModelingObject> ().TrashObject (true);
@@ -423,20 +476,18 @@ public class Selection : MonoBehaviour
 						currentFocus.GetComponent<ModelingObject> ().DeSelect (this);
 					} else if (currentFocus.CompareTag ("TeleportPosition")) {
 						currentFocus.GetComponent<TeleportationPosition> ().StopMoving (this);
-
 						this.GetComponent<StageController> ().ShowPullVisual (false);
-						//otherController.transform.GetComponent<StageController> ().ShowScaleRotationToggle (false);
-
 						Teleportation.Instance.JumpToPos (5);
 					} else if (currentFocus.CompareTag ("Library")) {
 						this.GetComponent<StageController> ().ShowPullVisual (false);
-						//otherController.transform.GetComponent<StageController> ().ShowScaleRotationToggle (false);
-
 						library.Instance.StopMoving (this);
 					} else if (currentFocus.CompareTag ("HeightControl")) {
+						this.GetComponent<StageController> ().ShowPullVisual (false);
 						currentFocus.GetComponent<StageHeightController> ().StopMoving (this);
+					} else if (currentFocus.CompareTag ("DistanceControl")) {
+						this.GetComponent<StageController> ().ShowPullVisual (false);
+						currentFocus.GetComponent<StageDistanceController> ().StopMoving (this);
 					}
-
 
 				}
 
@@ -444,15 +495,18 @@ public class Selection : MonoBehaviour
 				movingObject = false;
 
 				if (currentFocus != null) {
+
 					if (currentFocus.CompareTag ("ModelingObject")) {
+
+						// this is not working
 						if (!groupItemSelection && currentSelection != null && currentSelection != currentFocus) {
 							UiCanvasGroup.Instance.CloseMenu (this);
 							this.enableFaceSelection (false);
 						}
 
 						if (groupItemSelection) {
-							ObjectsManager.Instance.AddObjectToGroup (ObjectsManager.Instance.currentGroup, currentFocus.GetComponent<ModelingObject> ());  
-							currentFocus.GetComponent<ModelingObject> ().ShowOutline (true);
+							// we could also display and icon (add to group)
+							ObjectsManager.Instance.AddObjectToGroup (ObjectsManager.Instance.currentGroup, currentFocus.GetComponent<ModelingObject> ());
 
 						} else if (faceSelection) {
 							if (collidingFace != null) {
@@ -490,20 +544,7 @@ public class Selection : MonoBehaviour
 					}
 
 				} else {
-					// user is clicking somewhere outside to close the menu
-					// test how it is if we not use that
 
-					/*
-
-					// check that we are not in group selection
-					if (!groupItemSelection) {
-						UiCanvasGroup.Instance.CloseMenu(this);
-					
-						DeAssignCurrentSelection(currentSelection);
-						this.enableFaceSelection(false);
-						otherController.enableFaceSelection(false);
-					}
-					*/
 				}
 
 				temps = 0;
@@ -534,6 +575,7 @@ public class Selection : MonoBehaviour
 				otherController.duplicateMode = false;
 			}
 		}
+	
         
     }
 

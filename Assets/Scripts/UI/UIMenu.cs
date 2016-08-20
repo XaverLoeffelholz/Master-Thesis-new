@@ -23,6 +23,7 @@ public class UIMenu : MonoBehaviour {
 		CloseMenu,
         Delete,
         GroupStart,
+		GroupBreak,
         GroupEnd,
         Duplicate,
         Color,
@@ -139,9 +140,16 @@ public class UIMenu : MonoBehaviour {
 			case (buttonType.Duplicate):
 				Duplicate ();
                 break;
-            case (buttonType.GroupStart):
-                StartGroup();
+			case (buttonType.GroupStart):
+				if (parentCanvas.currentModelingObject.group == null) {
+					StartGroup ();
+				} else {
+					ContinueGrouping ();
+				}
                 break;
+			case (buttonType.GroupBreak):
+				parentCanvas.currentModelingObject.group.BreakGroup ();
+				break;
             case (buttonType.GroupEnd):
                 EndGroup();
                 break;
@@ -155,6 +163,7 @@ public class UIMenu : MonoBehaviour {
                 Extrude();
                 break;
 			case (buttonType.CloseMenu):
+				EndGroup ();
 				parentCanvas.CloseMenu(controller);
 				break;
         }
@@ -169,12 +178,22 @@ public class UIMenu : MonoBehaviour {
         controller2.enableFaceSelection(true);
     }
 
+	public void ContinueGrouping(){
+		ObjectsManager.Instance.currentGroup = parentCanvas.currentModelingObject.group;
+		ObjectsManager.Instance.EnableObjects ();
+
+		// activate selection of item for group
+		controller1.groupItemSelection = true;
+		controller2.groupItemSelection = true;
+	}
 
     public void StartGroup()
     {
         // create group
         Group newGroup;
         newGroup = ObjectsManager.Instance.CreateGroup();
+
+		ObjectsManager.Instance.EnableObjects ();
 
         // add first element to group
         ObjectsManager.Instance.AddObjectToGroup(newGroup, parentCanvas.currentModelingObject);
@@ -188,14 +207,23 @@ public class UIMenu : MonoBehaviour {
 
     public void EndGroup()
     {
+		if (parentCanvas.currentModelingObject.group != null) {
+			if (parentCanvas.currentModelingObject.group.objectList.Count == 1) {
+				parentCanvas.currentModelingObject.group.BreakGroup ();
+			}
+		}
+
         // deactivate selection of item for group
         controller1.groupItemSelection = false;
         controller2.groupItemSelection = false;
     }
 
+
+
     public void Delete()
     {
         parentCanvas.Hide();
+		ObjectsManager.Instance.EnableObjects ();
         UiCanvasGroup.Instance.currentModelingObject.TrashObject(true);
     }
 

@@ -3,7 +3,7 @@ using System.Collections;
 
 public class StageController : MonoBehaviour {
 
-	public enum controllerMode { scalingStage, rotatingStage, pullPushObject, toggleRotateScale };
+	public enum controllerMode { scalingStage, rotatingStage, pullPushObject, toggleRotateScale, rotatingObject };
 
 	public controllerMode standardControllerMode;
 	public controllerMode currentControllerMode;
@@ -96,6 +96,25 @@ public class StageController : MonoBehaviour {
 		}
 	}
 
+	public void ShowRotateObjectVisual(bool value){		
+		if (value) {
+			currentControllerMode = controllerMode.rotatingObject;
+			pullIcon.SetActive (false);
+			normalIcon.SetActive (true);
+			toggle.SetActive (false);
+			toggle2.SetActive (false);
+			toggleBG.SetActive (false);
+		} else {
+			currentControllerMode = standardControllerMode;
+			pullIcon.SetActive (false);
+			normalIcon.SetActive (true);
+			toggle.SetActive (false);
+			toggle2.SetActive (false);
+			toggleBG.SetActive (false);
+		}
+	}
+
+
 	public void ShowScaleRotationToggle(bool value) {
 		
 		if (value) {
@@ -150,7 +169,6 @@ public class StageController : MonoBehaviour {
         if (device.GetTouchUp(SteamVR_Controller.ButtonMask.Touchpad))
         {
             touchDown = false;
-
 
 			LeanTween.color (line, lineColorNormal, 0.1f);
 			LeanTween.scale (touchpad, touchpadInitialScale, 0.2f).setDelay(0.1f); 
@@ -233,25 +251,26 @@ public class StageController : MonoBehaviour {
 
 				RotateStage (amountX);
 			}
-			else if (currentControllerMode == controllerMode.toggleRotateScale)
+			else if (currentControllerMode == controllerMode.rotatingObject)
 			{
-				if (recognizeNewSwipe) {
-					recognizeNewSwipe = false;
+				if (selection.otherController.currentFocus.CompareTag("ModelingObject")){
+					
+					// turn x value into rotation of stage
+					float amountX = device.GetAxis().x - lastX;
 					lastX = device.GetAxis().x;
+
+					amountOfMovementForHapticFeedback += amountX;
+
+					if (amountOfMovementForHapticFeedback > 2f) {
+						device.TriggerHapticPulse (1000);
+						amountOfMovementForHapticFeedback = 0f;
+					}
+
+					ModelingObject currentModelingObject = selection.otherController.currentFocus.GetComponent<ModelingObject> ();
+
+					currentModelingObject.RotateAround (currentModelingObject.GetBoundingBoxTopCenter () - currentModelingObject.GetBoundingBoxTopCenter (), amountX * 150f); 
 				}
-                // turn x value into rotation of stage
-                float amountX = device.GetAxis().x - lastX;
-	
-				if (amountX > 0.6f) {					
-					RotateObjectMode();
-
-				} else if(amountX < -0.6f) {					
-					ScaleObjectMode();
-
-				}
-
-
-            }
+			}
 
         }
 
@@ -299,28 +318,22 @@ public class StageController : MonoBehaviour {
 	public void ScaleStage(float amountY){
 		
 		Vector3 scaleStage = stage.parent.localScale;
-		scaleStage = scaleStage + (scaleStage * amountY * 2);
+		scaleStage = scaleStage + (scaleStage * amountY);
 
-		Vector3 libraryStage = library.localScale;
-		libraryStage = libraryStage + (libraryStage * amountY * 2);
-
-		Vector3 trashScale = trash.localScale;
-		trashScale = trashScale + (trashScale * amountY * 2);
+	//	Vector3 libraryStage = library.localScale;
+	//	libraryStage = libraryStage + (libraryStage * amountY);
 
 		if (scaleStage.x >= 0.25f && scaleStage.x <= 4f)
 		{
 			stage.parent.localScale = scaleStage; 
-			library.localScale = libraryStage;
-			trash.localScale = trashScale;
+		//	library.localScale = libraryStage;
 
 			// move line to point
 			float posLine = (scaleStage.x - 0.25f) / 3.75f;
 			line.transform.localPosition = minPosLine + posLine * (maxPosLine - minPosLine);
 
 			float scale = Mathf.Sqrt((Mathf.Abs(posLine - 0.5f)) / 0.5f);
-			line.transform.localScale = new Vector3 (Mathf.Max(lineInitialScale.x * (1f-scale), lineInitialScale.x*0.7f), lineInitialScale.y, lineInitialScale.z);
+			line.transform.localScale = new Vector3 (Mathf.Max(lineInitialScale.x * (1f-scale), lineInitialScale.x * 0.7f), lineInitialScale.y, lineInitialScale.z);
 		}
-
-
 	}
 }

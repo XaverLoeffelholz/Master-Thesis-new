@@ -10,6 +10,9 @@ public class Group : MonoBehaviour {
     public Vector3 RotationCenter;
 
 	public BoundingBox boundingBox;
+	public bool focused;
+
+	public ObjectSelecter objectSelector;
 
     // Use this for initialization
     void Start () {
@@ -25,7 +28,16 @@ public class Group : MonoBehaviour {
 
 	}
 
-	public void DrawBoundingBox(){
+	public void BreakGroup (){
+		for (int i = 0; i < objectList.Count; i++) {         
+			objectList [i].transform.SetParent (ObjectsManager.Instance.transform);
+			objectList [i].group = null;
+		}
+
+		ObjectsManager.Instance.DeleteGroup (this);
+	}
+
+	public void UpdateBoundingBox(){
 		boundingBox.coordinates = new Vector3[8];
 
 		// get highest and lowest values for x,y,z
@@ -33,15 +45,19 @@ public class Group : MonoBehaviour {
 		Vector3 maxima = GetBoundingBoxMaxima();
 
 		// set all points
-		boundingBox.coordinates[0] = new Vector3(maxima.x,maxima.y,maxima.z);
-		boundingBox.coordinates[1] = new Vector3(maxima.x,maxima.y,minima.z);
-		boundingBox.coordinates[2] = new Vector3(minima.x,maxima.y,minima.z);
-		boundingBox.coordinates[3] = new Vector3(minima.x,maxima.y,maxima.z);
+		boundingBox.coordinates[0] = transform.TransformPoint(new Vector3(maxima.x,maxima.y,maxima.z));
+		boundingBox.coordinates[1] = transform.TransformPoint(new Vector3(maxima.x,maxima.y,minima.z));
+		boundingBox.coordinates[2] = transform.TransformPoint(new Vector3(minima.x,maxima.y,minima.z));
+		boundingBox.coordinates[3] = transform.TransformPoint(new Vector3(minima.x,maxima.y,maxima.z));
 
-		boundingBox.coordinates[4] = new Vector3(maxima.x,minima.y,maxima.z);
-		boundingBox.coordinates[5] = new Vector3(maxima.x,minima.y,minima.z);
-		boundingBox.coordinates[6] = new Vector3(minima.x,minima.y,minima.z);
-		boundingBox.coordinates[7] = new Vector3(minima.x,minima.y,maxima.z);
+		boundingBox.coordinates[4] = transform.TransformPoint(new Vector3(maxima.x,minima.y,maxima.z));
+		boundingBox.coordinates[5] = transform.TransformPoint(new Vector3(maxima.x,minima.y,minima.z));
+		boundingBox.coordinates[6] = transform.TransformPoint(new Vector3(minima.x,minima.y,minima.z));
+		boundingBox.coordinates[7] = transform.TransformPoint(new Vector3(minima.x,minima.y,maxima.z));
+	}
+
+	public void DrawBoundingBox(){
+		UpdateBoundingBox ();
 
 		for (int i = 0; i < objectList.Count; i++)
 		{
@@ -117,7 +133,7 @@ public class Group : MonoBehaviour {
 
 		for (int i = 0; i < objectList.Count; i++)
 		{
-			Vector3 currentMinima = objectList [i].transform.TransformPoint(objectList [i].GetBoundingBoxMinima ());
+			Vector3 currentMinima = transform.InverseTransformPoint(objectList [i].transform.TransformPoint(objectList [i].GetBoundingBoxMinima ()));
 
 			if (currentMinima.x < minima.x) {
 				minima.x = currentMinima.x;
@@ -142,7 +158,7 @@ public class Group : MonoBehaviour {
 
 		for (int i = 0; i < objectList.Count; i++)
 		{
-			Vector3 currentMaxima = objectList [i].transform.TransformPoint(objectList [i].GetBoundingBoxMaxima ());
+			Vector3 currentMaxima = transform.InverseTransformPoint(objectList [i].transform.TransformPoint(objectList [i].GetBoundingBoxMaxima ()));
 
 			if (currentMaxima.x > maxima.x) {
 				maxima.x = currentMaxima.x;
@@ -162,23 +178,29 @@ public class Group : MonoBehaviour {
 	}
 
 
-    public void FocusGroup(ModelingObject initiater)
+	public void FocusGroup(ModelingObject initiater, Selection controller)
     {
+		focused = true;
+
+		objectSelector.ShowSelectionButton (controller);
+
         for (int i = 0; i < objectList.Count; i++) {         
             if (objectList[i] != initiater)
             {
-                objectList[i].Highlight();
+				objectList[i].Focus(controller);
             }
         }
     }
 
-    public void UnFocusGroup(ModelingObject initiater)
+	public void UnFocusGroup(ModelingObject initiater, Selection controller)
     {
+		focused = false;
+
         for (int i = 0; i < objectList.Count; i++)
         {
             if (objectList[i] != initiater)
             {
-                objectList[i].UnHighlight();
+				objectList[i].UnFocus(controller);
             }
         }
     }
@@ -219,7 +241,7 @@ public class Group : MonoBehaviour {
         {
             if (objectList[i] != initiater)
             {
-                objectList[i].ShowOutline(true);
+               // objectList[i].ShowOutline(true);
             }
         }
 
@@ -233,7 +255,7 @@ public class Group : MonoBehaviour {
         {
             if (objectList[i] != initiater)
             {
-                objectList[i].ShowOutline(false);
+               // objectList[i].ShowOutline(false);
             }
         }
 
@@ -307,4 +329,24 @@ public class Group : MonoBehaviour {
 		}
 	}
   
+	public Vector3 GetPosOfClosestVertex(Vector3 position, Vector3[] coordinates){
+		
+		Vector3 closestVertex = coordinates[0];
+		float shortestDistance = 999999f;
+
+		for (int i = 0; i < coordinates.Length; i++)
+		{
+			Vector3 newCoordinate = coordinates[i];
+
+			if (Vector3.Distance(position, newCoordinate) < shortestDistance)
+			{
+				closestVertex = newCoordinate;
+				shortestDistance = Vector3.Distance(position, newCoordinate);
+			}
+		}
+
+		return closestVertex;
+	}
+		
+	
 }

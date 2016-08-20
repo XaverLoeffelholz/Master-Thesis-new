@@ -50,7 +50,7 @@ public class library : Singleton<library>{
             }
         }
 
-        Invoke("RefillLibrary", 1.0f);
+        Invoke("RefillLibrary", 0.3f);
 
 		libraryInfopanel.CloseInfoPanel ();
     }

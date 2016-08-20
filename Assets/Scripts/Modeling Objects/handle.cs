@@ -155,6 +155,7 @@ public class handle : MonoBehaviour {
             case handleType.Rotation:
                 if (!alreadyMoving)
                 {
+					handles.HideRotationHandlesExcept (this);
                     newRotation = true;
                 }                
                 Rotate(pointOfCollision);
@@ -166,6 +167,12 @@ public class handle : MonoBehaviour {
 
 		connectedModelingObject.ShowBoundingBox ();
     }
+
+	public void FinishUsingHandle(){
+		if (typeOfHandle == handleType.Rotation) {
+			handles.ShowRotationHandles();
+		}
+	}
 
     private void ScaleFace(GameObject pointOfCollision)
     {

@@ -5,9 +5,9 @@ using System;
 public class ObjectSelecter : MonoBehaviour {
 
     public ModelingObject connectedObject;
+	public Group connectedGroup;
     private Vector3 initialScale;
     private float objectScale = 0.25f;
-	public GameObject Highlighter;
 	public GameObject buttonGameObject;
 	private Transform stageScaler;
 	public GameObject Collider;
@@ -44,25 +44,34 @@ public class ObjectSelecter : MonoBehaviour {
 		transform.LookAt (Camera.main.transform);
 	}
 
-	public void ShowSelectionButton(Selection controller){		
-		RePosition (Camera.main.transform.position);
-
-		if (!active) {			
-			connectedObject.ShowBoundingBox ();
+	public void ShowSelectionButton(Selection controller){	
+		if (!active) {
+			RePosition (Camera.main.transform.position);
 			buttonGameObject.SetActive (true);
 			active = true;
 			Collider.SetActive (true);
-			//RescaleButton ();
-		}
+			LeanTween.alpha (buttonGameObject, 1f, 0.15f);
 
-		connectedObject.boundingBox.ActivateBoundingBoxCollider ();
-		LeanTween.alpha (buttonGameObject, 1f, 0.15f);
+			if (connectedObject != null) {
+				connectedObject.ShowBoundingBox ();
+				connectedObject.boundingBox.ActivateBoundingBoxCollider ();
+			} else if (connectedGroup != null) {
+				connectedGroup.DrawBoundingBox ();
+				connectedGroup.boundingBox.ActivateBoundingBoxCollider ();
+			}
+		}
     }
 
-	public void HideSelectionButton(){
+	public void HideSelectionButton(){		
 		if (active) {
-			connectedObject.HideBoundingBox ();
-			connectedObject.boundingBox.DeActivateBoundingBoxCollider ();
+			if (connectedObject != null) {
+				connectedObject.HideBoundingBox ();
+				connectedObject.boundingBox.DeActivateBoundingBoxCollider ();
+			} else if (connectedGroup != null) {
+				connectedGroup.boundingBox.ClearBoundingBox();
+				connectedGroup.boundingBox.DeActivateBoundingBoxCollider ();
+			}
+
 			active = false;
 			Collider.SetActive (false);
 		}
@@ -74,6 +83,22 @@ public class ObjectSelecter : MonoBehaviour {
 		if (active) {
 			LeanTween.color(buttonGameObject, UiCanvasGroup.Instance.hoverColor, 0.2f).setEase(LeanTweenType.easeInOutCubic);
 			LeanTween.scale(buttonGameObject, initialScaleButtonGO*1.2f, 0.2f).setEase(LeanTweenType.easeInOutCubic);
+		}
+	}
+
+	public void FocusConnectedObject(Selection controller){
+		if (connectedObject != null) {
+			connectedObject.Focus (controller);
+		} else if (connectedGroup != null) {
+			connectedGroup.FocusGroup (null, controller);
+		}
+	}
+
+	public void UnFocusConnectedObject(Selection controller){
+		if (connectedObject != null) {
+			connectedObject.UnFocus (controller);
+		} else if (connectedGroup != null) {
+			connectedGroup.UnFocusGroup (null, controller);
 		}
 	}
 
@@ -95,20 +120,28 @@ public class ObjectSelecter : MonoBehaviour {
 		}
 
 		Collider.SetActive (false);
-        connectedObject.Select(controller, uiPosition);
-		ObjectsManager.Instance.DisableObjectsExcept (connectedObject);
-		Highlighter.SetActive (true);
+
+		if (connectedObject != null) {
+			connectedObject.Select (controller, uiPosition);
+			ObjectsManager.Instance.DisableObjectsExcept (connectedObject);
+		} else if (connectedGroup != null) {
+			connectedGroup.objectList[0].Select (controller, uiPosition);
+			ObjectsManager.Instance.DisableObjectsExcept (connectedGroup);
+		}
     }
 
 	public void DeSelect(Selection controller)
 	{
 	    HideSelectionButton ();
-		Highlighter.SetActive (false);
 	}
 
 	public void RePosition(Vector3 position)
     {
-		transform.position = connectedObject.GetPosOfClosestVertex (position, new Vector3[] {connectedObject.boundingBox.coordinates[4], connectedObject.boundingBox.coordinates[5],connectedObject.boundingBox.coordinates[6],connectedObject.boundingBox.coordinates[7] });
+		if (connectedObject != null) {
+			transform.position = connectedObject.GetPosOfClosestVertex (position, new Vector3[] {connectedObject.boundingBox.coordinates[4], connectedObject.boundingBox.coordinates[5],connectedObject.boundingBox.coordinates[6],connectedObject.boundingBox.coordinates[7] });
+		} else if (connectedGroup != null) {
+			transform.position = connectedGroup.GetPosOfClosestVertex (position, new Vector3[] {connectedGroup.boundingBox.coordinates[4], connectedGroup.boundingBox.coordinates[5],connectedGroup.boundingBox.coordinates[6],connectedGroup.boundingBox.coordinates[7] });
+		}
 	}
 
 	public void MoveAndFace (Vector3 position){
@@ -118,6 +151,7 @@ public class ObjectSelecter : MonoBehaviour {
 		LeanTween.color(buttonGameObject, UiCanvasGroup.Instance.normalColor, 0.01f).setEase(LeanTweenType.easeInOutCubic).setDelay(0.02f);
 
 		LeanTween.alpha (buttonGameObject, 0f, 0.35f);
+		LeanTween.scale (gameObject, gameObject.transform.localScale*2f, 0.4f).setEase (LeanTweenType.easeInOutCubic);
 		LeanTween.move (gameObject, position, 0.4f).setEase (LeanTweenType.easeInOutCubic);
 	}
 

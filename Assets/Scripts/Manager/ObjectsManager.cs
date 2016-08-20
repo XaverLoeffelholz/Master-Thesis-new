@@ -19,6 +19,9 @@ public class ObjectsManager : Singleton<ObjectsManager>
 	void Update () {
 	
 	}
+	public void DeleteGroup (Group group){
+		Destroy (group.gameObject);
+	}
 
     public void HideAllHandles()
     {
@@ -101,6 +104,11 @@ public class ObjectsManager : Singleton<ObjectsManager>
 		}
 	}
 
+	public void DisableObjectsExcept(Group selectedGroup){
+		// disable all objects except group
+	}
+
+
 	public void EnableObjects(){
 		foreach(Transform model in this.transform)
 		{
@@ -113,4 +121,6 @@ public class ObjectsManager : Singleton<ObjectsManager>
 			}
 		}
 	}
+
+
 }
