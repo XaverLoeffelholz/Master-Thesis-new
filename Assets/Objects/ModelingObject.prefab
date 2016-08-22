@@ -6798,7 +6798,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   connectedObject: {fileID: 11499176}
-  Highlighter: {fileID: 142490}
+  connectedGroup: {fileID: 0}
   buttonGameObject: {fileID: 180516}
   Collider: {fileID: 146974}
   active: 0
@@ -7047,6 +7047,7 @@ MonoBehaviour:
   DistanceVisualPrefab: {fileID: 109844, guid: 5a0eb25196fdfb642884382fa7e33171, type: 2}
   CenterVisualPrefab: {fileID: 100570, guid: 2ab13e4311ff15b4891b9679fcf2c007, type: 2}
   GroundVisualPrefab: {fileID: 199010, guid: 4dae066eb1e29bf41b3d97cdc89257c4, type: 2}
+  smoothTime: 0.02
   scalerObject: {fileID: 0}
   inTrashArea: 0
   coordinateSystem: {fileID: 108270}

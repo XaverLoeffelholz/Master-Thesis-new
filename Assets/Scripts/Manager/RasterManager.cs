@@ -6,6 +6,7 @@ public class RasterManager : Singleton<RasterManager> {
 
     public float rasterLevel;
     public float rasterLevelAngles;
+	public float smoothTime = 0.3F;
 
     // Use this for initialization
     void Start () {
