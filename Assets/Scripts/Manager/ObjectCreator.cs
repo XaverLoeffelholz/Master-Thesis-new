@@ -157,5 +157,15 @@ public class ObjectCreator : Singleton<ObjectCreator> {
         }
     }
 
+	public void DuplicateGroup(Group group, Vector3 objectPosition)
+	{
+		// create new group
+		Group NewGroup = ObjectsManager.Instance.CreateGroup();
+
+		for (int i = 0; i < group.objectList.Count; i++) {
+			DuplicateObject (group.objectList [i], NewGroup, (group.objectList [i].transform.position + (objectPosition-group.GetBoundingBoxCenter()))); 
+		}
+	}
+
 
 }

@@ -61,7 +61,7 @@ public class StageHeightController : MonoBehaviour {
 		float newY = stageScaler.transform.position.y + value;
 
 		newY = Mathf.Min (newY, 1.2f);
-		newY = Mathf.Max (newY, -1.7f);
+		newY = Mathf.Max (newY, -2.8f);
 
 		stageScaler.transform.position = new Vector3 (stageScaler.transform.position.x, newY, stageScaler.transform.position.z);
 

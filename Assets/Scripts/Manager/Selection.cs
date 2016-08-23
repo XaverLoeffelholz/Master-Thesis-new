@@ -152,7 +152,6 @@ public class Selection : MonoBehaviour
 	// Update is called once per frame
     // maybe also try update?
 	void FixedUpdate () {
-
         var device = SteamVR_Controller.Input((int)trackedObj.index);       
 
 		if (controllerActive) {
@@ -237,10 +236,7 @@ public class Selection : MonoBehaviour
 								currentFocus.GetComponent<ObjectSelecter> ().Focus (this);
 								if (currentFocus.GetComponent<ObjectSelecter> ().connectedObject != null) {
 									currentFocus.GetComponent<ObjectSelecter> ().connectedObject.Focus (this);
-								} else if (currentFocus.GetComponent<ObjectSelecter> ().connectedGroup != null) {
-									currentFocus.GetComponent<ObjectSelecter> ().connectedGroup.FocusGroup (null, this);
 								}
-
 								device.TriggerHapticPulse (600);
 							} else if (!UiCanvasGroup.Instance.visible && hit.rigidbody.transform.parent.gameObject.CompareTag ("TeleportPosition")) {
 								DeFocusCurrent (hit.rigidbody.transform.parent.gameObject);
@@ -385,7 +381,12 @@ public class Selection : MonoBehaviour
 							if (!duplicateMode) {			
 								currentFocus.GetComponent<ModelingObject> ().StartMoving (this, currentFocus.GetComponent<ModelingObject> ());
 							} else {
-								ObjectCreator.Instance.DuplicateObject (currentFocus.GetComponent<ModelingObject> (), null, pointOfCollision);
+								if (currentFocus.GetComponent<ModelingObject> ().group == null){
+									ObjectCreator.Instance.DuplicateObject (currentFocus.GetComponent<ModelingObject> (), null, 0.4f * pointOfCollision + 0.6f * currentFocus.transform.position);
+								} else {
+									ObjectCreator.Instance.DuplicateGroup(currentFocus.GetComponent<ModelingObject> ().group, 0.4f * pointOfCollision + 0.6f * currentFocus.GetComponent<ModelingObject> ().group.GetBoundingBoxCenter());
+								}
+
 								ModelingObject duplicatedObject = ObjectCreator.Instance.latestModelingObject;
 
 								DeFocusCurrent (duplicatedObject.gameObject);
@@ -429,6 +430,7 @@ public class Selection : MonoBehaviour
 					if (pointOfCollisionGO == null) {
 						CreatePointOfCollisionPrefab ();
 					}
+					this.GetComponent<StageController> ().ShowPullVisual (true);
 					currentFocus.GetComponent<handle> ().ApplyChanges (pointOfCollisionGO, movingHandle);
 					//currentFocus.GetComponent<handle> ().connectedObject.GetComponent<ModelingObject> ().HideBoundingBox ();
 					movingHandle = true;
@@ -443,6 +445,7 @@ public class Selection : MonoBehaviour
 				if (movingHandle){
 					currentFocus.GetComponent<handle> ().FinishUsingHandle ();
 					movingHandle = false;
+					this.GetComponent<StageController> ().ShowPullVisual (false);
 				}
 
 
@@ -491,7 +494,11 @@ public class Selection : MonoBehaviour
 
 				}
 
-				Destroy (pointOfCollisionGO);
+				///Destroy (pointOfCollisionGO);
+				if (pointOfCollisionGO != null) {
+					pointOfCollisionGO.SetActive(false);
+				}
+
 				movingObject = false;
 
 				if (currentFocus != null) {
@@ -506,7 +513,12 @@ public class Selection : MonoBehaviour
 
 						if (groupItemSelection) {
 							// we could also display and icon (add to group)
-							ObjectsManager.Instance.AddObjectToGroup (ObjectsManager.Instance.currentGroup, currentFocus.GetComponent<ModelingObject> ());
+							if (currentFocus.GetComponent<ModelingObject> ().group == null) {
+								ObjectsManager.Instance.AddObjectToGroup (ObjectsManager.Instance.currentGroup, currentFocus.GetComponent<ModelingObject> ());
+							} else {
+								ObjectsManager.Instance.AddAllObjectsOfGroupToGroup (ObjectsManager.Instance.currentGroup, currentFocus.GetComponent<ModelingObject> ().group);
+							}
+
 
 						} else if (faceSelection) {
 							if (collidingFace != null) {
@@ -600,11 +612,14 @@ public class Selection : MonoBehaviour
 
     public void CreatePointOfCollisionPrefab()
     {
-        if (pointOfCollisionGO == null)
-        {
-            pointOfCollisionGO = (GameObject)Instantiate(pointOfCollisionPrefab, pointOfCollision, new Quaternion(0f, 0f, 0, 0f));
-            pointOfCollisionGO.transform.SetParent(transform);
-        }
+		if (pointOfCollisionGO == null) {
+			pointOfCollisionGO = (GameObject)Instantiate (pointOfCollisionPrefab, pointOfCollision, new Quaternion (0f, 0f, 0, 0f));
+			pointOfCollisionGO.transform.SetParent (transform);
+		} else {
+			pointOfCollisionGO.SetActive (true);
+			pointOfCollisionGO.transform.position = pointOfCollision;
+			pointOfCollisionGO.transform.rotation = new Quaternion (0f, 0f, 0, 0f);
+		}
     }
 
     public void AssignCurrentFocus(GameObject newCollider)

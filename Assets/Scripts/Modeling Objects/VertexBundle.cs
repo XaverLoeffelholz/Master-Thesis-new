@@ -29,11 +29,11 @@ public class VertexBundle : MonoBehaviour {
 			vert.Initialize ();
             if (!centerVertex)
             {
-				Collider col = vert.GetComponent<BoxCollider>();
-                col.enabled = false;
+				//Collider col = vert.GetComponent<BoxCollider>();
+              //  col.enabled = false;
 
-                Rigidbody rig = vert.GetComponent<Rigidbody>();
-                rig.detectCollisions = false;
+              //  Rigidbody rig = vert.GetComponent<Rigidbody>();
+             //   rig.detectCollisions = false;
             }
 		}
 	}
@@ -67,11 +67,11 @@ public class VertexBundle : MonoBehaviour {
 	}
 
 	public void DeactivateCollisionDetection(){
-		Vertex[] vertices = transform.GetComponentsInChildren<Vertex>();
+	/*	Vertex[] vertices = transform.GetComponentsInChildren<Vertex>();
 
 		foreach (Vertex vert in vertices)
 		{
 			vert.gameObject.GetComponent<BoxCollider>().enabled = false;
-		}
+		} */
 	}
 }

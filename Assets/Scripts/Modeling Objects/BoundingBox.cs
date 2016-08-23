@@ -16,7 +16,7 @@ public class BoundingBox : MonoBehaviour {
 	
 	void FixedUpdate () {
 		if (active) {
-			boundingBoxCollider.transform.localScale = new Vector3 ((coordinates [0] - coordinates [1]).magnitude, (coordinates [0] - coordinates [4]).magnitude, (coordinates [0] - coordinates [3]).magnitude);
+			boundingBoxCollider.transform.localScale = new Vector3 ((coordinates [0] - coordinates [1]).magnitude, (coordinates [0] - coordinates [4]).magnitude, (coordinates [0] - coordinates [3]).magnitude) / boundingBoxCollider.transform.lossyScale.x;
 		}
 	}
 

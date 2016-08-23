@@ -94,6 +94,11 @@ public class ModelingObject : MonoBehaviour
 	public Transform rotationObject;
 	private bool onRaster = true;
 
+	public ColliderSphere colliderSphere;
+
+	// pick center of scaling
+	private Vector3 centerOfScaling = new Vector3(0f,0f,0f);
+
     // Use this for initialization
     void Start()
     {
@@ -137,56 +142,70 @@ public class ModelingObject : MonoBehaviour
 				LeanTween.rotateLocal (this.gameObject, Vector3.zero, 0.3f).setEase (LeanTweenType.easeInOutExpo);
 			}
 
-			if (!BiManualOperations.Instance.IsScalingStarted ()) {
-				
+			if (!BiManualOperations.Instance.IsScalingStarted ()) {				
 				Vector3 newPositionCollider = controllerForMovement.pointOfCollisionGO.transform.position;
-				Vector3 SmoothedNewPositionCollider = Vector3.SmoothDamp (lastPositionController, newPositionCollider, ref velocity, smoothTime);
+				Vector3 SmoothedNewPositionCollider; 
 
+				float distanceNewMovement = (newPositionCollider - lastPositionController).sqrMagnitude;
+
+				float smoothing = Mathf.Min((1f / distanceNewMovement * 0.03f), 0.12f);
+				if (distanceNewMovement > transform.lossyScale.x * 2f) {
+					smoothing = 0;
+				}
+
+				// smooth for fine movement
+				SmoothedNewPositionCollider = Vector3.SmoothDamp (lastPositionController, newPositionCollider, ref velocity, smoothing);
+					
 				Vector3 newPositionWorld = SmoothedNewPositionCollider - initialDistanceCollisionGOModelingObject;
 
-				transform.position = newPositionWorld;
-				float lowestPoint = GetBoundingBoxBottomCenter ().y;
+				lastPositionController = SmoothedNewPositionCollider;
 
-				// here we need to check for the whole group if there is an object touching 0
-				if (group != null) {
-					// get lowest point of group
-					lowestPoint = group.GetBoundingBoxBottomCenter ().y;
+				if ((newPositionWorld-transform.position).magnitude > 0.4f * transform.lossyScale.x ){
+					snapped = false;
+
+					if (colliderSphere.possibleSnapping != null) {				
+						colliderSphere.possibleSnapping.colliderSphere.SnappedToThis = null;
+						colliderSphere.SnappedToThis = null;
+						colliderSphere.possibleSnapping = null;
+					}
 				}
 
-				if (lowestPoint <= ObjectsManager.Instance.stageScaler.transform.position.y) {					
-					// check how far it is belowfadd
-					float belowZero = ObjectsManager.Instance.stageScaler.transform.position.y - lowestPoint;
-					transform.position = new Vector3 (transform.position.x, transform.position.y + belowZero, transform.position.z);
-					//this.transform.localPosition = RasterManager.Instance.Raster(this.transform.localPosition);
-				}
+				if (!snapped) {
+					transform.position = newPositionWorld;
+					float lowestPoint = GetBoundingBoxBottomCenter ().y;
 
-				transform.localPosition = RasterManager.Instance.Raster (transform.localPosition);
+					// here we need to check for the whole group if there is an object touching 0
+					if (group != null) {
+						// get lowest point of group
+						lowestPoint = group.GetBoundingBoxBottomCenter ().y;
+					}
 
-				// here check for possible snappings
-				if (bottomFace.center.possibleSnappingVertexBundle != null) {
-					if (!snapped) {
-						controllerForMovement.TriggerIfPressed (2500);
-						bottomFace.center.possibleSnappingVertexBundle.usedForSnapping = true;
-						snapped = true;
+					if (lowestPoint <= ObjectsManager.Instance.stageScaler.transform.position.y) {	
+						float belowZero = ObjectsManager.Instance.stageScaler.transform.position.y - lowestPoint;
+						transform.position = new Vector3 (transform.position.x, transform.position.y + belowZero, transform.position.z);
+					}
 
-						Vector3 distanceCurrentBottomSnap = bottomFace.center.possibleSnappingVertexBundle.transform.GetChild (0).position - bottomFace.center.transform.GetChild (0).position;
-						this.transform.position = this.transform.position + distanceCurrentBottomSnap;
+					transform.localPosition = RasterManager.Instance.Raster (transform.localPosition);
 
-					} else {						
-						if ((snapped && Mathf.Abs ((newPositionCollider - lastPositionController).magnitude) < 0.4f * transform.lossyScale.x)) {
-							Vector3 distanceCurrentBottomSnap = bottomFace.center.possibleSnappingVertexBundle.transform.GetChild (0).position - bottomFace.center.transform.GetChild (0).position;
+					// here check for possible snappings
+					if (colliderSphere.possibleSnapping != null && group == null) {
+						if (!snapped) {
+							controllerForMovement.TriggerIfPressed (2500);
+							snapped = true;
+							Vector3 distanceCurrentBottomSnap = colliderSphere.possibleSnapping.GetBoundingBoxTopCenter () - GetBoundingBoxBottomCenter ();
 							this.transform.position = this.transform.position + distanceCurrentBottomSnap;
-						} else {
-							snapped = false;	
-							bottomFace.center.possibleSnappingVertexBundle.usedForSnapping = false;
-							//bottomFace.center.possibleSnappingVertexBundle.possibleSnappingVertexBundle = null;
-							//bottomFace.center.possibleSnappingVertexBundle = null;
+						} 
+					} else {
+						snapped = false;
+
+						if (colliderSphere.possibleSnapping != null) {				
+							colliderSphere.possibleSnapping.colliderSphere.SnappedToThis = null;
+							colliderSphere.SnappedToThis = null;
+							colliderSphere.possibleSnapping = null;
 						}
 					}
-				} else {
-					snapped = false;
-					lastPositionController = transform.TransformPoint(RasterManager.Instance.Raster(transform.InverseTransformPoint(SmoothedNewPositionCollider)));
 				}
+
 
 				if (group != null) {
 					Vector3 distance = transform.position - prevPosition;
@@ -196,23 +215,11 @@ public class ModelingObject : MonoBehaviour
 				lastPositionX = PositionOnMovementStart;
 				lastPositionY = PositionOnMovementStart;
 
+				if ((transform.position - prevPosition).magnitude != null){
+					CalculateBoundingBox ();
+				}
 			}
 			          
-
-		}
-
-		/*
-		if (!onRaster) {
-			Vector3 newPositionLocal = RasterManager.Instance.Raster (transform.localPosition);
-			transform.localPosition = Vector3.SmoothDamp (transform.localPosition, newPositionLocal, ref velocity, smoothTime);
-			if ((transform.localPosition - newPositionLocal).magnitude < RasterManager.Instance.rasterLevel * 0.3) {
-				transform.localPosition = newPositionLocal;	
-				onRaster = true;
-			}
-		}
-		*/
-
-		if (moving) {
 			// maybe check local positon
 			int countX = RasterManager.Instance.getNumberOfGridUnits(transform.InverseTransformPoint(GetBoundingBoxBottomCenter()).x, transform.InverseTransformPoint(PositionOnMovementStart).x);
 
@@ -236,7 +243,6 @@ public class ModelingObject : MonoBehaviour
 					CenterVisual2.transform.localScale = new Vector3(1f, 1f, 1f);
 
 					// not very efficient
-					CalculateBoundingBox ();
 					CenterVisual2.transform.position = 0.25f * boundingBox.coordinates[4] + 0.25f * boundingBox.coordinates[5] + 0.25f * boundingBox.coordinates[6] + 0.25f * boundingBox.coordinates[7];
 
 					// prev position
@@ -474,17 +480,16 @@ public class ModelingObject : MonoBehaviour
             Vector3 position = allChildren[i].localPosition;
 
             // get all Vertex bundles
-            foreach (Transform vertexBundle in face)
-                if (vertexBundle.CompareTag("VertexBundle"))
-                {
+			foreach (Transform vertexBundle in face) {
+				if (vertexBundle.CompareTag ("VertexBundle")) {
 
-                    // compare position of Vertex with position of vertex bundle, if similar, set vertex bundle as parent
-                    if (position == vertexBundle.GetComponent<VertexBundle>().coordinates)
-                    {
-                        allChildren[i].SetParent(vertexBundle);
-                    }
+					// compare position of Vertex with position of vertex bundle, if similar, set vertex bundle as parent
+					if (position == vertexBundle.GetComponent<VertexBundle> ().coordinates) {
+						allChildren [i].SetParent (vertexBundle);
+					}
 
-                }
+				}
+			}
 
             // if no similar found, create new vertex bundle
             if (!allChildren[i].parent.gameObject.CompareTag("VertexBundle"))
@@ -546,19 +551,25 @@ public class ModelingObject : MonoBehaviour
         handles.RotateSide1.transform.position = 0.5f * boundingBox.coordinates[1] + 0.5f * boundingBox.coordinates[5];
         handles.RotateSide2.transform.position = 0.5f * boundingBox.coordinates[2] + 0.5f * boundingBox.coordinates[6];
         handles.RotateSide3.transform.position = 0.5f * boundingBox.coordinates[3] + 0.5f * boundingBox.coordinates[7];
+
+		handles.NonUniformScaleTop.transform.position = GetBoundingBoxTopCenter ();
+		handles.NonUniformScaleBottom.transform.position = GetBoundingBoxBottomCenter ();
+
+		handles.NonUniformScaleFront.transform.position = GetBoundingBoxFrontCenter ();
+		handles.NonUniformScaleBack.transform.position = GetBoundingBoxBackCenter ();
+
+		handles.NonUniformScaleLeft.transform.position = GetBoundingBoxLeftCenter ();
+		handles.NonUniformScaleRight.transform.position = GetBoundingBoxRightCenter ();
+
     }
 
     public void RotateHandles()
     {
-			//Quaternion newRotation = Quaternion.LookRotation(p1.transform.position - p2.transform.position);
-			//line.transform.rotation = newRotation;
-
 		handles.faceTopScale.transform.rotation = Quaternion.LookRotation (handles.faceTopScale.transform.position - transform.TransformPoint (topFace.center.coordinates));
 		handles.HeightTop.transform.rotation = Quaternion.LookRotation (transform.TransformDirection(topFace.normal));
 
 		handles.faceBottomScale.transform.rotation = Quaternion.LookRotation (handles.faceBottomScale.transform.position -  transform.TransformPoint (bottomFace.center.coordinates));
 		handles.HeightBottom.transform.rotation = Quaternion.LookRotation(transform.TransformDirection(bottomFace.normal));
-
 
         // use Bounding Box to rotate rotation Handles
         handles.RotateUp0.transform.rotation = Quaternion.LookRotation(boundingBox.coordinates[0] - boundingBox.coordinates[1]);
@@ -575,7 +586,8 @@ public class ModelingObject : MonoBehaviour
         handles.RotateSide1.transform.rotation = Quaternion.LookRotation(boundingBox.coordinates[1] - boundingBox.coordinates[5]);
         handles.RotateSide2.transform.rotation = Quaternion.LookRotation(boundingBox.coordinates[2] - boundingBox.coordinates[6]);
         handles.RotateSide3.transform.rotation = Quaternion.LookRotation(boundingBox.coordinates[3] - boundingBox.coordinates[7]);
-			       
+			
+		// rotate handles  to have arrows around object
         handles.RotateUp0.transform.RotateAround(boundingBox.coordinates[0] - boundingBox.coordinates[1], Vector3.AngleBetween(handles.RotateUp0.transform.up, handles.RotateUp0.transform.position - transform.position));
 		handles.RotateUp1.transform.RotateAround(boundingBox.coordinates[1] - boundingBox.coordinates[2], Vector3.AngleBetween(handles.RotateUp1.transform.up, handles.RotateUp1.transform.position - transform.position));
 		handles.RotateUp2.transform.RotateAround(boundingBox.coordinates[2] - boundingBox.coordinates[3], Vector3.AngleBetween(handles.RotateUp2.transform.up, handles.RotateUp2.transform.position - transform.position));
@@ -590,7 +602,17 @@ public class ModelingObject : MonoBehaviour
 		handles.RotateSide1.transform.RotateAround(boundingBox.coordinates[1] - boundingBox.coordinates[5], Vector3.AngleBetween(handles.RotateSide1.transform.right, handles.RotateSide1.transform.position - transform.position));
 		handles.RotateSide2.transform.RotateAround(boundingBox.coordinates[2] - boundingBox.coordinates[6], Vector3.AngleBetween(handles.RotateSide2.transform.right, handles.RotateSide2.transform.position - transform.position));
 		handles.RotateSide3.transform.RotateAround(boundingBox.coordinates[3] - boundingBox.coordinates[7], (-1f) * Vector3.AngleBetween(handles.RotateSide3.transform.right, handles.RotateSide3.transform.position - transform.position));
-    }
+   
+		// rotate non-uniform scaling handles
+		handles.NonUniformScaleTop.transform.rotation = Quaternion.LookRotation(transform.TransformDirection(Vector3.up));
+		handles.NonUniformScaleBottom.transform.rotation = Quaternion.LookRotation(transform.TransformDirection(Vector3.down));
+
+		handles.NonUniformScaleFront.transform.rotation = Quaternion.LookRotation(transform.TransformDirection(Vector3.back));
+		handles.NonUniformScaleBack.transform.rotation = Quaternion.LookRotation(transform.TransformDirection(Vector3.forward));
+
+		handles.NonUniformScaleLeft.transform.rotation = Quaternion.LookRotation(transform.TransformDirection(Vector3.left));
+		handles.NonUniformScaleRight.transform.rotation = Quaternion.LookRotation(transform.TransformDirection(Vector3.right));
+	}
 
     public void InitiateHandles()
     {
@@ -629,7 +651,7 @@ public class ModelingObject : MonoBehaviour
 				group.FocusGroup(this, controller);
             }
 
-			if (group == null && !transform.parent.CompareTag("Library") && !controller.groupItemSelection && !moving && !selected ){
+			if (!transform.parent.CompareTag("Library") && !controller.groupItemSelection && !moving && !selected ){
 				objectSelector.ShowSelectionButton (controller);
 			}
 
@@ -648,7 +670,9 @@ public class ModelingObject : MonoBehaviour
 
 			if (group != null && group.focused)
             {
-                group.UnFocusGroup(this, controller);
+				if (!controller.groupItemSelection) {
+					group.UnFocusGroup (this, controller);
+				}
             }
 
 			objectSelector.HideSelectionButton ();
@@ -676,10 +700,7 @@ public class ModelingObject : MonoBehaviour
 			if (group != null)
 			{
 				group.SelectGroup(this);
-			} else
-			{
-				//DrawBoundingBox();
-			}
+			} 
 
 			selected = true;
 
@@ -718,7 +739,6 @@ public class ModelingObject : MonoBehaviour
 
             UnFocus (controller);
 		}
-
     }
 
   
@@ -786,10 +806,24 @@ public class ModelingObject : MonoBehaviour
         }
     }
 
+	public void UseAsPossibleSnap(){
+		meshCollider.enabled = false;
+		colliderSphere.transform.GetComponent<SphereCollider> ().enabled = true;
+		colliderSphere.transform.position = GetBoundingBoxTopCenter ();
+		colliderSphere.transform.localScale = Vector3.one * RasterManager.Instance.rasterLevel * 3f;
+	}
+
+	public void StopUseAsPossibleSnap(){
+		meshCollider.enabled = true;
+		colliderSphere.transform.GetComponent<SphereCollider> ().enabled = false;
+	}
+			
 
     public void StartMoving(Selection controller, ModelingObject initiater)
     {
 		if (!moving) {
+			ObjectsManager.Instance.StartMovingObject (this);
+
 			CalculateBoundingBox ();
 			moving = true;
 			//initialBlocking = true;
@@ -809,8 +843,48 @@ public class ModelingObject : MonoBehaviour
 			{
 				initialCoordinatesBoundingBox[j] = boundingBox.coordinates[j+4];
 			}
+
+			// disable collider of object when moving
+			//meshCollider.enabled = false;
+
+			colliderSphere.transform.GetComponent<SphereCollider> ().enabled = true;
+			colliderSphere.parentMoving = true;
+			colliderSphere.transform.position = GetBoundingBoxBottomCenter ();
+			colliderSphere.transform.localScale = Vector3.one * RasterManager.Instance.rasterLevel * 3f;
+
+			if (colliderSphere.SnappedToThis != null) {				
+				colliderSphere.SnappedToThis.colliderSphere.possibleSnapping = null;
+				colliderSphere.SnappedToThis.snapped = false;
+				colliderSphere.SnappedToThis = null;
+			}
 		}
     }
+
+	public void StopMoving(Selection controller, ModelingObject initiater)
+	{
+		ObjectsManager.Instance.StopMovingObject (this);
+
+		if (group != null && initiater == this)
+		{
+			group.StopMoving(controller, initiater);
+		}
+
+		firstTimeMoving = false;
+		moving = false;
+		controllerForMovement = null;
+
+		// destroz previous distance vis
+		foreach (Transform visualObject in DistanceVisualisation)
+		{
+			Destroy(visualObject.gameObject);
+		}
+
+		CalculateBoundingBox ();
+
+		colliderSphere.parentMoving = false;
+		colliderSphere.transform.GetComponent<SphereCollider> ().enabled = false;
+		meshCollider.enabled = true;
+	}
 
 	public void DisplayOutlineOfGroundFace(){
 		// Display outline of groundface
@@ -837,29 +911,7 @@ public class ModelingObject : MonoBehaviour
 		} */
     }
 
-    public void StopMoving(Selection controller, ModelingObject initiater)
-    {
-        if (group != null && initiater == this)
-        {
-            group.StopMoving(controller, initiater);
-        }
-
-        firstTimeMoving = false;
-        moving = false;
-        controllerForMovement = null;
-
-        // destroz previous distance vis
-        foreach (Transform visualObject in DistanceVisualisation)
-        {
-            Destroy(visualObject.gameObject);
-        }
-
-		if (!transform.parent.CompareTag ("Library")) {
-			//objectSelector.ShowSelectionButton (controller);
-		}
-
-		CalculateBoundingBox ();
-    }
+  
 
 
 
@@ -1028,8 +1080,62 @@ public class ModelingObject : MonoBehaviour
         }
     }
 
+	public void ScaleNonUniform(float newScale, Vector3 direction, handle.handleType typeOfHandle){		
+		
+		switch (typeOfHandle)
+		{
+		case handle.handleType.ScaleX:
+			centerOfScaling = transform.InverseTransformPoint (GetBoundingBoxLeftCenter ());
+			break;
+		case handle.handleType.ScaleY:
+			centerOfScaling = transform.InverseTransformPoint (GetBoundingBoxBottomCenter ());
+			break;		
+		case handle.handleType.ScaleZ:
+			centerOfScaling = transform.InverseTransformPoint (GetBoundingBoxFrontCenter ());
+			break;		
+		case handle.handleType.ScaleMinusX:
+			centerOfScaling = transform.InverseTransformPoint (GetBoundingBoxRightCenter ());
+			break;
+		case handle.handleType.ScaleMinusY:
+			centerOfScaling = transform.InverseTransformPoint (GetBoundingBoxTopCenter ());
+			break;
+		case handle.handleType.ScaleMinusZ:
+			centerOfScaling = transform.InverseTransformPoint (GetBoundingBoxBackCenter ());
+			break;
+		}
+
+		Vector3 scaling = (direction * (newScale)) + Vector3.one - direction;
+
+		// here we need to adjust scaling so that the outcome is in grid
+
+		Matrix4x4 scalingMatrix = Matrix4x4.TRS (Vector3.zero, Quaternion.Euler(0f,0f,0f), scaling);
+
+		// go through all points
+		for (int i = 0; i < topFace.vertexBundles.Length; i++) {
+			Vector3 newPoint = scalingMatrix.MultiplyPoint3x4 (topFace.vertexBundles [i].coordinates - centerOfScaling);
+			topFace.vertexBundles [i].coordinates = newPoint + centerOfScaling;
+		}
+
+		for (int i = 0; i < bottomFace.vertexBundles.Length; i++) {
+			Vector3 newPoint = scalingMatrix.MultiplyPoint3x4 (bottomFace.vertexBundles [i].coordinates - centerOfScaling);
+			bottomFace.vertexBundles [i].coordinates = newPoint + centerOfScaling;
+		}
 
 
+		for (int i = 0; i < faces.Length; i++) {
+			faces [i].UpdateCenter ();
+		}
+
+		topFace.UpdateSpecialVertexCoordinates ();
+		bottomFace.UpdateSpecialVertexCoordinates ();
+
+		CalculateBoundingBox ();
+		PositionHandles ();
+		RotateHandles ();
+	}
+
+
+	// adapt this to be also used for non uniform scaling!!!
     public void ScaleBy(float newScale, bool initiater)
     {     
 		// first calculate scaling with top center
@@ -1120,52 +1226,9 @@ public class ModelingObject : MonoBehaviour
 		currentColor = color;
     }
 
-	public void SetRotation(Vector3 newRotation){
-		Quaternion difference = Quaternion.FromToRotation (rotationObject.transform.localRotation.eulerAngles, newRotation);
-
-		rotationObject.transform.localRotation = Quaternion.Euler(newRotation);
-		Rotate (difference);
-	}
 
 
-    public void Rotate(Quaternion rotation)
-    {
-        for (int i = 0; i < topFace.vertexBundles.Length; i++)
-        {
-            // rotate coordinates of every vertexbundle
-            topFace.vertexBundles[i].coordinates = rotation * topFace.vertexBundles[i].coordinates;
-        }
-
-        topFace.center.coordinates = rotation * topFace.center.coordinates;
-
-        for (int i = 0; i < bottomFace.vertexBundles.Length; i++)
-        {
-            // rotate coordinates of every vertexbundle
-            bottomFace.vertexBundles[i].coordinates = rotation * bottomFace.vertexBundles[i].coordinates;
-
-        }
-
-        bottomFace.center.coordinates = rotation * bottomFace.center.coordinates;
-
-        // update centers and recalculate normals of side faces
-
-        for (int i = 0; i < faces.Length; i++)
-        {
-            faces[i].UpdateCenter();
-            faces[i].RecalculateNormal();
-            faces[i].UpdateSpecialVertexCoordinates();
-        }
-
-
-        handles.HeightTop.transform.Rotate(rotation.eulerAngles);
-        handles.HeightBottom.transform.Rotate(rotation.eulerAngles);
-        handles.faceTopScale.transform.Rotate(rotation.eulerAngles);
-        handles.faceBottomScale.transform.Rotate(rotation.eulerAngles);
-    }
-
-
-
-    public void RotateAround(Vector3 angleAxis, float angle)
+      public void RotateAround(Vector3 angleAxis, float angle)
     {
         for (int i = 0; i < topFace.vertexBundles.Length; i++)
         {
@@ -1185,7 +1248,6 @@ public class ModelingObject : MonoBehaviour
         bottomFace.center.coordinates = Quaternion.AngleAxis(angle, angleAxis) * bottomFace.center.coordinates;
 
         // update centers and recalculate normals of side faces
-
         for (int i = 0; i < faces.Length; i++)
         {
             faces[i].UpdateCenter();
@@ -1193,10 +1255,10 @@ public class ModelingObject : MonoBehaviour
             faces[i].UpdateSpecialVertexCoordinates();
         }
 
-        handles.HeightTop.transform.RotateAround(new Vector3(0f, 0f, 0f), angleAxis, angle);
-        handles.HeightBottom.transform.RotateAround(new Vector3(0f, 0f, 0f), angleAxis, angle);
-        handles.faceTopScale.transform.RotateAround(new Vector3(0f, 0f, 0f), angleAxis, angle);
-        handles.faceBottomScale.transform.RotateAround(new Vector3(0f, 0f, 0f), angleAxis, angle);
+      //  handles.HeightTop.transform.RotateAround(new Vector3(0f, 0f, 0f), angleAxis, angle);
+     //   handles.HeightBottom.transform.RotateAround(new Vector3(0f, 0f, 0f), angleAxis, angle);
+     //   handles.faceTopScale.transform.RotateAround(new Vector3(0f, 0f, 0f), angleAxis, angle);
+     //   handles.faceBottomScale.transform.RotateAround(new Vector3(0f, 0f, 0f), angleAxis, angle);
 
         CalculateBoundingBox();
 		PositionHandles ();
@@ -1255,6 +1317,33 @@ public class ModelingObject : MonoBehaviour
 		return boundingBoxBottomCenter;
 	}
 
+	public Vector3 GetBoundingBoxFrontCenter()
+	{ 
+		CalculateBoundingBox ();
+		Vector3 pos = 0.25f * boundingBox.coordinates [1] + 0.25f * boundingBox.coordinates [2] + 0.25f * boundingBox.coordinates [5] + 0.25f * boundingBox.coordinates [6];
+		return pos;
+	}
+
+	public Vector3 GetBoundingBoxBackCenter()
+	{ 
+		CalculateBoundingBox ();
+		Vector3 pos = 0.25f * boundingBox.coordinates [0] + 0.25f * boundingBox.coordinates [3] + 0.25f * boundingBox.coordinates [4] + 0.25f * boundingBox.coordinates [7];
+		return pos;
+	}
+
+	public Vector3 GetBoundingBoxLeftCenter()
+	{ 
+		CalculateBoundingBox ();
+		Vector3 pos = 0.25f * boundingBox.coordinates [2] + 0.25f * boundingBox.coordinates [3] + 0.25f * boundingBox.coordinates [6] + 0.25f * boundingBox.coordinates [7];
+		return pos;
+	}
+
+	public Vector3 GetBoundingBoxRightCenter()
+	{ 
+		CalculateBoundingBox ();
+		Vector3 pos = 0.25f * boundingBox.coordinates [0] + 0.25f * boundingBox.coordinates [1] + 0.25f * boundingBox.coordinates [4] + 0.25f * boundingBox.coordinates [5];
+		return pos;
+	}
 
 	public Vector3 GetBoundingBoxCenter()
 	{

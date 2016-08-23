@@ -57,11 +57,11 @@ public class Vertex : MonoBehaviour {
 	}
 
 	public void DeactivateCollisionDetection(){
-		gameObject.GetComponent<BoxCollider> ().enabled = false;
+		//gameObject.GetComponent<BoxCollider> ().enabled = false;
 	}
 
 	public void ActivateCollisionDetection(){
-		gameObject.GetComponent<BoxCollider> ().enabled = true;
+		//gameObject.GetComponent<BoxCollider> ().enabled = true;
 	}
 
     void OnCollisionEnter(Collision col)

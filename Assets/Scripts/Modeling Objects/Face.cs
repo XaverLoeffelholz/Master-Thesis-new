@@ -68,6 +68,8 @@ public class Face : MonoBehaviour {
             lengthScalerToCenter = (-1f) * lengthScalerToCenter;
         }
 
+		// get amount of rescaling
+		float amountRescaling = lengthScalerToCenter/(scalerPosition - centerPosition).magnitude;
         scalerPosition = scaler.coordinates;
 
         for (int i = 0; i < vertexBundles.Length; i++)
@@ -75,7 +77,7 @@ public class Face : MonoBehaviour {
             if (vertexBundles[i] != null && (vertexBundles[i] != scaler) && (vertexBundles[i] != center))
             {
                 Vector3 VertexToCenter = vertexBundles[i].coordinates - centerPosition;
-                vertexBundles[i].coordinates = centerPosition + VertexToCenter.normalized * lengthScalerToCenter;
+				vertexBundles[i].coordinates = centerPosition + VertexToCenter * amountRescaling;
             }
 
         }
@@ -105,6 +107,9 @@ public class Face : MonoBehaviour {
 
         scalerPosition = scaler.coordinates;
 
+		parentModelingObject.CalculateBoundingBox ();
+		parentModelingObject.PositionHandles ();
+		parentModelingObject.RotateHandles ();
     }
 
 	public void AddVertexBundle(VertexBundle vBundle){
@@ -119,23 +124,34 @@ public class Face : MonoBehaviour {
 
     public void SetScaler()
     {
-		if (typeOfFace == faceType.TopFace)
-		{   
-			scaler = vertexBundles[1];
-			scalerPosition = scaler.coordinates;
+		if (parentModelingObject.typeOfObject != ModelingObject.ObjectType.octagon) {
+			if (typeOfFace == faceType.TopFace) {   
+				scaler = vertexBundles [1];
+				scalerPosition = scaler.coordinates;
 
-            parentModelingObject.scalerObject = vertexBundles[1];
+				parentModelingObject.scalerObject = vertexBundles [1];
 
+			} else if (typeOfFace == faceType.BottomFace) {   
+				scaler = vertexBundles [vertexBundles.Length - 1];
+				scalerPosition = scaler.coordinates;
 
+				parentModelingObject.scalerObject = vertexBundles [vertexBundles.Length - 1];
+			}
+		} else {
+			if (typeOfFace == faceType.TopFace) {   
+				scaler = vertexBundles [1];
+				scalerPosition = scaler.coordinates;
 
-		} else if (typeOfFace == faceType.BottomFace)
-		{   
-			scaler = vertexBundles[vertexBundles.Length-1];
-			scalerPosition = scaler.coordinates;
+				parentModelingObject.scalerObject = vertexBundles [1];
 
-			parentModelingObject.scalerObject = vertexBundles[vertexBundles.Length-1];
+			} else if (typeOfFace == faceType.BottomFace) {   
+				scaler = vertexBundles [vertexBundles.Length - 2];
+				scalerPosition = scaler.coordinates;
 
+				parentModelingObject.scalerObject = vertexBundles [vertexBundles.Length - 2];
+			}
 		}
+
 
     }
 

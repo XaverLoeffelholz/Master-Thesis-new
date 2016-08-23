@@ -68,6 +68,14 @@ public class ObjectsManager : Singleton<ObjectsManager>
         return currentGroup;
     }
 
+	public void AddAllObjectsOfGroupToGroup(Group newGroup, Group oldGroup){
+		for (int i = 0; i < oldGroup.objectList.Count; i++) {
+			AddObjectToGroup (newGroup, oldGroup.objectList [i]);
+		}
+
+		DeleteGroup (oldGroup);
+	}
+
     public void AddObjectToGroup(Group group, ModelingObject modelingObject)
     {
         modelingObject.transform.SetParent(group.transform);
@@ -92,13 +100,19 @@ public class ObjectsManager : Singleton<ObjectsManager>
 	public void DisableObjectsExcept(ModelingObject selectedObject){
 		foreach(Transform model in this.transform)
 		{
-			if (model.CompareTag("ModelingObject"))
-			{
+			if (model.CompareTag ("ModelingObject")) {
 				ModelingObject currentModelingObject = model.GetComponent<ModelingObject> ();
 
 				if (currentModelingObject != selectedObject) {
 					currentModelingObject.DeActivateCollider ();
 					currentModelingObject.DarkenColorObject ();
+				}
+			} else if (model.CompareTag ("Group")) {
+				Group currentGroup =  model.GetComponent<Group> ();
+
+				if (currentGroup != selectedObject.group) {
+					currentGroup.DeActivateCollider ();
+					currentGroup.DarkenColorObject ();
 				}
 			}
 		}
@@ -118,9 +132,43 @@ public class ObjectsManager : Singleton<ObjectsManager>
 
 				currentModelingObject.ActivateCollider ();
 				currentModelingObject.NormalColorObject ();
+			} else if (model.CompareTag ("Group")) {
+				Group currentGroup =  model.GetComponent<Group> ();
+
+				currentGroup.ActivateCollider ();
+				currentGroup.NormalColorObject ();
 			}
 		}
 	}
+
+	public void StartMovingObject(ModelingObject movedObject){		
+		foreach(Transform model in this.transform)
+		{
+			if (model.CompareTag("ModelingObject"))
+			{
+				ModelingObject currentModelingObject = model.GetComponent<ModelingObject> ();
+
+				if (currentModelingObject != movedObject) {
+					currentModelingObject.UseAsPossibleSnap ();
+				}
+			}
+		}
+	}
+
+	public void StopMovingObject(ModelingObject movedObject){		
+		foreach(Transform model in this.transform)
+		{
+			if (model.CompareTag("ModelingObject"))
+			{
+				ModelingObject currentModelingObject = model.GetComponent<ModelingObject> ();
+
+				if (currentModelingObject != movedObject) {
+					currentModelingObject.StopUseAsPossibleSnap ();
+				}
+			}
+		}
+	}
+
 
 
 }

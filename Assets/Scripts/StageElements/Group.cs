@@ -11,8 +11,7 @@ public class Group : MonoBehaviour {
 
 	public BoundingBox boundingBox;
 	public bool focused;
-
-	public ObjectSelecter objectSelector;
+	public handles handles;
 
     // Use this for initialization
     void Start () {
@@ -29,6 +28,8 @@ public class Group : MonoBehaviour {
 	}
 
 	public void BreakGroup (){
+		boundingBox.ClearBoundingBox ();
+
 		for (int i = 0; i < objectList.Count; i++) {         
 			objectList [i].transform.SetParent (ObjectsManager.Instance.transform);
 			objectList [i].group = null;
@@ -68,64 +69,26 @@ public class Group : MonoBehaviour {
 	}
 
 
-    public Vector3 GetBoundingBoxTopCenter()
-    {
-        // add all bottom centers of objects together
-        Vector3 center = Vector3.zero;
-        float y = -9999f;
-
-        for (int i = 0; i < objectList.Count; i++)
-        {
-            center += objectList[i].GetBoundingBoxTopCenter();
-
-            if (objectList[i].GetBoundingBoxBottomCenter().y > y)
-            {
-                y = objectList[i].GetBoundingBoxBottomCenter().y;
-            }
-        }
-
-        center = center / objectList.Count;
-
-        return new Vector3(center.x, y, center.z);
-    }
+	public Vector3 GetBoundingBoxTopCenter()
+	{ 
+		UpdateBoundingBox ();
+		Vector3 boundingBoxBottomCenter = 0.25f * boundingBox.coordinates [0] + 0.25f * boundingBox.coordinates [1] + 0.25f * boundingBox.coordinates [2] + 0.25f * boundingBox.coordinates [3];
+		return boundingBoxBottomCenter;
+	}
 
     public Vector3 GetBoundingBoxBottomCenter()
     {
-        Vector3 center = Vector3.zero;
-        float y = 9999f;
+		UpdateBoundingBox ();
+		Vector3 boundingBoxBottomCenter = 0.25f * boundingBox.coordinates [4] + 0.25f * boundingBox.coordinates [5] + 0.25f * boundingBox.coordinates [6] + 0.25f * boundingBox.coordinates [7];
 
-        for (int i = 0; i < objectList.Count; i++)
-        {
-			center += objectList[i].transform.TransformPoint(objectList[i].GetBoundingBoxBottomCenter());
-
-			if (objectList[i].transform.TransformPoint(objectList[i].GetBoundingBoxBottomCenter()).y < y)
-            {
-				y = objectList[i].transform.TransformPoint(objectList[i].GetBoundingBoxBottomCenter()).y;
-            }
-        }
-
-        // calculate center
-        center = center / objectList.Count;
-
-	//	Debug.Log ("lowest point:" + new Vector3 (center.x, y, center.z));
-
-        return new Vector3(center.x, y, center.z);
+		return boundingBoxBottomCenter;     
     }
 
-    public Vector3 GetBoundingBoxCenter()
-    {
-        Vector3 center = Vector3.zero;
-
-        // add all centers together and divide by number of objects
-        for (int i = 0; i < objectList.Count; i++)
-        {
-            center += objectList[i].GetBoundingBoxCenter();
-        }
-
-        center = center / objectList.Count;
-
-        return center;
-    }
+	public Vector3 GetBoundingBoxCenter()
+	{
+		Vector3 boundingBoxCenter = 0.5f * GetBoundingBoxBottomCenter () + 0.5f * GetBoundingBoxTopCenter ();
+		return boundingBoxCenter;
+	}
 
 	public Vector3 GetBoundingBoxMinima()
 	{
@@ -182,12 +145,12 @@ public class Group : MonoBehaviour {
     {
 		focused = true;
 
-		objectSelector.ShowSelectionButton (controller);
+		DrawBoundingBox ();
 
         for (int i = 0; i < objectList.Count; i++) {         
             if (objectList[i] != initiater)
             {
-				objectList[i].Focus(controller);
+				objectList [i].Highlight ();
             }
         }
     }
@@ -196,11 +159,13 @@ public class Group : MonoBehaviour {
     {
 		focused = false;
 
+		boundingBox.ClearBoundingBox ();
+
         for (int i = 0; i < objectList.Count; i++)
         {
             if (objectList[i] != initiater)
             {
-				objectList[i].UnFocus(controller);
+				objectList [i].UnHighlight ();
             }
         }
     }
@@ -246,6 +211,8 @@ public class Group : MonoBehaviour {
         }
 
 		DrawBoundingBox ();
+
+		// fade out objects not in group
 
     }
 
@@ -310,6 +277,8 @@ public class Group : MonoBehaviour {
 
     public void TrashGroup(ModelingObject initiater)
     {
+		boundingBox.ClearBoundingBox ();
+
         for (int i = 0; i < objectList.Count; i++)
         {
             if (objectList[i] != initiater)
@@ -317,6 +286,8 @@ public class Group : MonoBehaviour {
                 objectList[i].TrashObject(false);
             }
         }
+
+		ObjectsManager.Instance.DeleteGroup (this);
     }
 
 	public void ColorGroup(ModelingObject initiater, Color color){
@@ -348,5 +319,34 @@ public class Group : MonoBehaviour {
 		return closestVertex;
 	}
 		
-	
+
+	public void DeActivateCollider (){
+		for (int i = 0; i < objectList.Count; i++)
+		{
+			objectList[i].DeActivateCollider();
+		}
+	}
+
+	public void DarkenColorObject (){
+		for (int i = 0; i < objectList.Count; i++)
+		{
+			objectList[i].DarkenColorObject();
+		}
+	}
+
+
+	public void ActivateCollider (){
+		for (int i = 0; i < objectList.Count; i++)
+		{
+			objectList[i].ActivateCollider();
+		}
+	}
+
+	public void NormalColorObject (){
+		for (int i = 0; i < objectList.Count; i++)
+		{
+			objectList[i].NormalColorObject();
+		}
+	}
+		
 }

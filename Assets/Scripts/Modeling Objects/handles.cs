@@ -30,6 +30,14 @@ public class handles : MonoBehaviour {
     public GameObject TopHandles;
     public GameObject BottomHandles;
 
+	public GameObject NonUniformScalingHandles;
+	public GameObject NonUniformScaleFront;
+	public GameObject NonUniformScaleBack;
+	public GameObject NonUniformScaleTop;
+	public GameObject NonUniformScaleBottom;
+	public GameObject NonUniformScaleLeft;
+	public GameObject NonUniformScaleRight;
+
     public bool objectFocused;
 
     // Use this for initialization
@@ -83,8 +91,20 @@ public class handles : MonoBehaviour {
 		}
 	}
 
-    public void ShowFrustumHandles()
-    {
+	public void ShowNonUniformScalingHandles() {
+		DisableHandles();
+
+		NonUniformScalingHandles.SetActive (true);
+		NonUniformScaleFront.SetActive(true);
+		NonUniformScaleBack.SetActive(true);
+		NonUniformScaleTop.SetActive(true);
+		NonUniformScaleBottom.SetActive(true);
+		NonUniformScaleLeft.SetActive(true);
+		NonUniformScaleRight.SetActive(true);
+	}
+
+    public void ShowFrustumHandles() {
+		
         DisableHandles();
         //transform.parent.GetComponent<ModelingObject>().PositionHandles();
         //transform.parent.GetComponent<ModelingObject>().RotateHandles();

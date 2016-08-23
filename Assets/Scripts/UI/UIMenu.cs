@@ -78,14 +78,23 @@ public class UIMenu : MonoBehaviour {
 				if (child.name == "UI Close"){
 					child.gameObject.SetActive(true);
 					child.GetComponent<RectTransform>().anchoredPosition3D = new Vector3(500f, -50f, 0f);
-				} else {
-					if(!child.gameObject.CompareTag("UIElementNotInUse")){
-						child.gameObject.SetActive(true);
-						buttons.Add(child.gameObject);
+				} else {			
+					if(!child.gameObject.CompareTag("UIElementNotInUse")){						
+						// check if it is a group 
+						if (UiCanvasGroup.Instance.currentModelingObject.group == null) {
+							child.gameObject.SetActive(true);
+							buttons.Add(child.gameObject);
+						} else {
+							if (!(child.gameObject.name == "UI Shape")){
+								child.gameObject.SetActive(true);
+								buttons.Add(child.gameObject);
+							}
+						}
 					}
 				}
             }
         }
+
         transform.parent.GetComponent<UiCanvasGroup>().ArrangeUIObjects(buttons);
         transform.parent.GetComponent<UiCanvasGroup>().Show();
 
@@ -96,12 +105,14 @@ public class UIMenu : MonoBehaviour {
         switch (TypeOfMenu)
         {
 			case (menuType.Rotation):
+				// sometimes wrong
 				parentCanvas.currentModelingObject.PositionHandles ();
 				parentCanvas.currentModelingObject.RotateHandles ();
                 parentCanvas.currentModelingObject.handles.ShowRotationHandles();
                 parentCanvas.currentModelingObject.ShowBoundingBox();
                 break;
             case (menuType.NonUniformScaling):
+				// not existing anymore
                 parentCanvas.currentModelingObject.handles.DisableHandles();
                 break;
             case (menuType.Color):
@@ -119,8 +130,12 @@ public class UIMenu : MonoBehaviour {
             case (menuType.NewObject):
                 parentCanvas.currentModelingObject.handles.DisableHandles ();
                 break;
-            case (menuType.MainMenu):
-                parentCanvas.currentModelingObject.handles.DisableHandles();
+			case (menuType.MainMenu):
+				if (UiCanvasGroup.Instance.currentModelingObject.group == null) {
+					parentCanvas.currentModelingObject.handles.ShowNonUniformScalingHandles();
+				} else {
+					parentCanvas.currentModelingObject.handles.DisableHandles();
+				}					
                 break;
         }
     }
@@ -229,11 +244,17 @@ public class UIMenu : MonoBehaviour {
 
     public void Duplicate()
     {
-		// when we have rotation we need to update this
-		Vector3 position = 0.25f * parentCanvas.currentModelingObject.boundingBox.coordinates[0] + 0.25f * parentCanvas.currentModelingObject.boundingBox.coordinates[1] + 0.25f * parentCanvas.currentModelingObject.boundingBox.coordinates[2] + 0.25f * parentCanvas.currentModelingObject.boundingBox.coordinates[3];
-		position = position + (position - parentCanvas.currentModelingObject.transform.position);
+		if (parentCanvas.currentModelingObject.group == null) {
+			parentCanvas.currentModelingObject.CalculateBoundingBox ();
+			Vector3 position = parentCanvas.currentModelingObject.GetBoundingBoxTopCenter () + (parentCanvas.currentModelingObject.GetBoundingBoxTopCenter () - parentCanvas.currentModelingObject.GetBoundingBoxCenter ());
+			ObjectCreator.Instance.DuplicateObject (parentCanvas.currentModelingObject, null, position);
+		} else {
+			parentCanvas.currentModelingObject.group.UpdateBoundingBox ();
+			Vector3 position = parentCanvas.currentModelingObject.group.GetBoundingBoxTopCenter () + (parentCanvas.currentModelingObject.group.GetBoundingBoxTopCenter () - parentCanvas.currentModelingObject.group.GetBoundingBoxCenter ());
+			ObjectCreator.Instance.DuplicateGroup (parentCanvas.currentModelingObject.group, position);
+		}
 
-		ObjectCreator.Instance.DuplicateObject(parentCanvas.currentModelingObject, null, position);
+
     }
 
     public void ChangeColor(UiElement button)

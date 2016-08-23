@@ -232,8 +232,15 @@ public class StageController : MonoBehaviour {
 					amountOfMovementForHapticFeedback = 0f;
 				}
 
-
 				ScaleStage (amountY);
+
+				if (selection.currentFocus != null) {
+					if (selection.currentFocus.CompareTag("ModelingObject")){
+						selection.currentFocus.GetComponent<ModelingObject>().objectSelector.RePosition(Camera.main.transform.position);
+					} else if (selection.currentFocus.CompareTag("SelectionButton")){
+						selection.currentFocus.GetComponent<ObjectSelecter>().RePosition(Camera.main.transform.position);
+					}
+				}
             }
 			else if (currentControllerMode == controllerMode.rotatingStage)
 			{
@@ -248,8 +255,15 @@ public class StageController : MonoBehaviour {
 					amountOfMovementForHapticFeedback = 0f;
 				}
 
-
 				RotateStage (amountX);
+
+				if (selection.currentFocus != null) {
+					if (selection.currentFocus.CompareTag("ModelingObject")){
+						selection.currentFocus.GetComponent<ModelingObject>().objectSelector.RePosition(Camera.main.transform.position);
+					} else if (selection.currentFocus.CompareTag("SelectionButton")){
+						selection.currentFocus.GetComponent<ObjectSelecter>().RePosition(Camera.main.transform.position);
+					}
+				}
 			}
 			else if (currentControllerMode == controllerMode.rotatingObject)
 			{

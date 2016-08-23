@@ -9,9 +9,12 @@ public class handle : MonoBehaviour {
         PositionCenter,
         Height,
         Rotation,
-        RotationX,
-        RotationY,
-        RotationZ
+		ScaleX,
+		ScaleY,
+		ScaleZ,
+		ScaleMinusX,
+		ScaleMinusY,
+		ScaleMinusZ
     };
 
     public GameObject connectedObject;
@@ -49,8 +52,20 @@ public class handle : MonoBehaviour {
     private bool newRotation = false;
     private float prevRotationAmount;
 
+	private bool newScaling = false;
+	private float prevScalingAmount;
+
+	public Color normalColor;
+	public Color hoverColor;
+
+
     // Use this for initialization
     void Start () {
+		if (arrow != null) {
+			arrow.GetComponent<Renderer>().material.color = normalColor;
+		}
+
+
         ResetLastPosition();
         connectedModelingObject = connectedObject.GetComponent<ModelingObject>();
 
@@ -82,11 +97,6 @@ public class handle : MonoBehaviour {
 
             initialLocalPositionHandle = transform.localPosition;
             initialPositionHandle = transform.position;
-
-			/*
-			if (circle != null) {
-				initialScaleCircle = circle.localScale;
-			}*/
         }
 
 		Vector3 pq = pointOfCollision - pos1;
@@ -160,13 +170,72 @@ public class handle : MonoBehaviour {
                 }                
                 Rotate(pointOfCollision);
                 break;
+			case handleType.ScaleX:
+				if (!alreadyMoving)
+				{
+					newScaling = true;
+				}         
+				ScaleNonUniform (pointOfCollision, new Vector3 (1f, 0f, 0f));
+				break;
+			case handleType.ScaleY:
+				if (!alreadyMoving)
+				{
+					newScaling = true;
+				}  
+				ScaleNonUniform (pointOfCollision, new Vector3 (0f, 1f, 0f));
+				break;
+			case handleType.ScaleZ:
+				if (!alreadyMoving)
+				{
+					newScaling = true;
+				}  
+				ScaleNonUniform (pointOfCollision, new Vector3 (0f, 0f, 1f));
+				break;
+			case handleType.ScaleMinusX:
+				if (!alreadyMoving)
+				{
+					newScaling = true;
+				}  
+				ScaleNonUniform (pointOfCollision, new Vector3 (1f, 0f, 0f));
+				break;
+			case handleType.ScaleMinusY:
+				if (!alreadyMoving)
+				{
+					newScaling = true;
+				}  
+				ScaleNonUniform (pointOfCollision, new Vector3 (0f, 1f, 0f));
+				break;
+			case handleType.ScaleMinusZ:
+				if (!alreadyMoving)
+				{
+					newScaling = true;
+				}  
+				ScaleNonUniform (pointOfCollision, new Vector3 (0f, 0f, 1f));
+				break;
         }
 
 		connectedModelingObject.RecalculateSideCenters();
 		connectedModelingObject.RecalculateNormals();
-
 		connectedModelingObject.ShowBoundingBox ();
     }
+
+	public void ScaleNonUniform(GameObject pointOfCollision, Vector3 direction){
+		Vector3 normalizedDirection = direction.normalized;
+
+		float input = CalculateInputFromPoint(pointOfCollision.transform.position, p1.transform.position, p2.transform.position);
+		input = RasterManager.Instance.Raster (input);
+
+		if (newScaling)
+		{
+			prevScalingAmount = input;
+			newScaling = false;
+		}
+			
+		// apply rastering!!!
+		connectedModelingObject.ScaleNonUniform (Mathf.Abs(1f + (input - prevScalingAmount)), direction, typeOfHandle);
+
+		prevScalingAmount = input;
+	}
 
 	public void FinishUsingHandle(){
 		if (typeOfHandle == handleType.Rotation) {
@@ -176,26 +245,16 @@ public class handle : MonoBehaviour {
 
     private void ScaleFace(GameObject pointOfCollision)
     {
-		float input = CalculateInputFromPoint(pointOfCollision.transform.position, p1.transform.position, p2.transform.position)*1.5f;
+		float input = CalculateInputFromPoint(pointOfCollision.transform.position, p1.transform.position, p2.transform.position) * 1.5f;
 
         Vector3 positionScaler = initialLocalPositionFace + ((1f - input) * initialDistancceCenterScaler);
         Vector3 newDistanceCenterScaler = positionScaler - face.centerPosition;
 
-        if (newDistanceCenterScaler.magnitude >= 0.1f && Vector3.Dot(initialDistancceCenterScaler, newDistanceCenterScaler)>0)
+		if (newDistanceCenterScaler.magnitude >= RasterManager.Instance.rasterLevel && Vector3.Dot(initialDistancceCenterScaler, newDistanceCenterScaler)>0)
         {
-			//Vector3 position = initialLocalPositionHandle + (-input * (initialLocalPositionHandle-face.centerPosition).normalized * 0.5f);
-
 			positionScaler = RasterManager.Instance.Raster(positionScaler);
 			transform.position = connectedModelingObject.transform.TransformPoint(positionScaler);
-			face.scaler.coordinates = positionScaler;
-
-            // update scale of circle
-			if (circle != null) {
-				//circle.localScale = initialScaleCircle * (newDistanceCenterScaler.magnitude / initialDistancceCenterScaler.magnitude); 
-				//circle.localScale = new Vector3(newDistanceCenterScaler.magnitude,newDistanceCenterScaler.magnitude,newDistanceCenterScaler.magnitude);
-
-			}
-
+			face.scaler.coordinates = positionScaler;  
         }
 
         face.UpdateScaleFromCorner();
@@ -219,16 +278,14 @@ public class handle : MonoBehaviour {
     {
 		float input = CalculateInputFromPoint(pointOfCollision.transform.position, p1.transform.position, p2.transform.position);
 
-         Vector3 position = initialLocalPositionHandle + ((-input * 1.4f) * face.normal);
-         Vector3 positionFace = initialLocalPositionFace + ((-input * 1.4f) * face.normal);
+        Vector3 position = initialLocalPositionHandle + ((-input * 1.4f) * face.normal);
+        Vector3 positionFace = initialLocalPositionFace + ((-input * 1.4f) * face.normal);
     
         // check that center does not get below other center
 
         if ((face.typeOfFace == Face.faceType.TopFace && positionFace.y > face.parentModelingObject.bottomFace.centerPosition.y) || (face.typeOfFace == Face.faceType.BottomFace && positionFace.y < face.parentModelingObject.topFace.centerPosition.y))
         {
             transform.localPosition = RasterManager.Instance.Raster(position);
-           // transform.localPosition = position;
-
             face.center.coordinates = RasterManager.Instance.Raster(positionFace);
             face.UpdateFaceFromCenter();
         }
@@ -253,13 +310,16 @@ public class handle : MonoBehaviour {
             newRotation = false;
         }
 			
+
+		// here we need to check if it is connected to a group or a modeling object
+
         // define rotation axis
 		Vector3 rotationAxis = connectedModelingObject.transform.InverseTransformDirection(p1.transform.position - p2.transform.position);
 
         // rotate around this axis
 		connectedModelingObject.RotateAround(rotationAxis, RasterManager.Instance.RasterAngle(newRotationAmount-prevRotationAmount));
 
-		prevRotationAmount =  RasterManager.Instance.RasterAngle(newRotationAmount);
+		prevRotationAmount = RasterManager.Instance.RasterAngle(newRotationAmount);
     }
 
     private void SetRotateStepTrue()
@@ -289,7 +349,7 @@ public class handle : MonoBehaviour {
 				if (arrow != null) {
 					// Hover effect: Scale bigger & change color
 					LeanTween.scale (arrow, new Vector3 (initialSizeArrow.x * 1.4f, initialSizeArrow.y * 1.4f, initialSizeArrow.z * 1.4f), 0.1f);
-					LeanTween.color (arrow, new Color (0.7f, 0.8f, 1f, 1f), 0.1f);
+					LeanTween.color (arrow, hoverColor, 0.1f);
 				}
 
                 controller.AssignCurrentFocus(transform.gameObject);
@@ -309,12 +369,12 @@ public class handle : MonoBehaviour {
 				if (arrow != null) {
 					// Hover effect: Scale bigger & change color
 					LeanTween.scale(arrow, new Vector3 (initialSizeArrow.x, initialSizeArrow.y, initialSizeArrow.z), 0.1f);
-					LeanTween.color(arrow, new Color(1f,1f,1f,1f), 0.1f);
+					LeanTween.color(arrow, normalColor, 0.1f);
 				}
 
                 controller.DeAssignCurrentFocus(transform.gameObject);
 				handles.objectFocused = false;
-				LeanTween.color(this.gameObject, Color.white, 0.2f);
+				//LeanTween.color(this.gameObject, Color.white, 0.2f);
 				focused = false;
 			}
 		}

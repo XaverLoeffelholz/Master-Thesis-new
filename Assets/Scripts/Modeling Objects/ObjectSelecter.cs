@@ -5,7 +5,6 @@ using System;
 public class ObjectSelecter : MonoBehaviour {
 
     public ModelingObject connectedObject;
-	public Group connectedGroup;
     private Vector3 initialScale;
     private float objectScale = 0.25f;
 	public GameObject buttonGameObject;
@@ -46,7 +45,7 @@ public class ObjectSelecter : MonoBehaviour {
 
 	public void ShowSelectionButton(Selection controller){	
 		if (!active) {
-			RePosition (Camera.main.transform.position);
+			//RePosition (Camera.main.transform.position);
 			buttonGameObject.SetActive (true);
 			active = true;
 			Collider.SetActive (true);
@@ -55,10 +54,7 @@ public class ObjectSelecter : MonoBehaviour {
 			if (connectedObject != null) {
 				connectedObject.ShowBoundingBox ();
 				connectedObject.boundingBox.ActivateBoundingBoxCollider ();
-			} else if (connectedGroup != null) {
-				connectedGroup.DrawBoundingBox ();
-				connectedGroup.boundingBox.ActivateBoundingBoxCollider ();
-			}
+			} 
 		}
     }
 
@@ -67,9 +63,6 @@ public class ObjectSelecter : MonoBehaviour {
 			if (connectedObject != null) {
 				connectedObject.HideBoundingBox ();
 				connectedObject.boundingBox.DeActivateBoundingBoxCollider ();
-			} else if (connectedGroup != null) {
-				connectedGroup.boundingBox.ClearBoundingBox();
-				connectedGroup.boundingBox.DeActivateBoundingBoxCollider ();
 			}
 
 			active = false;
@@ -89,17 +82,13 @@ public class ObjectSelecter : MonoBehaviour {
 	public void FocusConnectedObject(Selection controller){
 		if (connectedObject != null) {
 			connectedObject.Focus (controller);
-		} else if (connectedGroup != null) {
-			connectedGroup.FocusGroup (null, controller);
-		}
+		} 
 	}
 
 	public void UnFocusConnectedObject(Selection controller){
 		if (connectedObject != null) {
 			connectedObject.UnFocus (controller);
-		} else if (connectedGroup != null) {
-			connectedGroup.UnFocusGroup (null, controller);
-		}
+		} 
 	}
 
 	public void UnFocus(Selection controller){
@@ -124,11 +113,8 @@ public class ObjectSelecter : MonoBehaviour {
 		if (connectedObject != null) {
 			connectedObject.Select (controller, uiPosition);
 			ObjectsManager.Instance.DisableObjectsExcept (connectedObject);
-		} else if (connectedGroup != null) {
-			connectedGroup.objectList[0].Select (controller, uiPosition);
-			ObjectsManager.Instance.DisableObjectsExcept (connectedGroup);
-		}
-    }
+		} 
+	}
 
 	public void DeSelect(Selection controller)
 	{
@@ -139,9 +125,7 @@ public class ObjectSelecter : MonoBehaviour {
     {
 		if (connectedObject != null) {
 			transform.position = connectedObject.GetPosOfClosestVertex (position, new Vector3[] {connectedObject.boundingBox.coordinates[4], connectedObject.boundingBox.coordinates[5],connectedObject.boundingBox.coordinates[6],connectedObject.boundingBox.coordinates[7] });
-		} else if (connectedGroup != null) {
-			transform.position = connectedGroup.GetPosOfClosestVertex (position, new Vector3[] {connectedGroup.boundingBox.coordinates[4], connectedGroup.boundingBox.coordinates[5],connectedGroup.boundingBox.coordinates[6],connectedGroup.boundingBox.coordinates[7] });
-		}
+		} 
 	}
 
 	public void MoveAndFace (Vector3 position){
