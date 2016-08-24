@@ -58,6 +58,8 @@ public class handle : MonoBehaviour {
 	public Color normalColor;
 	public Color hoverColor;
 
+	private Vector3 centerOfScaling = new Vector3(0f,0f,0f);
+	private Vector3 touchPointForScaling = new Vector3(0f,0f,0f);
 
     // Use this for initialization
     void Start () {
@@ -166,6 +168,7 @@ public class handle : MonoBehaviour {
                 if (!alreadyMoving)
                 {
 					handles.HideRotationHandlesExcept (this);
+					handles.HideScalingHandlesExcept (null);
                     newRotation = true;
                 }                
                 Rotate(pointOfCollision);
@@ -173,6 +176,8 @@ public class handle : MonoBehaviour {
 			case handleType.ScaleX:
 				if (!alreadyMoving)
 				{
+					handles.HideRotationHandlesExcept (null);
+					handles.HideScalingHandlesExcept (this);
 					newScaling = true;
 				}         
 				ScaleNonUniform (pointOfCollision, new Vector3 (1f, 0f, 0f));
@@ -180,6 +185,8 @@ public class handle : MonoBehaviour {
 			case handleType.ScaleY:
 				if (!alreadyMoving)
 				{
+					handles.HideRotationHandlesExcept (null);
+					handles.HideScalingHandlesExcept (this);
 					newScaling = true;
 				}  
 				ScaleNonUniform (pointOfCollision, new Vector3 (0f, 1f, 0f));
@@ -187,6 +194,8 @@ public class handle : MonoBehaviour {
 			case handleType.ScaleZ:
 				if (!alreadyMoving)
 				{
+					handles.HideRotationHandlesExcept (null);
+					handles.HideScalingHandlesExcept (this);
 					newScaling = true;
 				}  
 				ScaleNonUniform (pointOfCollision, new Vector3 (0f, 0f, 1f));
@@ -194,6 +203,8 @@ public class handle : MonoBehaviour {
 			case handleType.ScaleMinusX:
 				if (!alreadyMoving)
 				{
+					handles.HideRotationHandlesExcept (null);
+					handles.HideScalingHandlesExcept (this);
 					newScaling = true;
 				}  
 				ScaleNonUniform (pointOfCollision, new Vector3 (1f, 0f, 0f));
@@ -201,6 +212,8 @@ public class handle : MonoBehaviour {
 			case handleType.ScaleMinusY:
 				if (!alreadyMoving)
 				{
+					handles.HideRotationHandlesExcept (null);
+					handles.HideScalingHandlesExcept (this);
 					newScaling = true;
 				}  
 				ScaleNonUniform (pointOfCollision, new Vector3 (0f, 1f, 0f));
@@ -208,6 +221,8 @@ public class handle : MonoBehaviour {
 			case handleType.ScaleMinusZ:
 				if (!alreadyMoving)
 				{
+					handles.HideRotationHandlesExcept (null);
+					handles.HideScalingHandlesExcept (this);
 					newScaling = true;
 				}  
 				ScaleNonUniform (pointOfCollision, new Vector3 (0f, 0f, 1f));
@@ -220,26 +235,58 @@ public class handle : MonoBehaviour {
     }
 
 	public void ScaleNonUniform(GameObject pointOfCollision, Vector3 direction){
+		
 		Vector3 normalizedDirection = direction.normalized;
-
 		float input = CalculateInputFromPoint(pointOfCollision.transform.position, p1.transform.position, p2.transform.position);
-		input = RasterManager.Instance.Raster (input);
+
+		// get current distance 
+		switch (typeOfHandle)
+		{
+		case handle.handleType.ScaleX:
+			centerOfScaling = connectedModelingObject.transform.InverseTransformPoint (connectedModelingObject.GetBoundingBoxLeftCenter ());
+			touchPointForScaling = connectedModelingObject.transform.InverseTransformPoint (connectedModelingObject.GetBoundingBoxRightCenter ());
+			break;
+		case handle.handleType.ScaleY:
+			centerOfScaling = connectedModelingObject.transform.InverseTransformPoint (connectedModelingObject.GetBoundingBoxBottomCenter ());
+			touchPointForScaling = connectedModelingObject.transform.InverseTransformPoint (connectedModelingObject.GetBoundingBoxTopCenter ());
+			break;		
+		case handle.handleType.ScaleZ:
+			centerOfScaling = connectedModelingObject.transform.InverseTransformPoint (connectedModelingObject.GetBoundingBoxFrontCenter ());
+			touchPointForScaling = connectedModelingObject.transform.InverseTransformPoint (connectedModelingObject.GetBoundingBoxBackCenter ());
+			break;		
+		case handle.handleType.ScaleMinusX:
+			centerOfScaling = connectedModelingObject.transform.InverseTransformPoint (connectedModelingObject.GetBoundingBoxRightCenter ());
+			touchPointForScaling = connectedModelingObject.transform.InverseTransformPoint (connectedModelingObject.GetBoundingBoxLeftCenter ());
+			break;
+		case handle.handleType.ScaleMinusY:
+			centerOfScaling = connectedModelingObject.transform.InverseTransformPoint (connectedModelingObject.GetBoundingBoxTopCenter ());
+			touchPointForScaling = connectedModelingObject.transform.InverseTransformPoint (connectedModelingObject.GetBoundingBoxBottomCenter ());
+			break;
+		case handle.handleType.ScaleMinusZ:
+			centerOfScaling = connectedModelingObject.transform.InverseTransformPoint (connectedModelingObject.GetBoundingBoxBackCenter ());
+			touchPointForScaling = connectedModelingObject.transform.InverseTransformPoint (connectedModelingObject.GetBoundingBoxFrontCenter ());
+			break;
+		}
 
 		if (newScaling)
 		{
 			prevScalingAmount = input;
 			newScaling = false;
 		}
+
+		float RasteredDistanceCenters = RasterManager.Instance.Raster((centerOfScaling - touchPointForScaling).magnitude * Mathf.Abs(1f + (input - prevScalingAmount)));
+		input = (RasteredDistanceCenters / ((centerOfScaling - touchPointForScaling).magnitude)) - 1f + prevScalingAmount;
 			
 		// apply rastering!!!
-		connectedModelingObject.ScaleNonUniform (Mathf.Abs(1f + (input - prevScalingAmount)), direction, typeOfHandle);
+		connectedModelingObject.ScaleNonUniform (Mathf.Abs(1f + (input - prevScalingAmount)), direction, typeOfHandle, centerOfScaling);
 
 		prevScalingAmount = input;
 	}
 
 	public void FinishUsingHandle(){
-		if (typeOfHandle == handleType.Rotation) {
-			handles.ShowRotationHandles();
+		if (typeOfHandle != handleType.Height && typeOfHandle != handleType.ScaleFace) {
+			// handles.ShowRotationHandles();
+			handles.ShowNonUniformScalingHandles();
 		}
 	}
 
@@ -247,12 +294,16 @@ public class handle : MonoBehaviour {
     {
 		float input = CalculateInputFromPoint(pointOfCollision.transform.position, p1.transform.position, p2.transform.position) * 1.5f;
 
-        Vector3 positionScaler = initialLocalPositionFace + ((1f - input) * initialDistancceCenterScaler);
+       // Raster
+		float RasteredDistanceCenterScaler = RasterManager.Instance.Raster((1f - input) * (initialDistancceCenterScaler).magnitude);
+		input = 1f - (RasteredDistanceCenterScaler / (initialDistancceCenterScaler).magnitude);
+
+		Vector3 positionScaler = initialLocalPositionFace + ((1f - input) * initialDistancceCenterScaler);
         Vector3 newDistanceCenterScaler = positionScaler - face.centerPosition;
 
 		if (newDistanceCenterScaler.magnitude >= RasterManager.Instance.rasterLevel && Vector3.Dot(initialDistancceCenterScaler, newDistanceCenterScaler)>0)
         {
-			positionScaler = RasterManager.Instance.Raster(positionScaler);
+			positionScaler = positionScaler;
 			transform.position = connectedModelingObject.transform.TransformPoint(positionScaler);
 			face.scaler.coordinates = positionScaler;  
         }
@@ -278,15 +329,18 @@ public class handle : MonoBehaviour {
     {
 		float input = CalculateInputFromPoint(pointOfCollision.transform.position, p1.transform.position, p2.transform.position);
 
-        Vector3 position = initialLocalPositionHandle + ((-input * 1.4f) * face.normal);
-        Vector3 positionFace = initialLocalPositionFace + ((-input * 1.4f) * face.normal);
+		float RasteredLength = RasterManager.Instance.Raster(((input) * (face.normal).magnitude));
+		input = RasteredLength / (face.normal).magnitude;
+
+        Vector3 position = initialLocalPositionHandle + ((-input) * face.normal);
+        Vector3 positionFace = initialLocalPositionFace + ((-input) * face.normal);
     
         // check that center does not get below other center
 
         if ((face.typeOfFace == Face.faceType.TopFace && positionFace.y > face.parentModelingObject.bottomFace.centerPosition.y) || (face.typeOfFace == Face.faceType.BottomFace && positionFace.y < face.parentModelingObject.topFace.centerPosition.y))
         {
-            transform.localPosition = RasterManager.Instance.Raster(position);
-            face.center.coordinates = RasterManager.Instance.Raster(positionFace);
+            transform.localPosition = position;
+            face.center.coordinates = positionFace;
             face.UpdateFaceFromCenter();
         }
     }

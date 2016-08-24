@@ -8,6 +8,7 @@ public class StageHeightController : MonoBehaviour {
 	private bool moving = false;
 	private float lastYValue;
 
+
 	// Use this for initialization
 	void Start () {
 		stageScaler = transform.parent;
@@ -41,7 +42,7 @@ public class StageHeightController : MonoBehaviour {
 			if (child.gameObject.name == "Arrow") {
 				LeanTween.scale(child.gameObject, new Vector3 (0.03f, 0.06f, 0.06f), 0.1f);
 			}
-			LeanTween.color(child.gameObject, new Color (0.3f, 0.3f, 0.4f, 0.5f), 0.1f);
+			LeanTween.color(child.gameObject, new Color (1f, 1f, 1f, 1f), 0.1f);
 		}
 	}
 
@@ -64,6 +65,5 @@ public class StageHeightController : MonoBehaviour {
 		newY = Mathf.Max (newY, -2.8f);
 
 		stageScaler.transform.position = new Vector3 (stageScaler.transform.position.x, newY, stageScaler.transform.position.z);
-
 	}
 }

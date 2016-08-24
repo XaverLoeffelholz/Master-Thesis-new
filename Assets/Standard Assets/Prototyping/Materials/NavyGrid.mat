@@ -7,13 +7,12 @@ Material:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_Name: NavyGrid
-  m_Shader: {fileID: 45, guid: 0000000000000000f000000000000000, type: 0}
-  m_ShaderKeywords: _ALPHABLEND_ON _EMISSIONMAP _LIGHTMAPPING_DYNAMIC_LIGHTMAPS _LIGHTMAPPING_REALTIME
+  m_Shader: {fileID: 46, guid: 0000000000000000f000000000000000, type: 0}
+  m_ShaderKeywords: _EMISSIONMAP _LIGHTMAPPING_DYNAMIC_LIGHTMAPS _LIGHTMAPPING_REALTIME
     _UVSEC_UV1
   m_LightmapFlags: 5
-  m_CustomRenderQueue: 3000
-  stringTagMap:
-    RenderType: Transparent
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
   m_SavedProperties:
     serializedVersion: 2
     m_TexEnvs:
@@ -98,11 +97,11 @@ Material:
       data:
         first:
           name: _SrcBlend
-        second: 5
+        second: 1
       data:
         first:
           name: _DstBlend
-        second: 10
+        second: 0
       data:
         first:
           name: _Cutoff
@@ -118,15 +117,15 @@ Material:
       data:
         first:
           name: _ZWrite
-        second: 0
+        second: 1
       data:
         first:
           name: _Glossiness
-        second: 0.4
+        second: 0.369
       data:
         first:
           name: _Metallic
-        second: 0.199
+        second: 0.433
       data:
         first:
           name: _BumpScale
@@ -150,7 +149,7 @@ Material:
       data:
         first:
           name: _Mode
-        second: 2
+        second: 0
       data:
         first:
           name: _Lightmapping
@@ -175,7 +174,7 @@ Material:
       data:
         first:
           name: _Color
-        second: {r: 0.403, g: 0.403, b: 0.397, a: 0.303}
+        second: {r: 0.5210714, g: 0.6838235, b: 0.30671498, a: 1}
       data:
         first:
           name: _SpecColor

@@ -39,7 +39,7 @@ public class StageDistanceController : MonoBehaviour {
 		foreach (Transform child in transform) {
 			if (child.gameObject.name == "Arrow") {
 				LeanTween.scale(child.gameObject, new Vector3 (0.04f, 0.08f, 0.08f), 0.1f);
-				LeanTween.color(child.gameObject, new Color (0.3f, 0.3f, 0.4f, 0.5f), 0.1f);
+				LeanTween.color(child.gameObject, new Color (1f, 1f, 1f, 1f), 0.1f);
 			}
 		}
 	}

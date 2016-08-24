@@ -109,8 +109,7 @@ public class ObjectCreator : Singleton<ObjectCreator> {
 			newObject.transform.position = offSet;
         }
 
-		newModelingObject.ChangeColor(color, true);
-
+		newModelingObject.ChangeColor(color, false);
 		latestModelingObject = newModelingObject;
     }
 
@@ -165,6 +164,8 @@ public class ObjectCreator : Singleton<ObjectCreator> {
 		for (int i = 0; i < group.objectList.Count; i++) {
 			DuplicateObject (group.objectList [i], NewGroup, (group.objectList [i].transform.position + (objectPosition-group.GetBoundingBoxCenter()))); 
 		}
+
+		NewGroup.UpdateBoundingBox ();
 	}
 
 

@@ -85,7 +85,16 @@ public class handles : MonoBehaviour {
 	public void HideRotationHandlesExcept(handle certainHandle){
 		foreach (Transform handle in RotationHandles)
 		{
-			if (handle != certainHandle) {
+			if (certainHandle == null || handle != certainHandle.transform) {
+				handle.gameObject.SetActive(false);
+			}
+		}
+	}
+
+	public void HideScalingHandlesExcept(handle certainHandle){
+		foreach (Transform handle in NonUniformScalingHandles.transform)
+		{
+			if (certainHandle == null || handle != certainHandle.transform) {
 				handle.gameObject.SetActive(false);
 			}
 		}
@@ -93,6 +102,7 @@ public class handles : MonoBehaviour {
 
 	public void ShowNonUniformScalingHandles() {
 		DisableHandles();
+		ShowRotationHandles ();
 
 		NonUniformScalingHandles.SetActive (true);
 		NonUniformScaleFront.SetActive(true);

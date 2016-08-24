@@ -47,11 +47,11 @@ public class BoundingBox : MonoBehaviour {
 
 	public void ActivateBoundingBoxCollider(){
 		active = true;
-		boundingBoxCollider.GetComponent<BoxCollider>().enabled = true;
+		//boundingBoxCollider.GetComponent<BoxCollider>().enabled = true;
 	}
 
 	public void DeActivateBoundingBoxCollider(){
 		active = false;
-		boundingBoxCollider.GetComponent<BoxCollider>().enabled = false;
+		//boundingBoxCollider.GetComponent<BoxCollider>().enabled = false;
 	}
 }

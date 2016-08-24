@@ -25,24 +25,30 @@ public class BiManualOperations : Singleton<BiManualOperations> {
 	void FixedUpdate() {
 		if (controller1.currentFocus != null && controller2.currentFocus != null) {
 			if (controller1.currentFocus == controller2.currentFocus && controller1.currentFocus.CompareTag ("ModelingObject")) {
-				controller1.duplicateMode = false;
-				controller2.duplicateMode = false;
+				if (controller1.currentFocus.GetComponent<ModelingObject> ().group == null) {
+					controller1.duplicateMode = false;
+					controller2.duplicateMode = false;
 
-				controller1.scalingMode = true;
-				controller2.scalingMode = true;
+					controller1.scalingMode = true;
+					controller2.scalingMode = true;
 
-				if (controller1.triggerPressed && controller2.triggerPressed) {
-					if (!scalingStarted) {
-						StartScalingRotating ();
+					if (controller1.triggerPressed && controller2.triggerPressed) {
+						if (!scalingStarted) {
+							StartScalingRotating ();
+						} else {
+							ScaleOrRotateObject ();
+						}
 					} else {
-						ScaleOrRotateObject ();
-					}
-				} else {
-					scalingStarted = false;
-					controller1.scalingObject = false;
-					controller2.scalingObject = false;
-				}
+						scalingStarted = false;
 
+						if (controller1.scalingObject) {
+							controller1.currentFocus.GetComponent<ModelingObject> ().StartMoving (controller1, controller1.currentFocus.GetComponent<ModelingObject> ());
+						}
+
+						controller1.scalingObject = false;
+						controller2.scalingObject = false;
+					}
+				}
 			} else {
 				controller1.scalingMode = false;
 				controller2.scalingMode = false;
@@ -58,6 +64,7 @@ public class BiManualOperations : Singleton<BiManualOperations> {
 		if (controller1.currentFocus != null) {
 
 			if (controller1.currentFocus.CompareTag("ModelingObject")){
+				ModelingObject modObject = controller1.currentFocus.GetComponent<ModelingObject>();
 
 				controller1.StartScaling ();
 				controller2.StartScaling ();
@@ -65,11 +72,8 @@ public class BiManualOperations : Singleton<BiManualOperations> {
 				scalingStarted = true;
 
 				initialscale = controller1.currentFocus.transform.localScale;
-
-				ModelingObject modObject = controller1.currentFocus.GetComponent<ModelingObject>();
-
+				modObject.StopMoving (controller1, modObject);
 				modObject.StartScaling(true);
-
 				initialDistance = controller2.pointOfCollisionGO.transform.position - controller1.pointOfCollisionGO.transform.position;
 				lastDistance = initialDistance;
             }

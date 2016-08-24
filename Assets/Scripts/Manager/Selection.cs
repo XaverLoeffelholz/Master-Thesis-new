@@ -60,6 +60,7 @@ public class Selection : MonoBehaviour
 
 	public Material normalGrabIconMat;
 	public Material duplicateGrabIconMat;
+	public Material addToGroupMat;
 	public Material scaleGrabIconMat;
 
 	public Material grabbedIconMat;
@@ -193,7 +194,12 @@ public class Selection : MonoBehaviour
 							grabIcon.GetComponent<Renderer> ().material = scaleGrabIconMat;
 							Vector3 newScale = initialScaleGrabIcon * hit.distance;
 							grabIcon.transform.localScale = new Vector3 (Mathf.Min (newScale.x, grabIcon.transform.localScale.x * 1.4f), Mathf.Min (newScale.y, grabIcon.transform.localScale.y * 1.4f), Mathf.Min (newScale.z, grabIcon.transform.localScale.z * 1.4f)); 
-						} else {
+						} else if (groupItemSelection) {
+							grabIcon.GetComponent<Renderer> ().material = addToGroupMat;
+							Vector3 newScale = initialScaleGrabIcon * hit.distance * 1.3f;
+							grabIcon.transform.localScale = new Vector3 (Mathf.Min (newScale.x, grabIcon.transform.localScale.x * 1.4f), Mathf.Min (newScale.y, grabIcon.transform.localScale.y * 1.4f), Mathf.Min (newScale.z, grabIcon.transform.localScale.z * 1.4f)); 
+						}
+						else {
 							grabIcon.GetComponent<Renderer> ().material = normalGrabIconMat;
 							Vector3 newScale = initialScaleGrabIcon * hit.distance;
 							grabIcon.transform.localScale = new Vector3 (Mathf.Min (newScale.x, grabIcon.transform.localScale.x * 1.4f), Mathf.Min (newScale.y, grabIcon.transform.localScale.y * 1.4f), Mathf.Min (newScale.z, grabIcon.transform.localScale.z * 1.4f)); 
@@ -215,6 +221,7 @@ public class Selection : MonoBehaviour
 								currentFocus = hit.rigidbody.transform.parent.gameObject;
 								currentFocus.GetComponent<ModelingObject> ().Focus (this);
 								device.TriggerHapticPulse (300);
+								grabIcon.SetActive (true);
 							} else if (hit.rigidbody.transform.parent.gameObject.CompareTag ("Handle")) {
 								DeFocusCurrent (hit.rigidbody.transform.parent.gameObject);
 								currentFocus = hit.rigidbody.transform.parent.gameObject;
@@ -250,14 +257,14 @@ public class Selection : MonoBehaviour
 								device.TriggerHapticPulse (600);
 								grabIcon.transform.localScale = initialScaleGrabIcon * hit.distance; 
 								grabIcon.SetActive (true);
-							} else if (!UiCanvasGroup.Instance.visible && hit.rigidbody.transform.parent.gameObject.CompareTag ("HeightControl")) {
+							} else if (hit.rigidbody.transform.parent.gameObject.CompareTag ("HeightControl")) {
 								DeFocusCurrent (hit.rigidbody.transform.parent.gameObject);
 								currentFocus = hit.rigidbody.transform.parent.gameObject;
 								currentFocus.GetComponent<StageHeightController> ().Focus (this);
 								device.TriggerHapticPulse (600);
 								grabIcon.transform.localScale = initialScaleGrabIcon * hit.distance; 
 								grabIcon.SetActive (true);
-							} else if (!UiCanvasGroup.Instance.visible && hit.rigidbody.transform.parent.gameObject.CompareTag ("DistanceControl")) {
+							} else if (hit.rigidbody.transform.parent.gameObject.CompareTag ("DistanceControl")) {
 								DeFocusCurrent (hit.rigidbody.transform.parent.gameObject);
 								currentFocus = hit.rigidbody.transform.parent.gameObject;
 								currentFocus.GetComponent<StageDistanceController> ().Focus (this);
@@ -274,7 +281,7 @@ public class Selection : MonoBehaviour
 
 						}
 
-						if (!UiCanvasGroup.Instance.visible && hit.rigidbody.transform.parent.gameObject.CompareTag ("ModelingObject")) {
+						if ((!UiCanvasGroup.Instance.visible || groupItemSelection) && hit.rigidbody.transform.parent.gameObject.CompareTag ("ModelingObject")) {
 							if (!grabIcon.activeSelf) {
 								grabIcon.transform.localScale = initialScaleGrabIcon * hit.distance; 
 								grabIcon.SetActive (true);
@@ -366,9 +373,10 @@ public class Selection : MonoBehaviour
 
 						CreatePointOfCollisionPrefab ();
 						movingObject = true;
-						UiCanvasGroup.Instance.Hide ();
 
 						if (currentFocus.CompareTag ("ModelingObject")) {
+							UiCanvasGroup.Instance.Hide ();
+
 							if (circleAnimation != null) {
 								circleAnimation.StartAnimation ();
 							}
@@ -516,7 +524,10 @@ public class Selection : MonoBehaviour
 							if (currentFocus.GetComponent<ModelingObject> ().group == null) {
 								ObjectsManager.Instance.AddObjectToGroup (ObjectsManager.Instance.currentGroup, currentFocus.GetComponent<ModelingObject> ());
 							} else {
-								ObjectsManager.Instance.AddAllObjectsOfGroupToGroup (ObjectsManager.Instance.currentGroup, currentFocus.GetComponent<ModelingObject> ().group);
+								if (currentFocus.GetComponent<ModelingObject> ().group != ObjectsManager.Instance.currentGroup) {
+									ObjectsManager.Instance.AddAllObjectsOfGroupToGroup (ObjectsManager.Instance.currentGroup, currentFocus.GetComponent<ModelingObject> ().group);
+								}
+
 							}
 
 
@@ -667,7 +678,11 @@ public class Selection : MonoBehaviour
     }
 
 	public void StartScaling(){
-		CreatePointOfCollisionPrefab();
+
+		if (typeOfController == controllerType.SecondaryController) {
+			CreatePointOfCollisionPrefab();
+		}
+
 		scalingObject = true;
 
 		if (grabbedIcon == null) {
@@ -679,8 +694,8 @@ public class Selection : MonoBehaviour
 			grabbedIcon.SetActive (true);
 			grabIcon.SetActive (false);
 
-			grabbedIconOffset = grabIcon.transform.position - currentFocus.transform.position; 
-			grabbedIcon.transform.position = currentFocus.transform.position + grabbedIconOffset;
+			//grabbedIconOffset = grabIcon.transform.position - currentFocus.transform.position; 
+			//grabbedIcon.transform.position = currentFocus.transform.position + grabbedIconOffset;
 		}
 	}
 }

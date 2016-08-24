@@ -45,7 +45,8 @@ public class ObjectSelecter : MonoBehaviour {
 
 	public void ShowSelectionButton(Selection controller){	
 		if (!active) {
-			//RePosition (Camera.main.transform.position);
+			connectedObject.CalculateBoundingBox ();
+			RePosition (Camera.main.transform.position);
 			buttonGameObject.SetActive (true);
 			active = true;
 			Collider.SetActive (true);

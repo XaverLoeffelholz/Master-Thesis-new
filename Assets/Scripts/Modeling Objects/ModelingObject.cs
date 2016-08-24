@@ -79,6 +79,7 @@ public class ModelingObject : MonoBehaviour
 	private Vector3[] vectorsTopOnScalingBegin;
 	private Vector3[] vectorsBottomOnScalingBegin;
 	private Vector3 boundingBoxTopToCenterOnScalingBegin;
+	private Vector3 boundingBoxCenterToRightOnScalingBegin;
 
 	private Transform player;
 	public GameObject trashIcon;
@@ -95,9 +96,6 @@ public class ModelingObject : MonoBehaviour
 	private bool onRaster = true;
 
 	public ColliderSphere colliderSphere;
-
-	// pick center of scaling
-	private Vector3 centerOfScaling = new Vector3(0f,0f,0f);
 
     // Use this for initialization
     void Start()
@@ -1054,7 +1052,7 @@ public class ModelingObject : MonoBehaviour
             relativeTo = GetBoundingBoxBottomCenter();
             initialDistancceCenterBottomScaler = scalerObject.coordinates - relativeTo;
 			
-			boundingBoxTopToCenterOnScalingBegin = GetBoundingBoxTopCenter () - GetBoundingBoxBottomCenter ();
+			boundingBoxCenterToRightOnScalingBegin = GetBoundingBoxRightCenter () - GetBoundingBoxCenter (); 
 
 			vectorsTopOnScalingBegin = new Vector3[topFace.vertexBundles.Length];
 			vectorsBottomOnScalingBegin = new Vector3[bottomFace.vertexBundles.Length];
@@ -1080,34 +1078,10 @@ public class ModelingObject : MonoBehaviour
         }
     }
 
-	public void ScaleNonUniform(float newScale, Vector3 direction, handle.handleType typeOfHandle){		
+	public void ScaleNonUniform(float newScale, Vector3 direction, handle.handleType typeOfHandle, Vector3 centerOfScaling){		
 		
-		switch (typeOfHandle)
-		{
-		case handle.handleType.ScaleX:
-			centerOfScaling = transform.InverseTransformPoint (GetBoundingBoxLeftCenter ());
-			break;
-		case handle.handleType.ScaleY:
-			centerOfScaling = transform.InverseTransformPoint (GetBoundingBoxBottomCenter ());
-			break;		
-		case handle.handleType.ScaleZ:
-			centerOfScaling = transform.InverseTransformPoint (GetBoundingBoxFrontCenter ());
-			break;		
-		case handle.handleType.ScaleMinusX:
-			centerOfScaling = transform.InverseTransformPoint (GetBoundingBoxRightCenter ());
-			break;
-		case handle.handleType.ScaleMinusY:
-			centerOfScaling = transform.InverseTransformPoint (GetBoundingBoxTopCenter ());
-			break;
-		case handle.handleType.ScaleMinusZ:
-			centerOfScaling = transform.InverseTransformPoint (GetBoundingBoxBackCenter ());
-			break;
-		}
-
-		Vector3 scaling = (direction * (newScale)) + Vector3.one - direction;
-
 		// here we need to adjust scaling so that the outcome is in grid
-
+		Vector3 scaling = (direction * (newScale)) + Vector3.one - direction;
 		Matrix4x4 scalingMatrix = Matrix4x4.TRS (Vector3.zero, Quaternion.Euler(0f,0f,0f), scaling);
 
 		// go through all points
@@ -1139,11 +1113,11 @@ public class ModelingObject : MonoBehaviour
     public void ScaleBy(float newScale, bool initiater)
     {     
 		// first calculate scaling with top center
-		Vector3 newBoundingBoxTopCenter = GetBoundingBoxBottomCenter() + newScale * (boundingBoxTopToCenterOnScalingBegin);
+		Vector3 newBoundingBoxCenterRight = GetBoundingBoxCenter() + newScale * (boundingBoxCenterToRightOnScalingBegin);
 
 		// raster that value
-		newBoundingBoxTopCenter = transform.TransformPoint(RasterManager.Instance.Raster (transform.InverseTransformPoint(newBoundingBoxTopCenter)));
-		float rasteredScalingValue = (newBoundingBoxTopCenter - GetBoundingBoxBottomCenter ()).magnitude / boundingBoxTopToCenterOnScalingBegin.magnitude;
+		newBoundingBoxCenterRight = transform.TransformPoint(RasterManager.Instance.Raster (transform.InverseTransformPoint(newBoundingBoxCenterRight)));
+		float rasteredScalingValue = (newBoundingBoxCenterRight - GetBoundingBoxCenter ()).magnitude / boundingBoxCenterToRightOnScalingBegin.magnitude;
 
 		Vector3 boundingBoxBottomLocal = transform.InverseTransformPoint (GetBoundingBoxBottomCenter ());
 
