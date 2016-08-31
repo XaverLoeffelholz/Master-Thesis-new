@@ -25,6 +25,8 @@ public class UiCanvasGroup : Singleton<UiCanvasGroup>{
     public UIMenu objectMenu;
     public UIMenu newObjectMenu;
 
+	public UIMenu currentMenu;
+
 	public Color normalColor;
 	public Color hoverColor;
 	public Color clickColor;
@@ -74,7 +76,6 @@ public class UiCanvasGroup : Singleton<UiCanvasGroup>{
     public void OpenMainMenu(ModelingObject modelingObject, Selection controller)
     {
         currentModelingObject = modelingObject;
-
         // let menu always face controller that selected object
 		player = controller.transform;
         MainMenu.GetComponent<UIMenu>().ActivateMenu();
@@ -88,8 +89,6 @@ public class UiCanvasGroup : Singleton<UiCanvasGroup>{
     }
 
 	public void CloseMenu(Selection controller){
-
-
 
 		controller1.groupItemSelection = false;
 		controller2.groupItemSelection = false;
@@ -113,6 +112,29 @@ public class UiCanvasGroup : Singleton<UiCanvasGroup>{
 
         visible = false;
     }
+
+	public void TemporarilyHide(){
+		LeanTween.alphaCanvas(canvGroup, 0f, 0.3f).setOnComplete(DeactivateMenus);
+		LeanTween.alphaCanvas (MenuBG, 0f, 0.3f);
+
+		canvGroup.blocksRaycasts = false;
+		canvGroup.interactable = false;
+	}
+
+	public void ShowAgain(Vector3 uiPosition){
+		if (visible) {
+			LeanTween.alphaCanvas(canvGroup, 1f, 0.3f);
+			LeanTween.alphaCanvas (MenuBG, 1f, 0.3f);
+			canvGroup.blocksRaycasts = true;
+			canvGroup.interactable = true;
+
+			if (currentMenu != null) {
+				currentMenu.ActivateMenu ();
+			}
+
+			UiCanvasGroup.Instance.transform.position = uiPosition;
+		}
+	}
 
     private void deactivateCanvGroup()
     {

@@ -66,7 +66,7 @@ public class handles : MonoBehaviour {
     {
         DisableHandles();
 		transform.parent.GetComponent<ModelingObject>().PositionHandles(true);
-		//transform.parent.GetComponent<ModelingObject>().RotateHandles();
+		transform.parent.GetComponent<ModelingObject>().RotateHandles();
     }
 
 	public void HideRotationHandlesExcept(handle certainHandle){

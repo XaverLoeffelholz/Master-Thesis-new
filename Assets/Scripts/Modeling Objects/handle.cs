@@ -81,10 +81,7 @@ public class handle : MonoBehaviour {
 	
 	// Update is called once per frame
 	void FixedUpdate () {
-        if (rotateStep && !locked)
-        {
-            RotateStepwise();
-        }
+
     }
 
 	private float CalculateInputFromPoint(Vector3 pointOfCollision, Vector3 pos1, Vector3 pos2)
@@ -371,10 +368,15 @@ public class handle : MonoBehaviour {
 		// here we need to check if it is connected to a group or a modeling object
 
         // define rotation axis
-		Vector3 rotationAxis = connectedModelingObject.transform.InverseTransformDirection(p1.transform.position - p2.transform.position);
+		Vector3 p1Rotation = connectedModelingObject.GetBoundingBoxCenter();
+		Vector3 p2Rotation = p1Rotation + (p1.transform.position - p2.transform.position);
+
+		Vector3 rotationAxis = connectedModelingObject.transform.InverseTransformDirection(p2Rotation - p1Rotation);
 
         // rotate around this axis
-		connectedModelingObject.RotateAround(rotationAxis, RasterManager.Instance.RasterAngle(newRotationAmount-prevRotationAmount));
+		Vector3 bbCenterBeforeRotation = connectedModelingObject.transform.InverseTransformPoint (connectedModelingObject.GetBoundingBoxCenter ());
+
+		connectedModelingObject.RotateAround(rotationAxis, RasterManager.Instance.RasterAngle(newRotationAmount-prevRotationAmount), bbCenterBeforeRotation);
 
 		prevRotationAmount = RasterManager.Instance.RasterAngle(newRotationAmount);
     }
@@ -384,13 +386,7 @@ public class handle : MonoBehaviour {
         rotateStep = true;
     }
 
-    private void RotateStepwise()
-    {
-        connectedModelingObject.RotateAround((RotationAxis.transform.position - connectedObject.transform.position), 45f);
-        rotateStep = false;
-        locked = true;
-    }
-
+   
     public void updateHandlePosition()
     {
         Vector3 rotation = connectedObject.transform.localRotation.eulerAngles;

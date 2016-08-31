@@ -51,9 +51,6 @@ public class UIMenu : MonoBehaviour {
 
     public void ActivateMenu()
     {
-        // Hide the menu
-       // transform.parent.GetComponent<UiCanvasGroup>().Hide();
-
         // get all menus, deactivate them
         List<GameObject> UiMenus = new List<GameObject>();
 
@@ -101,44 +98,51 @@ public class UIMenu : MonoBehaviour {
         controller1.enableFaceSelection(false);
         controller2.enableFaceSelection(false);
 
-        // Show the right handles
-        switch (TypeOfMenu)
-        {
-			case (menuType.Rotation):
-				// sometimes wrong
-				parentCanvas.currentModelingObject.RotateHandles ();
-                parentCanvas.currentModelingObject.handles.ShowRotationHandles();
-                parentCanvas.currentModelingObject.ShowBoundingBox();
-                break;
-            case (menuType.NonUniformScaling):
-				// not existing anymore
-                parentCanvas.currentModelingObject.handles.DisableHandles();
-                break;
-            case (menuType.Color):
-                parentCanvas.currentModelingObject.handles.DisableHandles();
-                break;
-            case (menuType.Shape):
-                parentCanvas.currentModelingObject.handles.ShowFrustumHandles();
-                break;
-            case (menuType.Object):
-                parentCanvas.currentModelingObject.handles.DisableHandles();
-                break;
-            case (menuType.Group):
-                parentCanvas.currentModelingObject.handles.DisableHandles();
-                break;
-            case (menuType.NewObject):
-                parentCanvas.currentModelingObject.handles.DisableHandles ();
-                break;
-			case (menuType.MainMenu):
-				if (UiCanvasGroup.Instance.currentModelingObject.group == null) {
-					parentCanvas.currentModelingObject.RotateHandles ();
-					parentCanvas.currentModelingObject.handles.ShowNonUniformScalingHandles();
-				} else {
-					parentCanvas.currentModelingObject.handles.DisableHandles();
-				}					
-                break;
-        }
+		UiCanvasGroup.Instance.currentMenu = this;
+
+		ActivateCurrentHandles ();
     }
+
+
+	public void ActivateCurrentHandles(){
+		// Show the right handles
+		switch (TypeOfMenu)
+		{
+		case (menuType.Rotation):
+			// sometimes wrong
+			parentCanvas.currentModelingObject.RotateHandles ();
+			parentCanvas.currentModelingObject.handles.ShowRotationHandles();
+			parentCanvas.currentModelingObject.ShowBoundingBox();
+			break;
+		case (menuType.NonUniformScaling):
+			// not existing anymore
+			parentCanvas.currentModelingObject.handles.DisableHandles();
+			break;
+		case (menuType.Color):
+			parentCanvas.currentModelingObject.handles.DisableHandles();
+			break;
+		case (menuType.Shape):
+			parentCanvas.currentModelingObject.handles.ShowFrustumHandles();
+			break;
+		case (menuType.Object):
+			parentCanvas.currentModelingObject.handles.DisableHandles();
+			break;
+		case (menuType.Group):
+			parentCanvas.currentModelingObject.handles.DisableHandles();
+			break;
+		case (menuType.NewObject):
+			parentCanvas.currentModelingObject.handles.DisableHandles ();
+			break;
+		case (menuType.MainMenu):
+			if (UiCanvasGroup.Instance.currentModelingObject.group == null) {
+				parentCanvas.currentModelingObject.RotateHandles ();
+				parentCanvas.currentModelingObject.handles.ShowNonUniformScalingHandles();
+			} else {
+				parentCanvas.currentModelingObject.handles.DisableHandles();
+			}					
+			break;
+		}
+	}
 
     public void PerformAction(UiElement button, Selection controller)
     {

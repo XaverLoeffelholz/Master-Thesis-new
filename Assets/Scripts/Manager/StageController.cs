@@ -282,7 +282,8 @@ public class StageController : MonoBehaviour {
 
 					ModelingObject currentModelingObject = selection.otherController.currentFocus.GetComponent<ModelingObject> ();
 
-					currentModelingObject.RotateAround (currentModelingObject.GetBoundingBoxTopCenter () - currentModelingObject.GetBoundingBoxTopCenter (), amountX * 150f); 
+					Vector3 bbCenterBeforeRotation = currentModelingObject.transform.InverseTransformPoint (currentModelingObject.GetBoundingBoxCenter ());
+					currentModelingObject.RotateAround (currentModelingObject.GetBoundingBoxTopCenter () - currentModelingObject.GetBoundingBoxTopCenter (), amountX * 150f, bbCenterBeforeRotation); 
 				}
 			}
 

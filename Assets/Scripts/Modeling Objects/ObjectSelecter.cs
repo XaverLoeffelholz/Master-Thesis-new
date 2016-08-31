@@ -114,7 +114,7 @@ public class ObjectSelecter : MonoBehaviour {
 
 		if (connectedObject != null) {
 			connectedObject.Select (controller, uiPosition);
-			ObjectsManager.Instance.DisableObjectsExcept (connectedObject);
+		//	ObjectsManager.Instance.DisableObjectsExcept (connectedObject);
 		} 
 	}
 
@@ -144,7 +144,7 @@ public class ObjectSelecter : MonoBehaviour {
 		LeanTween.color(buttonGameObject, UiCanvasGroup.Instance.clickColor, 0.01f).setEase(LeanTweenType.easeInOutCubic);
 		LeanTween.color(buttonGameObject, UiCanvasGroup.Instance.normalColor, 0.01f).setEase(LeanTweenType.easeInOutCubic).setDelay(0.02f);
 
-		LeanTween.alpha (buttonGameObject, 0f, 0.35f);
+		LeanTween.alpha (buttonGameObject, 0f, 0.25f);
 		LeanTween.scale (gameObject, gameObject.transform.localScale*2f, 0.4f).setEase (LeanTweenType.easeInOutCubic);
 		LeanTween.move (gameObject, position, 0.4f).setEase (LeanTweenType.easeInOutCubic);
 	}

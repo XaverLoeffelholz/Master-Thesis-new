@@ -728,7 +728,7 @@ public class ModelingObject : MonoBehaviour
             }
 
 			if (!transform.parent.CompareTag("Library") && !controller.groupItemSelection && !moving){
-				objectSelector.ShowSelectionButton (controller);
+			//	objectSelector.ShowSelectionButton (controller);
 			}
 
             controller.AssignCurrentFocus(transform.gameObject);
@@ -782,7 +782,7 @@ public class ModelingObject : MonoBehaviour
 
 			// move selection button
 			objectSelector.active = false;
-			objectSelector.MoveAndFace (uiPosition);
+		//	objectSelector.MoveAndFace (uiPosition);
 
 			controller.AssignCurrentSelection(transform.gameObject);
 			handles.gameObject.transform.GetChild(0).gameObject.SetActive(true);
@@ -933,6 +933,8 @@ public class ModelingObject : MonoBehaviour
 				colliderSphere.SnappedToThis.snapped = false;
 				colliderSphere.SnappedToThis = null;
 			}
+
+			handles.DisableHandles ();
 		}
     }
 
@@ -960,6 +962,7 @@ public class ModelingObject : MonoBehaviour
 		colliderSphere.parentMoving = false;
 		colliderSphere.transform.GetComponent<SphereCollider> ().enabled = false;
 		meshCollider.enabled = true;
+
 	}
 
 	public void DisplayOutlineOfGroundFace(){
@@ -1280,24 +1283,24 @@ public class ModelingObject : MonoBehaviour
 
 
 
-      public void RotateAround(Vector3 angleAxis, float angle)
+	public void RotateAround(Vector3 angleAxis, float angle, Vector3 bbCenterBeforeRotation)
     {
         for (int i = 0; i < topFace.vertexBundles.Length; i++)
         {
             // rotate coordinates of every vertexbundle
-            topFace.vertexBundles[i].coordinates = Quaternion.AngleAxis(angle, angleAxis) * topFace.vertexBundles[i].coordinates;
+			topFace.vertexBundles[i].coordinates = (Quaternion.AngleAxis(angle, angleAxis) * (topFace.vertexBundles[i].coordinates - bbCenterBeforeRotation)) + bbCenterBeforeRotation;
         }
 
-        topFace.center.coordinates = Quaternion.AngleAxis(angle, angleAxis) * topFace.center.coordinates;
-
+		// rotate coordinates of every vertexbundle
+		topFace.center.coordinates = (Quaternion.AngleAxis(angle, angleAxis) * (topFace.center.coordinates - bbCenterBeforeRotation)) + bbCenterBeforeRotation;
+									
         for (int i = 0; i < bottomFace.vertexBundles.Length; i++)
         {
             // rotate coordinates of every vertexbundle
-            bottomFace.vertexBundles[i].coordinates = Quaternion.AngleAxis(angle, angleAxis) * bottomFace.vertexBundles[i].coordinates;
-
+			bottomFace.vertexBundles[i].coordinates = (Quaternion.AngleAxis(angle, angleAxis) * (bottomFace.vertexBundles[i].coordinates - bbCenterBeforeRotation)) + bbCenterBeforeRotation;
         }
 
-        bottomFace.center.coordinates = Quaternion.AngleAxis(angle, angleAxis) * bottomFace.center.coordinates;
+		bottomFace.center.coordinates = (Quaternion.AngleAxis(angle, angleAxis) * (bottomFace.center.coordinates - bbCenterBeforeRotation)) + bbCenterBeforeRotation;
 
         // update centers and recalculate normals of side faces
         for (int i = 0; i < faces.Length; i++)

@@ -179,7 +179,7 @@ public class Group : MonoBehaviour {
         {
             if (objectList[i] != initiater)
             {
-                objectList[i].RotateAround(angleAxis, angle);
+             //   objectList[i].RotateAround(angleAxis, angle);
             }
         }
 
