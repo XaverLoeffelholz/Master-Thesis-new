@@ -47,16 +47,18 @@ public class ObjectSelecter : MonoBehaviour {
 		if (!active) {
 			connectedObject.CalculateBoundingBox ();
 			RePosition (Camera.main.transform.position);
-			buttonGameObject.SetActive (true);
-			active = true;
-			Collider.SetActive (true);
-			LeanTween.alpha (buttonGameObject, 1f, 0.15f);
-
-			if (connectedObject != null) {
-				connectedObject.ShowBoundingBox ();
-				connectedObject.boundingBox.ActivateBoundingBoxCollider ();
-			} 
 		}
+
+		buttonGameObject.SetActive (true);
+		active = true;
+		Collider.SetActive (true);
+		LeanTween.alpha (buttonGameObject, 1f, 0.15f);
+
+		if (connectedObject != null) {
+			connectedObject.ShowBoundingBox ();
+			connectedObject.boundingBox.ActivateBoundingBoxCollider ();
+		} 
+
     }
 
 	public void HideSelectionButton(){		
@@ -68,9 +70,8 @@ public class ObjectSelecter : MonoBehaviour {
 
 			active = false;
 			Collider.SetActive (false);
+			LeanTween.alpha (buttonGameObject, 0f, 0.2f);
 		}
-
-		LeanTween.alpha (buttonGameObject, 0f, 0.2f);
     }
 		
 	public void Focus(Selection controller){
@@ -125,7 +126,15 @@ public class ObjectSelecter : MonoBehaviour {
 	public void RePosition(Vector3 position)
     {
 		if (connectedObject != null) {
-			transform.position = connectedObject.GetPosOfClosestVertex (position, new Vector3[] {connectedObject.boundingBox.coordinates[4], connectedObject.boundingBox.coordinates[5],connectedObject.boundingBox.coordinates[6],connectedObject.boundingBox.coordinates[7] });
+			//transform.position = connectedObject.GetPosOfClosestVertex (position, new Vector3[] {connectedObject.boundingBox.coordinates[4], connectedObject.boundingBox.coordinates[5],connectedObject.boundingBox.coordinates[6],connectedObject.boundingBox.coordinates[7] });
+			Vector3[] positions = new Vector3[connectedObject.bottomFace.vertexBundles.Length];
+
+			for (int i=0; i < positions.Length; i++){
+				positions [i] = connectedObject.transform.TransformPoint(connectedObject.bottomFace.vertexBundles [i].coordinates);
+			}
+
+			transform.position = connectedObject.GetPosOfClosestVertex (position, positions);
+
 		} 
 	}
 

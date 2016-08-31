@@ -61,6 +61,9 @@ public class handle : MonoBehaviour {
 	private Vector3 centerOfScaling = new Vector3(0f,0f,0f);
 	private Vector3 touchPointForScaling = new Vector3(0f,0f,0f);
 
+	public Vector3 boundingBoxCorner1;
+	public Vector3 boundingBoxCorner2;
+
     // Use this for initialization
     void Start () {
 		if (arrow != null) {

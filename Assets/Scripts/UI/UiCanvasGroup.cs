@@ -133,7 +133,8 @@ public class UiCanvasGroup : Singleton<UiCanvasGroup>{
             float x = ((i+1) * positioningWidth) - width / 2;
 
             float y = - (((Mathf.Sin((float) (i+1) / (float) elements.Count * Mathf.PI)) * positioningHeight) - height / 2);
-            elements[i].GetComponent<RectTransform>().anchoredPosition3D = new Vector3(x, y, 0f);
+
+            elements[i].GetComponent<RectTransform>().anchoredPosition3D = new Vector3(x, 700f, 0f);
         }
     }
 }

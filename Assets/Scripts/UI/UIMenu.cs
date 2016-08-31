@@ -106,7 +106,6 @@ public class UIMenu : MonoBehaviour {
         {
 			case (menuType.Rotation):
 				// sometimes wrong
-				parentCanvas.currentModelingObject.PositionHandles ();
 				parentCanvas.currentModelingObject.RotateHandles ();
                 parentCanvas.currentModelingObject.handles.ShowRotationHandles();
                 parentCanvas.currentModelingObject.ShowBoundingBox();
@@ -132,6 +131,7 @@ public class UIMenu : MonoBehaviour {
                 break;
 			case (menuType.MainMenu):
 				if (UiCanvasGroup.Instance.currentModelingObject.group == null) {
+					parentCanvas.currentModelingObject.RotateHandles ();
 					parentCanvas.currentModelingObject.handles.ShowNonUniformScalingHandles();
 				} else {
 					parentCanvas.currentModelingObject.handles.DisableHandles();

@@ -526,7 +526,7 @@ public class ModelingObject : MonoBehaviour
         meshCollider.sharedMesh = mesh;
     }
 
-    public void PositionHandles()
+	public void PositionHandles(bool showRotationHandles)
     {
 		handles.faceTopScale.transform.position = transform.TransformPoint(topFace.scaler.coordinates);
 		handles.faceBottomScale.transform.position = transform.TransformPoint(bottomFace.scaler.coordinates);
@@ -535,20 +535,98 @@ public class ModelingObject : MonoBehaviour
         handles.HeightTop.transform.localPosition = topFace.centerPosition;
         handles.HeightBottom.transform.localPosition = bottomFace.centerPosition;
 
-        handles.RotateUp0.transform.position = 0.5f * boundingBox.coordinates[0] + 0.5f * boundingBox.coordinates[1];
-        handles.RotateUp1.transform.position = 0.5f * boundingBox.coordinates[1] + 0.5f * boundingBox.coordinates[2];
-        handles.RotateUp2.transform.position = 0.5f * boundingBox.coordinates[2] + 0.5f * boundingBox.coordinates[3];
-        handles.RotateUp3.transform.position = 0.5f * boundingBox.coordinates[3] + 0.5f * boundingBox.coordinates[0];
+		// get Closes bounding box coordinate 
+		Vector3 closesBBcorner = GetPosOfClosestVertex(Camera.main.transform.position, boundingBox.coordinates);
 
-        handles.RotateDown0.transform.position = 0.5f * boundingBox.coordinates[4] + 0.5f * boundingBox.coordinates[5];
-        handles.RotateDown1.transform.position = 0.5f * boundingBox.coordinates[5] + 0.5f * boundingBox.coordinates[6];
-        handles.RotateDown2.transform.position = 0.5f * boundingBox.coordinates[6] + 0.5f * boundingBox.coordinates[7];
-        handles.RotateDown3.transform.position = 0.5f * boundingBox.coordinates[7] + 0.5f * boundingBox.coordinates[4];
+		// terrible code :)
 
-        handles.RotateSide0.transform.position = 0.5f * boundingBox.coordinates[0] + 0.5f * boundingBox.coordinates[4];
-        handles.RotateSide1.transform.position = 0.5f * boundingBox.coordinates[1] + 0.5f * boundingBox.coordinates[5];
-        handles.RotateSide2.transform.position = 0.5f * boundingBox.coordinates[2] + 0.5f * boundingBox.coordinates[6];
-        handles.RotateSide3.transform.position = 0.5f * boundingBox.coordinates[3] + 0.5f * boundingBox.coordinates[7];
+		handles.RotateUp0.transform.position = 0.5f * boundingBox.coordinates [0] + 0.5f * boundingBox.coordinates [1];
+		if (closesBBcorner == boundingBox.coordinates [0] || closesBBcorner == boundingBox.coordinates [1]) {			
+			handles.RotateUp0.SetActive (showRotationHandles);
+		} else {
+			handles.RotateUp0.SetActive (false);
+		}
+
+		handles.RotateUp1.transform.position = 0.5f * boundingBox.coordinates [1] + 0.5f * boundingBox.coordinates [2];
+		if (closesBBcorner == boundingBox.coordinates [1] || closesBBcorner == boundingBox.coordinates [2]) {			
+			handles.RotateUp1.SetActive (showRotationHandles);
+		} else {
+			handles.RotateUp1.SetActive (false);
+		}
+
+		handles.RotateUp2.transform.position = 0.5f * boundingBox.coordinates [2] + 0.5f * boundingBox.coordinates [3];
+		if (closesBBcorner == boundingBox.coordinates [2] || closesBBcorner == boundingBox.coordinates [3]) {			
+			handles.RotateUp2.SetActive (showRotationHandles);
+		} else {
+			handles.RotateUp2.SetActive (false);
+		}
+
+		handles.RotateUp3.transform.position = 0.5f * boundingBox.coordinates [3] + 0.5f * boundingBox.coordinates [0];
+		if (closesBBcorner == boundingBox.coordinates [3] || closesBBcorner == boundingBox.coordinates [0]) {
+			handles.RotateUp3.SetActive (showRotationHandles);
+		} else {
+			handles.RotateUp3.SetActive (false);
+		}
+
+		handles.RotateDown0.transform.position = 0.5f * boundingBox.coordinates [4] + 0.5f * boundingBox.coordinates [5];
+		if (closesBBcorner == boundingBox.coordinates [4] || closesBBcorner == boundingBox.coordinates [5]) {			
+			handles.RotateDown0.SetActive (showRotationHandles);
+		} else {
+			handles.RotateDown0.SetActive (false);
+		}
+
+		handles.RotateDown1.transform.position = 0.5f * boundingBox.coordinates[5] + 0.5f * boundingBox.coordinates[6];
+		if (closesBBcorner == boundingBox.coordinates [5] || closesBBcorner == boundingBox.coordinates [6]) {			
+			handles.RotateDown1.SetActive (showRotationHandles);
+		} else {
+			handles.RotateDown1.SetActive (false);
+		}
+
+		handles.RotateDown2.transform.position = 0.5f * boundingBox.coordinates[6] + 0.5f * boundingBox.coordinates[7];
+		if (closesBBcorner == boundingBox.coordinates [6] || closesBBcorner == boundingBox.coordinates [7]) {			
+			handles.RotateDown2.SetActive (showRotationHandles);
+		} else {
+			handles.RotateDown2.SetActive (false);
+		}
+
+		handles.RotateDown3.transform.position = 0.5f * boundingBox.coordinates[7] + 0.5f * boundingBox.coordinates[4];
+		if (closesBBcorner == boundingBox.coordinates [7] || closesBBcorner == boundingBox.coordinates [4]) {			
+			handles.RotateDown3.SetActive (showRotationHandles);
+		} else {
+			handles.RotateDown3.SetActive (false);
+		}
+
+		handles.RotateSide0.transform.position = 0.5f * boundingBox.coordinates[0] + 0.5f * boundingBox.coordinates[4];
+		if (closesBBcorner == boundingBox.coordinates [0] || closesBBcorner == boundingBox.coordinates [4]) {
+			
+			handles.RotateSide0.SetActive (showRotationHandles);
+		} else {
+			handles.RotateSide0.SetActive (false);
+		}
+
+		handles.RotateSide1.transform.position = 0.5f * boundingBox.coordinates[1] + 0.5f * boundingBox.coordinates[5];
+
+		if (closesBBcorner == boundingBox.coordinates [1] || closesBBcorner == boundingBox.coordinates [5]) {			
+			handles.RotateSide1.SetActive (showRotationHandles);
+		} else {
+			handles.RotateSide1.SetActive (false);
+		}
+
+		handles.RotateSide2.transform.position = 0.5f * boundingBox.coordinates[2] + 0.5f * boundingBox.coordinates[6];
+
+		if (closesBBcorner == boundingBox.coordinates [2] || closesBBcorner == boundingBox.coordinates [6]) {			
+			handles.RotateSide2.SetActive (showRotationHandles);
+		} else {
+			handles.RotateSide2.SetActive (false);
+		}
+
+		handles.RotateSide3.transform.position = 0.5f * boundingBox.coordinates[3] + 0.5f * boundingBox.coordinates[7];
+
+		if (closesBBcorner == boundingBox.coordinates [3] || closesBBcorner == boundingBox.coordinates [7]) {			
+			handles.RotateSide3.SetActive (showRotationHandles);
+		} else {
+			handles.RotateSide3.SetActive (false);
+		}
 
 		handles.NonUniformScaleTop.transform.position = GetBoundingBoxTopCenter ();
 		handles.NonUniformScaleBottom.transform.position = GetBoundingBoxBottomCenter ();
@@ -614,7 +692,7 @@ public class ModelingObject : MonoBehaviour
 
     public void InitiateHandles()
     {
-        PositionHandles();
+        PositionHandles(false);
         RotateHandles();
 
         handles.faceTopScale.GetComponent<handle>().face = topFace;
@@ -649,7 +727,7 @@ public class ModelingObject : MonoBehaviour
 				group.FocusGroup(this, controller);
             }
 
-			if (!transform.parent.CompareTag("Library") && !controller.groupItemSelection && !moving && !selected ){
+			if (!transform.parent.CompareTag("Library") && !controller.groupItemSelection && !moving){
 				objectSelector.ShowSelectionButton (controller);
 			}
 
@@ -1104,7 +1182,7 @@ public class ModelingObject : MonoBehaviour
 		bottomFace.UpdateSpecialVertexCoordinates ();
 
 		CalculateBoundingBox ();
-		PositionHandles ();
+		PositionHandles (true);
 		RotateHandles ();
 	}
 
@@ -1137,7 +1215,7 @@ public class ModelingObject : MonoBehaviour
 		bottomFace.UpdateSpecialVertexCoordinates ();
 
 		CalculateBoundingBox ();
-		PositionHandles ();
+		PositionHandles (false);
 		RotateHandles ();
 
 		/*
@@ -1235,7 +1313,7 @@ public class ModelingObject : MonoBehaviour
      //   handles.faceBottomScale.transform.RotateAround(new Vector3(0f, 0f, 0f), angleAxis, angle);
 
         CalculateBoundingBox();
-		PositionHandles ();
+		PositionHandles (true);
 		RotateHandles();
     }
 
@@ -1267,7 +1345,7 @@ public class ModelingObject : MonoBehaviour
         }
 
 		CalculateBoundingBox ();
-		PositionHandles ();
+		PositionHandles (false);
 		RotateHandles();		
 
 		// later we could need this for rotation

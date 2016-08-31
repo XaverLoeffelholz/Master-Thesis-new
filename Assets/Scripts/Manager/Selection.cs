@@ -57,6 +57,7 @@ public class Selection : MonoBehaviour
 
 	public bool duplicateMode;
 	public bool scalingMode;
+	private bool recheckFocus = false;
 
 	public Material normalGrabIconMat;
 	public Material duplicateGrabIconMat;
@@ -65,6 +66,12 @@ public class Selection : MonoBehaviour
 
 	public Material grabbedIconMat;
 	public Material scaleGrabbedIconMat;
+
+	public SettingsButtonHelp settingsButtonHelp;
+	public DuplicateHelp duplicateHelp;
+
+	public Transform buttonOnController;
+	public Vector3 standardPosButton;
 
     void Awake()
     {
@@ -82,6 +89,7 @@ public class Selection : MonoBehaviour
 
 		initialScaleGrabIcon = new Vector3(0.006f,0.006f,0.006f);
 		initialScaleGrabbedIcon = new Vector3(0.006f,0.006f,0.006f);
+		standardPosButton = buttonOnController.transform.localPosition;
     }
 
 
@@ -91,15 +99,21 @@ public class Selection : MonoBehaviour
 			grabIcon.SetActive(false);
 		}
 
-		if (currentFocus != null) {
+		if (currentFocus != null && newObject != null) {
 			if (currentFocus.CompareTag ("ModelingObject")) {
 				// compare selection button and object
 				if (newObject.CompareTag ("SelectionButton")) {
 					if (newObject.GetComponent<ObjectSelecter> ().connectedObject != currentFocus.GetComponent<ModelingObject> ()) {
 						currentFocus.GetComponent<ModelingObject> ().UnFocus (this);
+						if (typeOfController == controllerType.mainController) {
+							settingsButtonHelp.Hide ();
+						}
 					}
 				} else {
 					currentFocus.GetComponent<ModelingObject> ().UnFocus (this);
+					if (typeOfController == controllerType.mainController) {
+						settingsButtonHelp.Hide ();
+					}
 				}
 			} else if (currentFocus.CompareTag ("Handle")) {
 				currentFocus.GetComponent<handle> ().UnFocus (this);
@@ -121,18 +135,27 @@ public class Selection : MonoBehaviour
 					if (currentFocus.GetComponent<ObjectSelecter> ().connectedObject != newObject.GetComponent<ModelingObject> ()) {
 						currentFocus.GetComponent<ObjectSelecter> ().UnFocus (this);
 						currentFocus.GetComponent<ObjectSelecter> ().connectedObject.UnFocus (this);
+						if (typeOfController == controllerType.mainController) {
+							settingsButtonHelp.Hide ();
+						}
 					} else {
 						currentFocus.GetComponent<ObjectSelecter> ().UnFocus (this);
 					}
 				} else {
 					currentFocus.GetComponent<ObjectSelecter> ().UnFocus (this);
 					currentFocus.GetComponent<ObjectSelecter> ().connectedObject.UnFocus (this);
+					if (typeOfController == controllerType.mainController) {
+						settingsButtonHelp.Hide ();
+					}
 				} 
 			}
 
 			currentFocus = null;
 		}
 
+		if (newObject == null) {
+
+		}
 	}
 
     public void AdjustLengthPointer(float MaxDistance)
@@ -178,6 +201,7 @@ public class Selection : MonoBehaviour
 			// only change focus is the object is not moved at the moment
 			if (!movingObject && !movingHandle && !scalingObject && !triggerPressed) {
 				if (Physics.Raycast (LaserPointer.transform.position, LaserPointer.transform.forward, out hit)) {					
+
 					if (currentFocus != null) {
 						Vector3 directionLaserPointerObject = (currentFocus.transform.position - LaserPointer.transform.position).normalized;
 						uiPositon = LaserPointer.transform.position + directionLaserPointerObject * 0.5f + Vector3.down * 0.27f;
@@ -214,12 +238,17 @@ public class Selection : MonoBehaviour
 						}
 
 
-						if (currentFocus != hit.rigidbody.transform.parent.gameObject) {
+						if (currentFocus != hit.rigidbody.transform.parent.gameObject || recheckFocus) {
+							recheckFocus = false;
+
 							// focus of Object
 							if ((!UiCanvasGroup.Instance.visible || groupItemSelection) && hit.rigidbody.transform.parent.gameObject.CompareTag ("ModelingObject")) {								
 								DeFocusCurrent (hit.rigidbody.transform.parent.gameObject);
 								currentFocus = hit.rigidbody.transform.parent.gameObject;
 								currentFocus.GetComponent<ModelingObject> ().Focus (this);
+								if (typeOfController == controllerType.mainController) {
+									settingsButtonHelp.Show ();
+								}
 								device.TriggerHapticPulse (300);
 								grabIcon.SetActive (true);
 							} else if (hit.rigidbody.transform.parent.gameObject.CompareTag ("Handle")) {
@@ -328,6 +357,8 @@ public class Selection : MonoBehaviour
 
 
 			if (device.GetTouchDown (SteamVR_Controller.ButtonMask.ApplicationMenu)) {
+				buttonOnController.transform.localPosition = standardPosButton + new Vector3 (0f, -0.002f, 0f);
+
 				if (!UiCanvasGroup.Instance.visible && currentFocus != null) {
 
 					if (currentFocus.CompareTag ("ModelingObject")) {
@@ -339,13 +370,14 @@ public class Selection : MonoBehaviour
 						UiCanvasGroup.Instance.Show ();
 						currentFocus.GetComponent<ObjectSelecter> ().Select (this, uiPositon);
 					}
-				} else if (UiCanvasGroup.Instance.visible) {
-					
+				} else if (UiCanvasGroup.Instance.visible) {					
 					UiCanvasGroup.Instance.CloseMenu (this);
 				}
 			}
 
-
+			if (device.GetTouchUp (SteamVR_Controller.ButtonMask.ApplicationMenu)) {
+				buttonOnController.transform.localPosition = standardPosButton;
+			}
 
 			if (currentFocus != null) {
 				if (device.GetTouchDown (SteamVR_Controller.ButtonMask.Trigger)) {
@@ -388,6 +420,10 @@ public class Selection : MonoBehaviour
 
 							if (!duplicateMode) {			
 								currentFocus.GetComponent<ModelingObject> ().StartMoving (this, currentFocus.GetComponent<ModelingObject> ());
+								if (typeOfController == controllerType.mainController) {
+									settingsButtonHelp.HideCompletely (false);
+								}
+
 							} else {
 								if (currentFocus.GetComponent<ModelingObject> ().group == null){
 									ObjectCreator.Instance.DuplicateObject (currentFocus.GetComponent<ModelingObject> (), null, 0.4f * pointOfCollision + 0.6f * currentFocus.transform.position);
@@ -401,6 +437,10 @@ public class Selection : MonoBehaviour
 								currentFocus = duplicatedObject.gameObject;
 								duplicatedObject.Focus (this);
 								duplicatedObject.StartMoving (this, duplicatedObject);
+
+								if (typeOfController == controllerType.mainController) {
+									settingsButtonHelp.HideCompletely (false);
+								}
 							}
 
 						} else if (currentFocus.CompareTag ("TeleportPosition")) {
@@ -485,6 +525,13 @@ public class Selection : MonoBehaviour
 						}
 
 						currentFocus.GetComponent<ModelingObject> ().DeSelect (this);
+
+						if (typeOfController == controllerType.mainController) {
+							settingsButtonHelp.Hide ();
+						}
+
+						recheckFocus = true;
+
 					} else if (currentFocus.CompareTag ("TeleportPosition")) {
 						currentFocus.GetComponent<TeleportationPosition> ().StopMoving (this);
 						this.GetComponent<StageController> ().ShowPullVisual (false);
@@ -592,15 +639,32 @@ public class Selection : MonoBehaviour
 		if (typeOfController == controllerType.SecondaryController) {
 			if (device.GetTouchDown (SteamVR_Controller.ButtonMask.Trigger) && !scalingMode) {
 				otherController.duplicateMode = true;
+				duplicateHelp.DuplicateActive ();
 			}
 
 			if (device.GetTouchUp (SteamVR_Controller.ButtonMask.Trigger)) {
 				otherController.duplicateMode = false;
+				duplicateHelp.DuplicateNotActive ();
 			}
+
+			if (device.GetTouchDown (SteamVR_Controller.ButtonMask.ApplicationMenu)) {
+				buttonOnController.transform.localPosition = standardPosButton + new Vector3 (0f, -0.002f, 0f);
+				ToggleOnOffHelp ();
+			}
+
+			if (device.GetTouchUp (SteamVR_Controller.ButtonMask.ApplicationMenu)) {
+				buttonOnController.transform.localPosition = standardPosButton;
+			}
+
 		}
 	
         
     }
+
+	public void ToggleOnOffHelp(){
+		duplicateHelp.ToggleOnOff ();
+		settingsButtonHelp.ToggleOnOff ();
+	}
 
 	public void ActivateController(bool value){
 		

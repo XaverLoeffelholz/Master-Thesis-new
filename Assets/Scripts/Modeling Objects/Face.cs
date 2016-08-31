@@ -108,7 +108,7 @@ public class Face : MonoBehaviour {
         scalerPosition = scaler.coordinates;
 
 		parentModelingObject.CalculateBoundingBox ();
-		parentModelingObject.PositionHandles ();
+		parentModelingObject.PositionHandles (false);
 		parentModelingObject.RotateHandles ();
     }
 

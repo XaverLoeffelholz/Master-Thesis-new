@@ -65,21 +65,8 @@ public class handles : MonoBehaviour {
     public void ShowRotationHandles()
     {
         DisableHandles();
-
-        RotateUp0.SetActive(true);
-        RotateUp1.SetActive(true);
-     // RotateUp2.SetActive(true);
-     // RotateUp3.SetActive(true);
-
-     // RotateDown0.SetActive(true);
-     // RotateDown1.SetActive(true);
-     // RotateDown2.SetActive(true);
-	 // RotateDown3.SetActive(true);
-
-     // RotateSide0.SetActive(true);
-        RotateSide1.SetActive(true);
-     // RotateSide2.SetActive(true);
-     // RotateSide3.SetActive(true);
+		transform.parent.GetComponent<ModelingObject>().PositionHandles(true);
+		//transform.parent.GetComponent<ModelingObject>().RotateHandles();
     }
 
 	public void HideRotationHandlesExcept(handle certainHandle){
@@ -136,7 +123,7 @@ public class handles : MonoBehaviour {
     public void ShowFrustumCenterHandles()
     {
         DisableHandles();
-        transform.parent.GetComponent<ModelingObject>().PositionHandles();
+        transform.parent.GetComponent<ModelingObject>().PositionHandles(false);
         CenterBottomPosition.SetActive(true);
         CenterTopPosition.SetActive(true);
     }
