@@ -231,7 +231,12 @@ public class handle : MonoBehaviour {
 
 		connectedModelingObject.RecalculateSideCenters();
 		connectedModelingObject.RecalculateNormals();
-		connectedModelingObject.ShowBoundingBox ();
+
+		handles.HideRotationHandlesExcept (this);
+		handles.HideScalingHandlesExcept (this);
+
+		//connectedModelingObject.ShowBoundingBox ();
+		//connectedModelingObject.ShowBoundingBox ();
     }
 
 	public void ScaleNonUniform(GameObject pointOfCollision, Vector3 direction){
@@ -379,6 +384,9 @@ public class handle : MonoBehaviour {
 		connectedModelingObject.RotateAround(rotationAxis, RasterManager.Instance.RasterAngle(newRotationAmount-prevRotationAmount), bbCenterBeforeRotation);
 
 		prevRotationAmount = RasterManager.Instance.RasterAngle(newRotationAmount);
+
+		connectedModelingObject.CalculateBoundingBox ();
+		connectedModelingObject.boundingBox.DrawBoundingBox ();
     }
 
     private void SetRotateStepTrue()

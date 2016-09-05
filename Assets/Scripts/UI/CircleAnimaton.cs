@@ -34,4 +34,5 @@ public class CircleAnimaton : MonoBehaviour {
 		LeanTween.alpha (innerCircle, 0f, 0.2f).setDelay(0.1f);
 		LeanTween.alpha (outterCircle, 0f, 0.4f).setDelay(0.1f).setEase(LeanTweenType.easeOutCubic);
 	}
+
 }

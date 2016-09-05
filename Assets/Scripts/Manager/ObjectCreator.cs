@@ -18,6 +18,9 @@ public class ObjectCreator : Singleton<ObjectCreator> {
 
 	public ModelingObject latestModelingObject;
 
+	public GameObject duplicateAnimationPrefab;
+	private GameObject duplicateAnimation;
+
 
     // Use this for initialization
     void Start () {
@@ -154,7 +157,15 @@ public class ObjectCreator : Singleton<ObjectCreator> {
         {
 			createNewObject(octagon, original.typeOfObject, null, original, objectPosition, true, group, original.currentColor);
         }
+
+		duplicateAnimation = Instantiate (duplicateAnimationPrefab);
+		duplicateAnimation.transform.position = original.transform.position;
+		duplicateAnimation.GetComponent<CircleAnimaton> ().StartAnimation ();
     }
+
+	private void DeleteAnimationObject(){
+		Destroy (duplicateAnimation);
+	}
 
 	public void DuplicateGroup(Group group, Vector3 objectPosition)
 	{

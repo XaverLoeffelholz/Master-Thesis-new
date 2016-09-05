@@ -50,14 +50,16 @@ public class UiCanvasGroup : Singleton<UiCanvasGroup>{
 
     public void DeactivateMenus()
     {
-        foreach (Transform menu in transform)
-        {
-           // deactivate all buttons in other menus
-           foreach (Transform button in menu)
-           {
-               button.gameObject.SetActive(false);
-           }
-        }
+		if (!visible) {
+			foreach (Transform menu in transform)
+			{
+				// deactivate all buttons in other menus
+				foreach (Transform button in menu)
+				{
+					button.gameObject.SetActive(false);
+				}
+			}
+		}     
     }
 
     public void PositionUI()
@@ -89,7 +91,7 @@ public class UiCanvasGroup : Singleton<UiCanvasGroup>{
     }
 
 	public void CloseMenu(Selection controller){
-
+		
 		controller1.groupItemSelection = false;
 		controller2.groupItemSelection = false;
 
@@ -114,15 +116,18 @@ public class UiCanvasGroup : Singleton<UiCanvasGroup>{
     }
 
 	public void TemporarilyHide(){
-		LeanTween.alphaCanvas(canvGroup, 0f, 0.3f).setOnComplete(DeactivateMenus);
+	//	LeanTween.alphaCanvas(canvGroup, 0f, 0.3f).setOnComplete(DeactivateMenus);
+		LeanTween.alphaCanvas(canvGroup, 0f, 0.3f);
 		LeanTween.alphaCanvas (MenuBG, 0f, 0.3f);
 
 		canvGroup.blocksRaycasts = false;
 		canvGroup.interactable = false;
+
+		visible = false;
 	}
 
 	public void ShowAgain(Vector3 uiPosition){
-		if (visible) {
+		if (!visible) {
 			LeanTween.alphaCanvas(canvGroup, 1f, 0.3f);
 			LeanTween.alphaCanvas (MenuBG, 1f, 0.3f);
 			canvGroup.blocksRaycasts = true;

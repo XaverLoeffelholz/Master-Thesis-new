@@ -97,6 +97,8 @@ public class ModelingObject : MonoBehaviour
 
 	public ColliderSphere colliderSphere;
 
+	public float timeOnMovementStart;
+
     // Use this for initialization
     void Start()
     {
@@ -113,7 +115,7 @@ public class ModelingObject : MonoBehaviour
             transform.Rotate(0, 10f * Time.deltaTime, 0);
         }
 
-		if (moving) {
+		if (moving && ((Time.time -timeOnMovementStart) > 0.25f)) {
 			onRaster = false;
 
 			if (inTrashArea) {
@@ -528,6 +530,8 @@ public class ModelingObject : MonoBehaviour
 
 	public void PositionHandles(bool showRotationHandles)
     {
+		CalculateBoundingBox ();
+
 		handles.faceTopScale.transform.position = transform.TransformPoint(topFace.scaler.coordinates);
 		handles.faceBottomScale.transform.position = transform.TransformPoint(bottomFace.scaler.coordinates);
 		handles.CenterTopPosition.transform.localPosition = topFace.centerPosition;
@@ -535,13 +539,11 @@ public class ModelingObject : MonoBehaviour
         handles.HeightTop.transform.localPosition = topFace.centerPosition;
         handles.HeightBottom.transform.localPosition = bottomFace.centerPosition;
 
-		// get Closes bounding box coordinate 
+		// get Closest bounding box coordinate 
 		Vector3 closesBBcorner = GetPosOfClosestVertex(Camera.main.transform.position, boundingBox.coordinates);
 
-		// terrible code :)
-
 		handles.RotateUp0.transform.position = 0.5f * boundingBox.coordinates [0] + 0.5f * boundingBox.coordinates [1];
-		if (closesBBcorner == boundingBox.coordinates [0] || closesBBcorner == boundingBox.coordinates [1]) {			
+		if (closesBBcorner == boundingBox.coordinates [0] || closesBBcorner == boundingBox.coordinates [1]) {	
 			handles.RotateUp0.SetActive (showRotationHandles);
 		} else {
 			handles.RotateUp0.SetActive (false);
@@ -636,7 +638,6 @@ public class ModelingObject : MonoBehaviour
 
 		handles.NonUniformScaleLeft.transform.position = GetBoundingBoxLeftCenter ();
 		handles.NonUniformScaleRight.transform.position = GetBoundingBoxRightCenter ();
-
     }
 
     public void RotateHandles()
@@ -852,6 +853,8 @@ public class ModelingObject : MonoBehaviour
 
 	public void HideBoundingBox()
 	{
+		Debug.Log ("HideBB");
+
 		if (group == null) {
 			boundingBox.ClearBoundingBox ();
 		} else {
@@ -898,7 +901,13 @@ public class ModelingObject : MonoBehaviour
     public void StartMoving(Selection controller, ModelingObject initiater)
     {
 		if (!moving) {
+
+
+			UiCanvasGroup.Instance.TemporarilyHide ();
+
 			ObjectsManager.Instance.StartMovingObject (this);
+
+			timeOnMovementStart = Time.time;
 
 			CalculateBoundingBox ();
 			moving = true;
@@ -1513,6 +1522,11 @@ public class ModelingObject : MonoBehaviour
       
         return closestVertex;
 
+	}
+
+	public void RepositionScalers(){
+		topFace.RepositionScaler ();
+		bottomFace.RepositionScaler ();
 	}
 
 	public void EnterTrashArea(){

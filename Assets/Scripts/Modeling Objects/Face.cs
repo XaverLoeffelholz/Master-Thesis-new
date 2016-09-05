@@ -122,6 +122,26 @@ public class Face : MonoBehaviour {
 
 	}
 
+	public void RepositionScaler(){
+		Vector3[] vertexBundlesCoordinates = new Vector3[vertexBundles.Length];
+		int idOfVertexbundle;
+
+		for (int i=0; i< vertexBundles.Length; i++){
+			vertexBundlesCoordinates [i] = parentModelingObject.transform.TransformPoint(vertexBundles [i].coordinates);
+		}
+
+		scalerPosition = parentModelingObject.transform.InverseTransformPoint(parentModelingObject.GetPosOfClosestVertex(Camera.main.transform.position, vertexBundlesCoordinates));
+
+		for (int i=0; i< vertexBundles.Length; i++){
+			if (vertexBundles [i].coordinates == scalerPosition) {
+				scaler = vertexBundles [i];
+				parentModelingObject.scalerObject = vertexBundles [i];
+				break;
+			}
+		}
+	}
+
+
     public void SetScaler()
     {
 		if (parentModelingObject.typeOfObject != ModelingObject.ObjectType.octagon) {

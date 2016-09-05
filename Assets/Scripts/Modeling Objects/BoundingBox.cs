@@ -23,6 +23,7 @@ public class BoundingBox : MonoBehaviour {
 
 	public void DrawBoundingBox(){
         ClearBoundingBox();
+
         GameObject linesGO = Instantiate(linesPrefab);
 		linesGO.transform.SetParent(transform.GetChild(0));
 		Lines lines = linesGO.GetComponent<Lines> ();

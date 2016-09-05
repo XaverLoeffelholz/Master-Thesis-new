@@ -251,7 +251,7 @@ public class Selection : MonoBehaviour
 								currentFocus = hit.rigidbody.transform.parent.gameObject;
 								currentFocus.GetComponent<handle> ().Focus (this);
 								device.TriggerHapticPulse (600);
-							} else if (hit.rigidbody.transform.parent.gameObject.CompareTag ("UiElement")) {
+							} else if (hit.rigidbody.transform.parent.gameObject.CompareTag ("UiElement") && UiCanvasGroup.Instance.visible) {
 								DeFocusCurrent (hit.rigidbody.transform.parent.gameObject);
 								currentFocus = hit.rigidbody.transform.parent.gameObject;
 								currentFocus.GetComponent<UiElement> ().Focus (this);
@@ -413,14 +413,14 @@ public class Selection : MonoBehaviour
 							device.TriggerHapticPulse (1800);
 							otherController.ActivateController (true);
 
-							UiCanvasGroup.Instance.TemporarilyHide ();
-
+						
 							if (currentSelection != null && currentFocus != currentSelection){
 								currentSelection.GetComponent<ModelingObject> ().DeSelect (this);
 							}
 
 							if (!duplicateMode) {			
 								currentFocus.GetComponent<ModelingObject> ().StartMoving (this, currentFocus.GetComponent<ModelingObject> ());
+
 								if (typeOfController == controllerType.mainController) {
 									//settingsButtonHelp.HideCompletely (false);
 								}
@@ -532,7 +532,7 @@ public class Selection : MonoBehaviour
 						} else {
 							if (currentSelection != null) {
 								if (currentSelection != currentFocus) {
-									currentSelection.GetComponent<ModelingObject> ().DeSelect (this);
+									//currentSelection.GetComponent<ModelingObject> ().DeSelect (this);
 									currentFocus.GetComponent<ModelingObject> ().Select (this, uiPositon.position);
 								} else {
 									UiCanvasGroup.Instance.ShowAgain (uiPositon.position);
@@ -572,11 +572,13 @@ public class Selection : MonoBehaviour
 
 					if (currentFocus.CompareTag ("ModelingObject")) {
 
+						/*
 						// this is not working
 						if (!groupItemSelection && currentSelection != null && currentSelection != currentFocus) {
 							UiCanvasGroup.Instance.CloseMenu (this);
 							this.enableFaceSelection (false);
 						}
+						*/
 
 						if (groupItemSelection) {
 							// we could also display and icon (add to group)
