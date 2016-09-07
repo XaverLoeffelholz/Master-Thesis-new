@@ -112,7 +112,7 @@ public class UIMenu : MonoBehaviour {
 			// sometimes wrong
 			parentCanvas.currentModelingObject.RotateHandles ();
 			parentCanvas.currentModelingObject.handles.ShowRotationHandles();
-			parentCanvas.currentModelingObject.ShowBoundingBox();
+			parentCanvas.currentModelingObject.ShowBoundingBox(true);
 			break;
 		case (menuType.NonUniformScaling):
 			// not existing anymore

@@ -55,7 +55,7 @@ public class ObjectSelecter : MonoBehaviour {
 		LeanTween.alpha (buttonGameObject, 1f, 0.15f);
 
 		if (connectedObject != null) {
-			connectedObject.ShowBoundingBox ();
+			connectedObject.ShowBoundingBox (true);
 			connectedObject.boundingBox.ActivateBoundingBoxCollider ();
 		} 
 
@@ -64,7 +64,7 @@ public class ObjectSelecter : MonoBehaviour {
 	public void HideSelectionButton(){		
 		if (active) {
 			if (connectedObject != null) {
-				connectedObject.HideBoundingBox ();
+				connectedObject.HideBoundingBox (true);
 				connectedObject.boundingBox.DeActivateBoundingBoxCollider ();
 			}
 

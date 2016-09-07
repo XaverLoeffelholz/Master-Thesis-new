@@ -99,6 +99,7 @@ public class ModelingObject : MonoBehaviour
 
 	public float timeOnMovementStart;
 
+
     // Use this for initialization
     void Start()
     {
@@ -792,7 +793,7 @@ public class ModelingObject : MonoBehaviour
 			UiCanvasGroup.Instance.OpenMainMenu(this, controller);
 
 			//ShowOutline(true);
-			ShowBoundingBox ();
+			ShowBoundingBox (true);
 			boundingBox.DeActivateBoundingBoxCollider ();
 		}      
     }
@@ -840,24 +841,22 @@ public class ModelingObject : MonoBehaviour
 		boundingBox.coordinates[7] = transform.TransformPoint (new Vector3(minima.x, minima.y, maxima.z));
     }
 
-    public void ShowBoundingBox()
+	public void ShowBoundingBox(bool checkForGroup)
     {
-		if (group == null) {
-			CalculateBoundingBox ();
-			boundingBox.DrawBoundingBox ();
-		} else {
+		CalculateBoundingBox ();
+		boundingBox.DrawBoundingBox ();
+
+		if (group != null && checkForGroup) {
 			group.DrawBoundingBox ();
 		}
 
     }
 
-	public void HideBoundingBox()
+	public void HideBoundingBox(bool checkForGroup)
 	{
-		Debug.Log ("HideBB");
+		boundingBox.ClearBoundingBox ();
 
-		if (group == null) {
-			boundingBox.ClearBoundingBox ();
-		} else {
+		if (group != null && checkForGroup) {
 			group.boundingBox.ClearBoundingBox ();
 		}
 	}
@@ -901,8 +900,6 @@ public class ModelingObject : MonoBehaviour
     public void StartMoving(Selection controller, ModelingObject initiater)
     {
 		if (!moving) {
-
-
 			UiCanvasGroup.Instance.TemporarilyHide ();
 
 			ObjectsManager.Instance.StartMovingObject (this);
@@ -944,6 +941,10 @@ public class ModelingObject : MonoBehaviour
 			}
 
 			handles.DisableHandles ();
+
+			if (group != null) {
+				group.HideBoundingBox ();
+			}
 		}
     }
 

@@ -16,6 +16,9 @@ public class BiManualOperations : Singleton<BiManualOperations> {
     private Vector3 lastDistance;
     private Quaternion lastRotation;
 
+	private float smoothTime = 0.2f;
+	private Vector3 velocity = Vector3.zero;
+
     // Use this for initialization
     void Start () {
 	
@@ -84,7 +87,7 @@ public class BiManualOperations : Singleton<BiManualOperations> {
     {
         if (currentBimanualMode == bimanualMode.scaling)
         {
-            Vector3 newDistance = controller2.pointOfCollisionGO.transform.position - controller1.pointOfCollisionGO.transform.position;
+			Vector3 newDistance = Vector3.SmoothDamp (lastDistance, controller2.pointOfCollisionGO.transform.position - controller1.pointOfCollisionGO.transform.position, ref velocity, smoothTime);
 
             // move scaler of object
             float newScale = newDistance.magnitude / initialDistance.magnitude;
@@ -98,6 +101,8 @@ public class BiManualOperations : Singleton<BiManualOperations> {
 			if (newScale < 0.1f) {
 				newScale = 0.1f;
 			}
+
+			lastDistance = newDistance;
 
             modObject.ScaleBy(newScale, true);
         }

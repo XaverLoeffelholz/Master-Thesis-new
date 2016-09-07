@@ -64,6 +64,9 @@ public class handle : MonoBehaviour {
 	public Vector3 boundingBoxCorner1;
 	public Vector3 boundingBoxCorner2;
 
+	private float smoothTime = 0.15f;
+	private float velocity = 0.0f;
+
     // Use this for initialization
     void Start () {
 		if (arrow != null) {
@@ -242,6 +245,7 @@ public class handle : MonoBehaviour {
 	public void ScaleNonUniform(GameObject pointOfCollision, Vector3 direction){
 		
 		Vector3 normalizedDirection = direction.normalized;
+		//float input = Mathf.SmoothDamp(prevScalingAmount, CalculateInputFromPoint(pointOfCollision.transform.position, p1.transform.position, p2.transform.position), ref velocity, smoothTime;
 		float input = CalculateInputFromPoint(pointOfCollision.transform.position, p1.transform.position, p2.transform.position);
 
 		// get current distance 
@@ -281,9 +285,12 @@ public class handle : MonoBehaviour {
 
 		float RasteredDistanceCenters = RasterManager.Instance.Raster((centerOfScaling - touchPointForScaling).magnitude * Mathf.Abs(1f + (input - prevScalingAmount)));
 		input = (RasteredDistanceCenters / ((centerOfScaling - touchPointForScaling).magnitude)) - 1f + prevScalingAmount;
-			
-		// apply rastering!!!
-		connectedModelingObject.ScaleNonUniform (Mathf.Abs(1f + (input - prevScalingAmount)), direction, typeOfHandle, centerOfScaling);
+
+		float adjustedInput = Mathf.Abs (1f + (input - prevScalingAmount));
+
+		if (adjustedInput > RasterManager.Instance.rasterLevel * 2) {
+			connectedModelingObject.ScaleNonUniform (adjustedInput, direction, typeOfHandle, centerOfScaling);
+		}
 
 		prevScalingAmount = input;
 	}

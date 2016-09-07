@@ -28,9 +28,9 @@ public class Group : MonoBehaviour {
 	}
 
 	public void BreakGroup (){
-		boundingBox.ClearBoundingBox ();
+		HideBoundingBox ();
 
-		for (int i = 0; i < objectList.Count; i++) {         
+		for (int i = 0; i < objectList.Count; i++) {  
 			objectList [i].transform.SetParent (ObjectsManager.Instance.transform);
 			objectList [i].group = null;
 		}
@@ -62,12 +62,19 @@ public class Group : MonoBehaviour {
 
 		for (int i = 0; i < objectList.Count; i++)
 		{
-			objectList [i].boundingBox.ClearBoundingBox ();
+			objectList [i].ShowBoundingBox (false);
 		}
 
 		boundingBox.DrawBoundingBox ();
 	}
 
+	public void HideBoundingBox(){
+		boundingBox.ClearBoundingBox ();
+
+		for (int i = 0; i < objectList.Count; i++) {  
+			objectList [i].HideBoundingBox (false);
+		}
+	}
 
 	public Vector3 GetBoundingBoxTopCenter()
 	{ 
@@ -151,6 +158,7 @@ public class Group : MonoBehaviour {
             if (objectList[i] != initiater)
             {
 				objectList [i].Highlight ();
+				objectList [i].ShowBoundingBox (false);
             }
         }
     }
@@ -166,6 +174,7 @@ public class Group : MonoBehaviour {
             if (objectList[i] != initiater)
             {
 				objectList [i].UnHighlight ();
+				objectList [i].HideBoundingBox (false);
             }
         }
     }
@@ -232,6 +241,8 @@ public class Group : MonoBehaviour {
 
     public void Move(Vector3 distance, ModelingObject initiater)
     {
+		
+		
         for (int i = 0; i < objectList.Count; i++)
         {
             if (objectList[i] != initiater)

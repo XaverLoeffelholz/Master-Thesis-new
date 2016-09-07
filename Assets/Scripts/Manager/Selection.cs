@@ -5,8 +5,11 @@ using System;
 [RequireComponent(typeof(SteamVR_TrackedObject))]
 public class Selection : MonoBehaviour
 {
-    public enum controllerType { mainController, SecondaryController}
+	public enum controllerType { mainController, SecondaryController};
 
+	public enum selectionMode { laserpointer, directTouch };		
+
+	public selectionMode currentSelectionMode;
     public controllerType typeOfController;
 
     public GameObject currentFocus;
@@ -73,6 +76,10 @@ public class Selection : MonoBehaviour
 	public Transform buttonOnController;
 	public Vector3 standardPosButton;
 
+	public SphereColliderSelection colliderSphere;
+	private GameObject collisionObject;
+
+
     void Awake()
     {
         trackedObj = GetComponent<SteamVR_TrackedObject>();
@@ -90,6 +97,13 @@ public class Selection : MonoBehaviour
 		initialScaleGrabIcon = new Vector3(0.006f,0.006f,0.006f);
 		initialScaleGrabbedIcon = new Vector3(0.006f,0.006f,0.006f);
 		standardPosButton = buttonOnController.transform.localPosition;
+
+		if (currentSelectionMode == selectionMode.directTouch) {
+			colliderSphere.ActivateCollider ();
+			LaserPointer.transform.GetChild (0).gameObject.SetActive (false);
+		} else {
+			colliderSphere.DeActivateCollider ();
+		}
     }
 
 
@@ -99,10 +113,10 @@ public class Selection : MonoBehaviour
 			grabIcon.SetActive(false);
 		}
 
-		if (currentFocus != null && newObject != null) {
+		if (currentFocus != null) {
 			if (currentFocus.CompareTag ("ModelingObject")) {
 				// compare selection button and object
-				if (newObject.CompareTag ("SelectionButton")) {
+				if (newObject != null && newObject.CompareTag ("SelectionButton")) {
 					if (newObject.GetComponent<ObjectSelecter> ().connectedObject != currentFocus.GetComponent<ModelingObject> ()) {
 						currentFocus.GetComponent<ModelingObject> ().UnFocus (this);
 						if (typeOfController == controllerType.mainController) {
@@ -131,7 +145,7 @@ public class Selection : MonoBehaviour
 				currentFocus.GetComponent<Infopanel> ().UnFocus (this);
 			} else if (currentFocus.CompareTag ("SelectionButton")) {				
 				// compare selection button and object
-				if (newObject.CompareTag ("ModelingObject")) {
+				if (newObject != null && newObject.CompareTag ("ModelingObject")) {
 					if (currentFocus.GetComponent<ObjectSelecter> ().connectedObject != newObject.GetComponent<ModelingObject> ()) {
 						currentFocus.GetComponent<ObjectSelecter> ().UnFocus (this);
 						currentFocus.GetComponent<ObjectSelecter> ().connectedObject.UnFocus (this);
@@ -153,9 +167,6 @@ public class Selection : MonoBehaviour
 			currentFocus = null;
 		}
 
-		if (newObject == null) {
-
-		}
 	}
 
     public void AdjustLengthPointer(float MaxDistance)
@@ -181,6 +192,9 @@ public class Selection : MonoBehaviour
 		if (controllerActive) {
 			if ((movingObject || scalingObject) && currentFocus != null) {
 				if (grabbedIcon != null && grabbedIcon.activeSelf) {
+					grabbedIcon.transform.LookAt (Camera.main.transform);
+					grabbedIcon.transform.Rotate (new Vector3 (90, 0f, 0f));
+
 					if (scalingMode) {
 						grabbedIcon.GetComponent<Renderer> ().material = scaleGrabbedIconMat;
 						grabbedIcon.transform.position = pointOfCollisionGO.transform.position;
@@ -200,11 +214,15 @@ public class Selection : MonoBehaviour
 
 			// only change focus is the object is not moved at the moment
 			if (!movingObject && !movingHandle && !scalingObject && !triggerPressed) {
-				if (Physics.Raycast (LaserPointer.transform.position, LaserPointer.transform.forward, out hit)) {					
+				
+				if ((currentSelectionMode == selectionMode.laserpointer && Physics.Raycast (LaserPointer.transform.position, LaserPointer.transform.forward, out hit)) 
+					|| currentSelectionMode == selectionMode.directTouch) {					
 
-					AdjustLengthPointer (hit.distance);
+					if (currentSelectionMode == selectionMode.laserpointer) {
+						AdjustLengthPointer (hit.distance);
+					}
 
-					if (grabIcon != null && grabIcon.activeSelf) {
+					if (grabIcon != null && grabIcon.activeSelf && currentSelectionMode == selectionMode.laserpointer) {
 						if (duplicateMode) {
 							grabIcon.GetComponent<Renderer> ().material = duplicateGrabIconMat;
 							Vector3 newScale = initialScaleGrabIcon * hit.distance * 1.3f;
@@ -226,96 +244,121 @@ public class Selection : MonoBehaviour
 
 					}
 
-					if (hit.rigidbody != null && hit.rigidbody.transform.parent != null) {
+					if (currentSelectionMode == selectionMode.laserpointer) {
+						if (hit.rigidbody != null && hit.rigidbody.transform.parent != null) {
+							collisionObject = hit.rigidbody.transform.parent.gameObject;
+						} else {
+							collisionObject = null;
+						}
+					} else {
+						if (colliderSphere.currentCollider != null && colliderSphere.currentCollider.transform.parent != null) {
+							collisionObject = colliderSphere.currentCollider.transform.parent.gameObject;
+						} else {
+							collisionObject = null;
+						}
+					}
 
-						if (grabIcon == null) {
+					if (collisionObject != null) {
+
+						if (grabIcon == null && currentSelectionMode == selectionMode.laserpointer) {
 							grabIcon = Instantiate (grabIconPrefab);
 						}
 
 
-						if (currentFocus != hit.rigidbody.transform.parent.gameObject || recheckFocus) {
+						if (currentFocus != collisionObject || recheckFocus) {
 							recheckFocus = false;
 
-							// focus of Object
-							// old: if ((!UiCanvasGroup.Instance.visible || groupItemSelection) && hit.rigidbody.transform.parent.gameObject.CompareTag ("ModelingObject")) {	
-								
-							if (hit.rigidbody.transform.parent.gameObject.CompareTag ("ModelingObject")) {		
-								DeFocusCurrent (hit.rigidbody.transform.parent.gameObject);
-								currentFocus = hit.rigidbody.transform.parent.gameObject;
+							if (collisionObject.CompareTag ("ModelingObject")) {		
+								DeFocusCurrent (collisionObject);
+								currentFocus = collisionObject;
 								currentFocus.GetComponent<ModelingObject> ().Focus (this);
-
 								device.TriggerHapticPulse (300);
-								grabIcon.SetActive (true);
-							} else if (hit.rigidbody.transform.parent.gameObject.CompareTag ("Handle")) {
-								DeFocusCurrent (hit.rigidbody.transform.parent.gameObject);
-								currentFocus = hit.rigidbody.transform.parent.gameObject;
+								if (currentSelectionMode == selectionMode.laserpointer) {
+									grabIcon.SetActive (true);
+								}
+							} else if (collisionObject.CompareTag ("Handle")) {
+								DeFocusCurrent (collisionObject);
+								currentFocus = collisionObject;
 								currentFocus.GetComponent<handle> ().Focus (this);
 								device.TriggerHapticPulse (600);
-							} else if (hit.rigidbody.transform.parent.gameObject.CompareTag ("UiElement") && UiCanvasGroup.Instance.visible) {
-								DeFocusCurrent (hit.rigidbody.transform.parent.gameObject);
-								currentFocus = hit.rigidbody.transform.parent.gameObject;
+							} else if (collisionObject.CompareTag ("UiElement") && UiCanvasGroup.Instance.visible) {
+								DeFocusCurrent (collisionObject);
+								currentFocus = collisionObject;
 								currentFocus.GetComponent<UiElement> ().Focus (this);
 								device.TriggerHapticPulse (600);
-							} else if (!UiCanvasGroup.Instance.visible && hit.rigidbody.transform.parent.gameObject.CompareTag ("TeleportTrigger")) {
-								DeFocusCurrent (hit.rigidbody.transform.parent.gameObject);
-								currentFocus = hit.rigidbody.transform.parent.gameObject;
+							} else if (!UiCanvasGroup.Instance.visible && collisionObject.CompareTag ("TeleportTrigger")) {
+								DeFocusCurrent (collisionObject);
+								currentFocus = collisionObject;
 								currentFocus.GetComponent<TeleportationTrigger> ().Focus (this);
 								device.TriggerHapticPulse (600);
-							} else if (!UiCanvasGroup.Instance.visible && hit.rigidbody.transform.parent.gameObject.CompareTag ("SelectionButton")) {
-								DeFocusCurrent (hit.rigidbody.transform.parent.gameObject);
-								currentFocus = hit.rigidbody.transform.parent.gameObject;
+							} else if (!UiCanvasGroup.Instance.visible && collisionObject.CompareTag ("SelectionButton")) {
+								DeFocusCurrent (collisionObject);
+								currentFocus = collisionObject;
 								currentFocus.GetComponent<ObjectSelecter> ().Focus (this);
 								if (currentFocus.GetComponent<ObjectSelecter> ().connectedObject != null) {
 									currentFocus.GetComponent<ObjectSelecter> ().connectedObject.Focus (this);
 								}
 								device.TriggerHapticPulse (600);
-							} else if (!UiCanvasGroup.Instance.visible && hit.rigidbody.transform.parent.gameObject.CompareTag ("TeleportPosition")) {
-								DeFocusCurrent (hit.rigidbody.transform.parent.gameObject);
-								currentFocus = hit.rigidbody.transform.parent.gameObject;
+							} else if (!UiCanvasGroup.Instance.visible && collisionObject.CompareTag ("TeleportPosition")) {
+								DeFocusCurrent (collisionObject);
+								currentFocus = collisionObject;
 								currentFocus.GetComponent<TeleportationPosition> ().Focus (this);
 								device.TriggerHapticPulse (600);
-							} else if (!UiCanvasGroup.Instance.visible && hit.rigidbody.transform.parent.gameObject.CompareTag ("Library")) {
-								DeFocusCurrent (hit.rigidbody.transform.parent.gameObject);
-								currentFocus = hit.rigidbody.transform.parent.gameObject;
+							} else if (!UiCanvasGroup.Instance.visible && collisionObject.CompareTag ("Library")) {
+								DeFocusCurrent (collisionObject);
+								currentFocus = collisionObject;
 								library.Instance.Focus (this);
 								device.TriggerHapticPulse (600);
-								grabIcon.transform.localScale = initialScaleGrabIcon * hit.distance; 
-								grabIcon.SetActive (true);
-							} else if (hit.rigidbody.transform.parent.gameObject.CompareTag ("HeightControl")) {
-								DeFocusCurrent (hit.rigidbody.transform.parent.gameObject);
-								currentFocus = hit.rigidbody.transform.parent.gameObject;
+
+								if (currentSelectionMode == selectionMode.laserpointer) {
+									grabIcon.transform.localScale = initialScaleGrabIcon * hit.distance; 
+									grabIcon.SetActive (true);
+								}
+
+							} else if (collisionObject.CompareTag ("HeightControl")) {
+								DeFocusCurrent (collisionObject);
+								currentFocus = collisionObject;
 								currentFocus.GetComponent<StageHeightController> ().Focus (this);
 								device.TriggerHapticPulse (600);
-								grabIcon.transform.localScale = initialScaleGrabIcon * hit.distance; 
-								grabIcon.SetActive (true);
-							} else if (hit.rigidbody.transform.parent.gameObject.CompareTag ("DistanceControl")) {
-								DeFocusCurrent (hit.rigidbody.transform.parent.gameObject);
-								currentFocus = hit.rigidbody.transform.parent.gameObject;
+								if (currentSelectionMode == selectionMode.laserpointer) {
+									grabIcon.transform.localScale = initialScaleGrabIcon * hit.distance; 
+									grabIcon.SetActive (true);
+								}
+							} else if (collisionObject.CompareTag ("DistanceControl")) {
+								DeFocusCurrent (collisionObject);
+								currentFocus = collisionObject;
 								currentFocus.GetComponent<StageDistanceController> ().Focus (this);
 								device.TriggerHapticPulse (600);
-								grabIcon.transform.localScale = initialScaleGrabIcon * hit.distance; 
-								grabIcon.SetActive (true);
-							} else if (!UiCanvasGroup.Instance.visible && hit.rigidbody.transform.parent.gameObject.CompareTag ("InfoPanel")) {
-								DeFocusCurrent (hit.rigidbody.transform.parent.gameObject);
-								currentFocus = hit.rigidbody.transform.parent.gameObject;
+								if (currentSelectionMode == selectionMode.laserpointer) {
+									grabIcon.transform.localScale = initialScaleGrabIcon * hit.distance; 
+									grabIcon.SetActive (true);
+								}
+							} else if (!UiCanvasGroup.Instance.visible && collisionObject.CompareTag ("InfoPanel")) {
+								DeFocusCurrent (collisionObject);
+								currentFocus = collisionObject;
 								currentFocus.GetComponent<Infopanel> ().Focus (this);
 								device.TriggerHapticPulse (600);
-							}
-								
+							}								
 
 						}
 
-						if ((!UiCanvasGroup.Instance.visible || groupItemSelection) && hit.rigidbody.transform.parent.gameObject.CompareTag ("ModelingObject")) {
+						if ((!UiCanvasGroup.Instance.visible || groupItemSelection) && collisionObject.CompareTag ("ModelingObject") && currentSelectionMode == selectionMode.laserpointer) {
 							if (!grabIcon.activeSelf) {
 								grabIcon.transform.localScale = initialScaleGrabIcon * hit.distance; 
 								grabIcon.SetActive (true);
 							}
 						}
 
-						// Set position of collision
-						pointOfCollision = hit.point;
+						if (currentSelectionMode == selectionMode.laserpointer) {
+							// Set position of collision
+							pointOfCollision = hit.point;
+						} else {
+							pointOfCollision = colliderSphere.transform.position;
+						}
 
 						if (grabIcon != null && grabIcon.activeSelf) {
+							grabIcon.transform.LookAt (Camera.main.transform);
+							grabIcon.transform.Rotate (new Vector3 (90, 0f, 0f));
 							grabIcon.transform.position = pointOfCollision;
 						}
 
@@ -335,18 +378,23 @@ public class Selection : MonoBehaviour
 
 					} else {
 						if (currentFocus != null) {
-							DeFocusCurrent (currentFocus.gameObject);
+							DeFocusCurrent (null);
 							temps = Time.time;
-							AdjustLengthPointer (50f);
+
+							if (currentSelectionMode == selectionMode.laserpointer) {
+								AdjustLengthPointer (50f);
+							}
 						}
 					}
 				} else {
 					if (currentFocus != null) {
-						DeFocusCurrent (currentFocus.gameObject);
+						DeFocusCurrent (null);
 						temps = Time.time;
 					}
 
-					AdjustLengthPointer (50f);
+					if (currentSelectionMode == selectionMode.laserpointer) {
+						AdjustLengthPointer (50f);
+					}
 				}
 			} 
 
@@ -388,14 +436,17 @@ public class Selection : MonoBehaviour
 							grabbedIcon = Instantiate (grabbedIconPrefab);
 						}
 
-						if (!grabbedIcon.activeSelf) {
+						if (grabbedIcon != null && grabIcon != null  && !grabbedIcon.activeSelf) {
 							grabbedIcon.SetActive (true);
 
 							grabbedIconOffset = grabIcon.transform.position - currentFocus.transform.position; 
 							grabbedIcon.transform.position = currentFocus.transform.position + grabbedIconOffset;
 						}
 
-						grabIcon.SetActive (false);
+						if (grabIcon != null) {
+							grabIcon.SetActive (false);
+						}
+
 
 						CreatePointOfCollisionPrefab ();
 						movingObject = true;
@@ -610,7 +661,7 @@ public class Selection : MonoBehaviour
 						currentHandle.ResetLastPosition ();
 						currentHandle.UnLock ();
 						currentHandle.UnFocus (this);
-						currentHandle.connectedObject.GetComponent<ModelingObject> ().ShowBoundingBox ();
+						currentHandle.connectedObject.GetComponent<ModelingObject> ().ShowBoundingBox (true);
 					} else if (currentFocus.CompareTag ("UiElement") && UiCanvasGroup.Instance.visible && !movingObject && !movingHandle) {
 						if (Time.time - tempsUI > 0.1f) {
 							device.TriggerHapticPulse (1000);

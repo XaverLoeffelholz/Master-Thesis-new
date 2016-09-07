@@ -161,6 +161,8 @@ public class ObjectCreator : Singleton<ObjectCreator> {
 		duplicateAnimation = Instantiate (duplicateAnimationPrefab);
 		duplicateAnimation.transform.position = original.transform.position;
 		duplicateAnimation.GetComponent<CircleAnimaton> ().StartAnimation ();
+
+		Invoke ("DeleteAnimationObject", 0.6f);
     }
 
 	private void DeleteAnimationObject(){

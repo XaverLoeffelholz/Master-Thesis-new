@@ -42,6 +42,9 @@ public class StageController : MonoBehaviour {
 
 	private float amountOfMovementForHapticFeedback;
 
+	private float smoothTime = 0.01F;
+	private float velocity = 0.0F;
+
     void Awake()
     {
 		trackedObj = GetComponent<SteamVR_TrackedObject>();
@@ -182,7 +185,7 @@ public class StageController : MonoBehaviour {
 			if (currentControllerMode == controllerMode.pullPushObject)
             {
                 // turn y value into scale of stage          
-                float amountY = device.GetAxis().y - lastY;
+				float amountY = Mathf.SmoothDamp(lastY, device.GetAxis().y,ref velocity, smoothTime) - lastY;
                 lastY = device.GetAxis().y;
 
 				amountOfMovementForHapticFeedback += amountY;
@@ -197,7 +200,7 @@ public class StageController : MonoBehaviour {
 					Vector3 ObjectToController = selection.pointOfCollisionGO.transform.position - transform.position;
 
 					// move object on line when using touchpad
-					selection.pointOfCollisionGO.transform.position = selection.pointOfCollisionGO.transform.position + ObjectToController * amountY*1.4f;
+					selection.pointOfCollisionGO.transform.position = selection.pointOfCollisionGO.transform.position + ObjectToController * amountY;
 
 					if (selection.currentFocus.CompareTag ("ModelingObject")) {
 						selection.pointOfCollisionGO.transform.position = selection.pointOfCollisionGO.transform.position;
@@ -222,7 +225,7 @@ public class StageController : MonoBehaviour {
 			else if (currentControllerMode == controllerMode.scalingStage)
             {
                 // turn y value into scale of stage          
-                float amountY = device.GetAxis().y - lastY;
+				float amountY = Mathf.SmoothDamp(lastY, device.GetAxis().y, ref velocity, smoothTime) - lastY;
                 lastY = device.GetAxis().y;
 
 				amountOfMovementForHapticFeedback += amountY;
@@ -245,7 +248,7 @@ public class StageController : MonoBehaviour {
 			else if (currentControllerMode == controllerMode.rotatingStage)
 			{
 				// turn x value into rotation of stage
-				float amountX = device.GetAxis().x - lastX;
+				float amountX = Mathf.SmoothDamp(lastX, device.GetAxis().x, ref velocity, smoothTime) - lastX;
 				lastX = device.GetAxis().x;
 
 				amountOfMovementForHapticFeedback += amountX;
@@ -267,10 +270,10 @@ public class StageController : MonoBehaviour {
 			}
 			else if (currentControllerMode == controllerMode.rotatingObject)
 			{
-				if (selection.otherController.currentFocus.CompareTag("ModelingObject")){
+				if (selection.otherController.currentFocus != null && selection.otherController.currentFocus.CompareTag("ModelingObject")){
 					
 					// turn x value into rotation of stage
-					float amountX = device.GetAxis().x - lastX;
+					float amountX = Mathf.SmoothDamp(lastX, device.GetAxis().x, ref velocity, smoothTime) - lastX;
 					lastX = device.GetAxis().x;
 
 					amountOfMovementForHapticFeedback += amountX;
