@@ -22,6 +22,8 @@ public class DuplicateHelp : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 		transform.position = controller2.transform.position;
+
+		transform.LookAt (controller2.transform);
 	}
 
 	public void DuplicateActive(){

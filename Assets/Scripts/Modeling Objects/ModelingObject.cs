@@ -532,6 +532,7 @@ public class ModelingObject : MonoBehaviour
 	public void PositionHandles(bool showRotationHandles)
     {
 		CalculateBoundingBox ();
+		//Vector3 sizeHandles =  transform.InverseTransformVector (Vector3.one);
 
 		handles.faceTopScale.transform.position = transform.TransformPoint(topFace.scaler.coordinates);
 		handles.faceBottomScale.transform.position = transform.TransformPoint(bottomFace.scaler.coordinates);
@@ -546,6 +547,7 @@ public class ModelingObject : MonoBehaviour
 		handles.RotateUp0.transform.position = 0.5f * boundingBox.coordinates [0] + 0.5f * boundingBox.coordinates [1];
 		if (closesBBcorner == boundingBox.coordinates [0] || closesBBcorner == boundingBox.coordinates [1]) {	
 			handles.RotateUp0.SetActive (showRotationHandles);
+			//handles.RotateUp0.transform.localScale = sizeHandles;
 		} else {
 			handles.RotateUp0.SetActive (false);
 		}
@@ -553,6 +555,7 @@ public class ModelingObject : MonoBehaviour
 		handles.RotateUp1.transform.position = 0.5f * boundingBox.coordinates [1] + 0.5f * boundingBox.coordinates [2];
 		if (closesBBcorner == boundingBox.coordinates [1] || closesBBcorner == boundingBox.coordinates [2]) {			
 			handles.RotateUp1.SetActive (showRotationHandles);
+			//handles.RotateUp1.transform.localScale = sizeHandles;
 		} else {
 			handles.RotateUp1.SetActive (false);
 		}
@@ -560,6 +563,7 @@ public class ModelingObject : MonoBehaviour
 		handles.RotateUp2.transform.position = 0.5f * boundingBox.coordinates [2] + 0.5f * boundingBox.coordinates [3];
 		if (closesBBcorner == boundingBox.coordinates [2] || closesBBcorner == boundingBox.coordinates [3]) {			
 			handles.RotateUp2.SetActive (showRotationHandles);
+			//handles.RotateUp2.transform.localScale = sizeHandles;
 		} else {
 			handles.RotateUp2.SetActive (false);
 		}
@@ -567,6 +571,7 @@ public class ModelingObject : MonoBehaviour
 		handles.RotateUp3.transform.position = 0.5f * boundingBox.coordinates [3] + 0.5f * boundingBox.coordinates [0];
 		if (closesBBcorner == boundingBox.coordinates [3] || closesBBcorner == boundingBox.coordinates [0]) {
 			handles.RotateUp3.SetActive (showRotationHandles);
+			//handles.RotateUp3.transform.localScale = sizeHandles;
 		} else {
 			handles.RotateUp3.SetActive (false);
 		}
@@ -574,6 +579,7 @@ public class ModelingObject : MonoBehaviour
 		handles.RotateDown0.transform.position = 0.5f * boundingBox.coordinates [4] + 0.5f * boundingBox.coordinates [5];
 		if (closesBBcorner == boundingBox.coordinates [4] || closesBBcorner == boundingBox.coordinates [5]) {			
 			handles.RotateDown0.SetActive (showRotationHandles);
+			//handles.RotateDown0.transform.localScale = sizeHandles;
 		} else {
 			handles.RotateDown0.SetActive (false);
 		}
@@ -581,6 +587,7 @@ public class ModelingObject : MonoBehaviour
 		handles.RotateDown1.transform.position = 0.5f * boundingBox.coordinates[5] + 0.5f * boundingBox.coordinates[6];
 		if (closesBBcorner == boundingBox.coordinates [5] || closesBBcorner == boundingBox.coordinates [6]) {			
 			handles.RotateDown1.SetActive (showRotationHandles);
+			//handles.RotateDown1.transform.localScale = sizeHandles;
 		} else {
 			handles.RotateDown1.SetActive (false);
 		}
@@ -588,6 +595,7 @@ public class ModelingObject : MonoBehaviour
 		handles.RotateDown2.transform.position = 0.5f * boundingBox.coordinates[6] + 0.5f * boundingBox.coordinates[7];
 		if (closesBBcorner == boundingBox.coordinates [6] || closesBBcorner == boundingBox.coordinates [7]) {			
 			handles.RotateDown2.SetActive (showRotationHandles);
+			//handles.RotateDown2.transform.localScale = sizeHandles;
 		} else {
 			handles.RotateDown2.SetActive (false);
 		}
@@ -595,14 +603,15 @@ public class ModelingObject : MonoBehaviour
 		handles.RotateDown3.transform.position = 0.5f * boundingBox.coordinates[7] + 0.5f * boundingBox.coordinates[4];
 		if (closesBBcorner == boundingBox.coordinates [7] || closesBBcorner == boundingBox.coordinates [4]) {			
 			handles.RotateDown3.SetActive (showRotationHandles);
+			//handles.RotateDown3.transform.localScale = sizeHandles;
 		} else {
 			handles.RotateDown3.SetActive (false);
 		}
 
 		handles.RotateSide0.transform.position = 0.5f * boundingBox.coordinates[0] + 0.5f * boundingBox.coordinates[4];
-		if (closesBBcorner == boundingBox.coordinates [0] || closesBBcorner == boundingBox.coordinates [4]) {
-			
+		if (closesBBcorner == boundingBox.coordinates [0] || closesBBcorner == boundingBox.coordinates [4]) {			
 			handles.RotateSide0.SetActive (showRotationHandles);
+			//handles.RotateSide0.transform.localScale = sizeHandles;
 		} else {
 			handles.RotateSide0.SetActive (false);
 		}
@@ -611,6 +620,7 @@ public class ModelingObject : MonoBehaviour
 
 		if (closesBBcorner == boundingBox.coordinates [1] || closesBBcorner == boundingBox.coordinates [5]) {			
 			handles.RotateSide1.SetActive (showRotationHandles);
+			//handles.RotateSide1.transform.localScale = sizeHandles;
 		} else {
 			handles.RotateSide1.SetActive (false);
 		}
@@ -619,6 +629,7 @@ public class ModelingObject : MonoBehaviour
 
 		if (closesBBcorner == boundingBox.coordinates [2] || closesBBcorner == boundingBox.coordinates [6]) {			
 			handles.RotateSide2.SetActive (showRotationHandles);
+			//handles.RotateSide2.transform.localScale = sizeHandles;
 		} else {
 			handles.RotateSide2.SetActive (false);
 		}
@@ -627,6 +638,7 @@ public class ModelingObject : MonoBehaviour
 
 		if (closesBBcorner == boundingBox.coordinates [3] || closesBBcorner == boundingBox.coordinates [7]) {			
 			handles.RotateSide3.SetActive (showRotationHandles);
+		//	handles.RotateSide3.transform.localScale = sizeHandles;
 		} else {
 			handles.RotateSide3.SetActive (false);
 		}
@@ -639,6 +651,14 @@ public class ModelingObject : MonoBehaviour
 
 		handles.NonUniformScaleLeft.transform.position = GetBoundingBoxLeftCenter ();
 		handles.NonUniformScaleRight.transform.position = GetBoundingBoxRightCenter ();
+
+
+		//handles.NonUniformScaleTop.transform.localScale = sizeHandles;
+		//handles.NonUniformScaleBottom.transform.localScale = sizeHandles;
+		//handles.NonUniformScaleFront.transform.localScale = sizeHandles;
+		//handles.NonUniformScaleBack.transform.localScale = sizeHandles;
+		//handles.NonUniformScaleLeft.transform.localScale = sizeHandles;
+		//handles.NonUniformScaleRight.transform.localScale = sizeHandles;
     }
 
     public void RotateHandles()
@@ -1206,30 +1226,35 @@ public class ModelingObject : MonoBehaviour
 		// first calculate scaling with top center
 		Vector3 newBoundingBoxCenterRight = GetBoundingBoxCenter() + newScale * (boundingBoxCenterToRightOnScalingBegin);
 
-		// raster that value
-		newBoundingBoxCenterRight = transform.TransformPoint(RasterManager.Instance.Raster (transform.InverseTransformPoint(newBoundingBoxCenterRight)));
-		float rasteredScalingValue = (newBoundingBoxCenterRight - GetBoundingBoxCenter ()).magnitude / boundingBoxCenterToRightOnScalingBegin.magnitude;
+		if ((transform.InverseTransformVector (newBoundingBoxCenterRight-GetBoundingBoxCenter ())).magnitude >= RasterManager.Instance.rasterLevel * 2) {
 
-		Vector3 boundingBoxBottomLocal = transform.InverseTransformPoint (GetBoundingBoxBottomCenter ());
+			// raster that value
+			newBoundingBoxCenterRight = transform.TransformPoint(RasterManager.Instance.Raster (transform.InverseTransformPoint(newBoundingBoxCenterRight)));
+			float rasteredScalingValue = (newBoundingBoxCenterRight - GetBoundingBoxCenter ()).magnitude / boundingBoxCenterToRightOnScalingBegin.magnitude;
 
-		for (int i = 0; i < topFace.vertexBundles.Length; i++) {
-			topFace.vertexBundles [i].coordinates = boundingBoxBottomLocal + rasteredScalingValue * (vectorsTopOnScalingBegin[i]);
+			Vector3 boundingBoxBottomLocal = transform.InverseTransformPoint (GetBoundingBoxBottomCenter ());
+
+			for (int i = 0; i < topFace.vertexBundles.Length; i++) {
+				topFace.vertexBundles [i].coordinates = boundingBoxBottomLocal + rasteredScalingValue * (vectorsTopOnScalingBegin[i]);
+			}
+
+			for (int i = 0; i < bottomFace.vertexBundles.Length; i++) {
+				bottomFace.vertexBundles [i].coordinates = boundingBoxBottomLocal + rasteredScalingValue * (vectorsBottomOnScalingBegin[i]);
+			}
+
+			for (int i = 0; i < faces.Length; i++) {
+				faces [i].UpdateCenter ();
+			}
+
+			topFace.UpdateSpecialVertexCoordinates ();
+			bottomFace.UpdateSpecialVertexCoordinates ();
+
+			ShowBoundingBox(false);
+			PositionHandles (false);
+			RotateHandles ();
 		}
 
-		for (int i = 0; i < bottomFace.vertexBundles.Length; i++) {
-			bottomFace.vertexBundles [i].coordinates = boundingBoxBottomLocal + rasteredScalingValue * (vectorsBottomOnScalingBegin[i]);
-		}
-				
-		for (int i = 0; i < faces.Length; i++) {
-			faces [i].UpdateCenter ();
-		}
 
-		topFace.UpdateSpecialVertexCoordinates ();
-		bottomFace.UpdateSpecialVertexCoordinates ();
-
-		CalculateBoundingBox ();
-		PositionHandles (false);
-		RotateHandles ();
 
 		/*
 

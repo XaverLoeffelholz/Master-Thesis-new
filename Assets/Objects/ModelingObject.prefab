@@ -8280,8 +8280,8 @@ BoxCollider:
   m_IsTrigger: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Size: {x: 1, y: 2, z: 2}
-  m_Center: {x: -0.3, y: 0, z: -0.15}
+  m_Size: {x: 1, y: 1.47, z: 1.54}
+  m_Center: {x: -0.3, y: 0, z: -0.01}
 --- !u!65 &6527668
 BoxCollider:
   m_ObjectHideFlags: 1
@@ -8328,8 +8328,8 @@ BoxCollider:
   m_IsTrigger: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Size: {x: 1, y: 2, z: 2}
-  m_Center: {x: -0.3, y: 0, z: -0.15}
+  m_Size: {x: 1, y: 1.47, z: 1.54}
+  m_Center: {x: -0.3, y: 0, z: -0.01}
 --- !u!65 &6535102
 BoxCollider:
   m_ObjectHideFlags: 1
@@ -8448,8 +8448,8 @@ BoxCollider:
   m_IsTrigger: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Size: {x: 1, y: 2, z: 2}
-  m_Center: {x: -0.3, y: 0, z: -0.15}
+  m_Size: {x: 1, y: 1.47, z: 1.54}
+  m_Center: {x: -0.3, y: 0, z: -0.01}
 --- !u!65 &6565346
 BoxCollider:
   m_ObjectHideFlags: 1
@@ -8532,8 +8532,8 @@ BoxCollider:
   m_IsTrigger: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Size: {x: 1, y: 2, z: 2}
-  m_Center: {x: -0.3, y: 0, z: -0.15}
+  m_Size: {x: 1, y: 1.47, z: 1.54}
+  m_Center: {x: -0.3, y: 0, z: -0.01}
 --- !u!65 &6584422
 BoxCollider:
   m_ObjectHideFlags: 1
@@ -8544,8 +8544,8 @@ BoxCollider:
   m_IsTrigger: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Size: {x: 1, y: 2, z: 2}
-  m_Center: {x: -0.3, y: 0, z: -0.15}
+  m_Size: {x: 1, y: 1.47, z: 1.54}
+  m_Center: {x: -0.3, y: 0, z: -0.01}
 --- !u!65 &6584552
 BoxCollider:
   m_ObjectHideFlags: 1
@@ -8556,8 +8556,8 @@ BoxCollider:
   m_IsTrigger: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Size: {x: 1, y: 2, z: 2}
-  m_Center: {x: -0.3, y: 0, z: -0.15}
+  m_Size: {x: 1, y: 1.47, z: 1.54}
+  m_Center: {x: -0.3, y: 0, z: -0.01}
 --- !u!65 &6585854
 BoxCollider:
   m_ObjectHideFlags: 1
@@ -8997,6 +8997,7 @@ MonoBehaviour:
   NonUniformScaleLeft: {fileID: 164592}
   NonUniformScaleRight: {fileID: 119872}
   objectFocused: 0
+  Handlegroup: {fileID: 430326}
 --- !u!114 &11438084
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -9510,6 +9511,7 @@ MonoBehaviour:
   boundingBox: {fileID: 11471622}
   rotationObject: {fileID: 0}
   colliderSphere: {fileID: 11486358}
+  timeOnMovementStart: 0
 --- !u!135 &13506724
 SphereCollider:
   m_ObjectHideFlags: 1

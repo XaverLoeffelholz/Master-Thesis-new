@@ -64,7 +64,7 @@ public class handle : MonoBehaviour {
 	public Vector3 boundingBoxCorner1;
 	public Vector3 boundingBoxCorner2;
 
-	private float smoothTime = 0.15f;
+	private float smoothTime = 0.05f;
 	private float velocity = 0.0f;
 
     // Use this for initialization
@@ -368,17 +368,18 @@ public class handle : MonoBehaviour {
         // cross product
         Vector3 crossProduct = Vector3.Cross(HandleToCenter, handleDirection) * (-1f);
 
-		float newRotationAmount = 90f*CalculateInputFromPoint(pointOfCollision.transform.position, transform.position, transform.position + crossProduct);
 
-        if (newRotation)
-        {
-			prevRotationAmount =  RasterManager.Instance.RasterAngle(newRotationAmount);
-            newRotation = false;
-        }
+
+		float newRotationAmount = 90f * CalculateInputFromPoint (pointOfCollision.transform.position, transform.position, transform.position + crossProduct);
+
+		if (newRotation) {
+		//	newRotationAmount = 90f * CalculateInputFromPoint (pointOfCollision.transform.position, transform.position, transform.position + crossProduct);
+			prevRotationAmount = RasterManager.Instance.RasterAngle (newRotationAmount);
+			newRotation = false;
+		} else {
+			//newRotationAmount = Mathf.SmoothDamp(prevRotationAmount, 90f*CalculateInputFromPoint(pointOfCollision.transform.position, transform.position, transform.position + crossProduct), ref velocity, smoothTime);
+		}
 			
-
-		// here we need to check if it is connected to a group or a modeling object
-
         // define rotation axis
 		Vector3 p1Rotation = connectedModelingObject.GetBoundingBoxCenter();
 		Vector3 p2Rotation = p1Rotation + (p1.transform.position - p2.transform.position);
@@ -392,8 +393,8 @@ public class handle : MonoBehaviour {
 
 		prevRotationAmount = RasterManager.Instance.RasterAngle(newRotationAmount);
 
-		connectedModelingObject.CalculateBoundingBox ();
-		connectedModelingObject.boundingBox.DrawBoundingBox ();
+		//connectedModelingObject.CalculateBoundingBox ();
+		//connectedModelingObject.boundingBox.DrawBoundingBox ();
     }
 
     private void SetRotateStepTrue()

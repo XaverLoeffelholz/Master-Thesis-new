@@ -8,6 +8,8 @@ public class StageController : MonoBehaviour {
 	public controllerMode standardControllerMode;
 	public controllerMode currentControllerMode;
 
+	public bool freeMovementStage;
+
     public Transform stage;
     public Transform library;
     public Transform trash;
@@ -77,6 +79,10 @@ public class StageController : MonoBehaviour {
 			line.transform.localScale = new Vector3 (Mathf.Max(lineInitialScale.x * (1f-scale), lineInitialScale.x*0.7f), lineInitialScale.y, lineInitialScale.z);
 		}
 
+		if (selection.currentSelectionMode == Selection.selectionMode.directTouch) {
+			ScaleStage (-0.6f);
+			stage.parent.position =  stage.parent.position + new Vector3 (0f, 0f, -1.2f);
+		}
 
     }
 

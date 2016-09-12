@@ -24,7 +24,6 @@ public class StageHeightController : MonoBehaviour {
 	}
 
 	public void Focus(Selection controller){
-
 		foreach (Transform child in transform) {
 			if (child.gameObject.name == "Arrow") {
 				LeanTween.scale(child.gameObject, new Vector3 (0.04f, 0.07f, 0.07f), 0.1f);

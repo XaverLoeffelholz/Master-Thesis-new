@@ -3,9 +3,14 @@ using System.Collections;
 
 public class SphereColliderSelection : MonoBehaviour {
 
+	// we have to check for all collisions
+
 	public GameObject currentCollider;
 	public MeshRenderer renderer;
-	public SphereCollider collider;
+	public CapsuleCollider collider;
+	public Transform positionOfMostInterest;
+
+	private int numberOfContactPoints = 0;
 
 	// Use this for initialization
 	void Start () {
@@ -18,35 +23,79 @@ public class SphereColliderSelection : MonoBehaviour {
 	}
 
 	void OnCollisionEnter(Collision collision){
+		float distanceToPosOfInterest = 99999f;
+
 		// we can also compare which collider has more points and choose that one
+		foreach (ContactPoint contact in collision.contacts) {
+			float currentDistance = (contact.point - positionOfMostInterest.position).magnitude;
+
+			if (currentDistance < distanceToPosOfInterest) {
+				distanceToPosOfInterest = currentDistance;
+				currentCollider = contact.otherCollider.gameObject;
+			}
+		}
+
+		/*
+		 * 
 		if (currentCollider == null) {
 			currentCollider = collision.collider.gameObject;
+			numberOfContactPoints = collision.contacts.Length;
+		} else {
+			if (collision.contacts.Length > numberOfContactPoints) {
+				currentCollider = collision.collider.gameObject;
+				numberOfContactPoints = collision.contacts.Length;
+			}
 		}
+
+		*/
+
 	}
 
 	void OnCollisionStay(Collision collision){
-		if (currentCollider != null) {
-			if (collision.collider.gameObject == null) {
-				currentCollider = null;
+		
+		float distanceToPosOfInterest = 99999f;
+
+		// we can also compare which collider has more points and choose that one
+		foreach (ContactPoint contact in collision.contacts) {
+			float currentDistance = (contact.point - positionOfMostInterest.position).magnitude;
+
+			if (currentDistance < distanceToPosOfInterest) {
+				distanceToPosOfInterest = currentDistance;
+				currentCollider = contact.otherCollider.gameObject;
 			}
 		}
+
+		/*
+		if (currentCollider != null) {
+			if (collision.gameObject == currentCollider.gameObject) {
+				numberOfContactPoints = collision.contacts.Length;
+			} else {
+				if (collision.contacts.Length > numberOfContactPoints) {
+					currentCollider = collision.collider.gameObject;
+					numberOfContactPoints = collision.contacts.Length;
+				} 
+			}
+		}	
+		*/
+
 	}
 
 	void OnCollisionExit(Collision collision){
-		if (currentCollider != null && collision.collider.gameObject == currentCollider.gameObject) {
+		if (currentCollider != null && collision.gameObject == currentCollider.gameObject) {
 			currentCollider = null;
+			numberOfContactPoints = 0;
 		}
 	}
 
 	public void ActivateCollider(){
 		collider.enabled = true;
-		renderer.enabled = true;
+		//renderer.enabled = true;
 		currentCollider = null;
 	}
 
 	public void DeActivateCollider(){
 		collider.enabled = false;
-		renderer.enabled = false;
+		//renderer.enabled = false;
 		currentCollider = null;
 	}
 }

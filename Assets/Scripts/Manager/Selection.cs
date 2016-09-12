@@ -78,6 +78,7 @@ public class Selection : MonoBehaviour
 
 	public SphereColliderSelection colliderSphere;
 	private GameObject collisionObject;
+	public GrabAnimation grabAnimation;
 
 
     void Awake()
@@ -135,6 +136,8 @@ public class Selection : MonoBehaviour
 				currentFocus.GetComponent<UiElement> ().UnFocus (this);
 			} else if (currentFocus.CompareTag ("TeleportPosition")) {
 				currentFocus.GetComponent<TeleportationPosition> ().UnFocus (this);
+			} else if (currentFocus.CompareTag ("Stage")) {
+				currentFocus.GetComponent<StageFreeMovement> ().UnFocus (this);
 			} else if (currentFocus.CompareTag ("Library")) {
 				library.Instance.UnFocus (this);
 			} else if (currentFocus.CompareTag ("HeightControl")) {
@@ -208,6 +211,12 @@ public class Selection : MonoBehaviour
 						grabbedIcon.transform.localScale = new Vector3 (Mathf.Min (newScale.x, grabbedIcon.transform.localScale.x * 1.4f), Mathf.Min (newScale.y, grabbedIcon.transform.localScale.y * 1.4f), Mathf.Min (newScale.z, grabbedIcon.transform.localScale.z * 1.4f)); 
 					}
 				}
+			}
+
+			if (device.GetTouchDown (SteamVR_Controller.ButtonMask.Trigger)) {
+				grabAnimation.Close ();
+			} else if (device.GetTouchUp (SteamVR_Controller.ButtonMask.Trigger)) {
+				grabAnimation.Open ();
 			}
 
 			RaycastHit hit;
@@ -333,6 +342,15 @@ public class Selection : MonoBehaviour
 									grabIcon.transform.localScale = initialScaleGrabIcon * hit.distance; 
 									grabIcon.SetActive (true);
 								}
+							}else if (collisionObject.CompareTag ("Stage")) {
+								DeFocusCurrent (collisionObject);
+								currentFocus = collisionObject;
+								currentFocus.GetComponent<StageFreeMovement> ().Focus (this);
+								device.TriggerHapticPulse (300);
+								if (currentSelectionMode == selectionMode.laserpointer) {
+									grabIcon.transform.localScale = initialScaleGrabIcon * hit.distance; 
+									grabIcon.SetActive (true);
+								}
 							} else if (!UiCanvasGroup.Instance.visible && collisionObject.CompareTag ("InfoPanel")) {
 								DeFocusCurrent (collisionObject);
 								currentFocus = collisionObject;
@@ -428,7 +446,7 @@ public class Selection : MonoBehaviour
 					temps = Time.time;
 				}
 
-				if (triggerPressed && (currentFocus.CompareTag ("ModelingObject") || currentFocus.CompareTag ("TeleportPosition") || currentFocus.CompareTag ("Library") || currentFocus.CompareTag ("DistanceControl") || currentFocus.CompareTag ("HeightControl"))
+				if (triggerPressed && (currentFocus.CompareTag ("ModelingObject") || currentFocus.CompareTag ("TeleportPosition") || currentFocus.CompareTag ("Stage") || currentFocus.CompareTag ("Library") || currentFocus.CompareTag ("DistanceControl") || currentFocus.CompareTag ("HeightControl"))
 				    && typeOfController == controllerType.mainController) {
 					if (!movingObject && !faceSelection && !groupItemSelection) {
 
@@ -527,6 +545,12 @@ public class Selection : MonoBehaviour
 							}
 							this.GetComponent<StageController> ().ShowPullVisual (true);
 							currentFocus.GetComponent<StageDistanceController> ().StartMoving (this);
+						} else if (currentFocus.CompareTag ("Stage")) {
+							if (circleAnimation != null) {
+								circleAnimation.StartAnimation ();
+							}
+							this.GetComponent<StageController> ().ShowPullVisual (true);
+							currentFocus.GetComponent<StageFreeMovement> ().StartMoving (this);
 						}
 					}
 
@@ -608,6 +632,9 @@ public class Selection : MonoBehaviour
 					} else if (currentFocus.CompareTag ("DistanceControl")) {
 						this.GetComponent<StageController> ().ShowPullVisual (false);
 						currentFocus.GetComponent<StageDistanceController> ().StopMoving (this);
+					} else if (currentFocus.CompareTag ("Stage")) {
+						this.GetComponent<StageController> ().ShowPullVisual (false);
+						currentFocus.GetComponent<StageFreeMovement> ().StopMoving (this);
 					}
 
 				}
@@ -696,6 +723,8 @@ public class Selection : MonoBehaviour
 			if (grabbedIcon != null) {
 				grabbedIcon.SetActive (false);
 			}
+
+			grabAnimation.Open ();
 		}
 
 
@@ -816,7 +845,10 @@ public class Selection : MonoBehaviour
 
 		if (!grabbedIcon.activeSelf) {
 			grabbedIcon.SetActive (true);
-			grabIcon.SetActive (false);
+
+			if (grabIcon != null) {
+				grabIcon.SetActive (false);
+			}
 
 			//grabbedIconOffset = grabIcon.transform.position - currentFocus.transform.position; 
 			//grabbedIcon.transform.position = currentFocus.transform.position + grabbedIconOffset;

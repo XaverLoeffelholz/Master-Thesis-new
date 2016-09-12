@@ -28,6 +28,7 @@ TagManager:
   - UIElementNotInUse
   - DistanceControl
   - ColliderSphere
+  - Stage
   layers:
   - Default
   - TransparentFX

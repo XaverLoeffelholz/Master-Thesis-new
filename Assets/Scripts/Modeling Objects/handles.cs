@@ -40,6 +40,8 @@ public class handles : MonoBehaviour {
 
     public bool objectFocused;
 
+	public Transform Handlegroup;
+
     // Use this for initialization
     void Start () {
         objectFocused = false;
@@ -90,6 +92,10 @@ public class handles : MonoBehaviour {
 	public void ShowNonUniformScalingHandles() {
 		DisableHandles();
 		ShowRotationHandles ();
+
+	//	Handlegroup.SetParent (transform.root);
+	//	Handlegroup.localScale = new Vector3 (1f, 1f, 1f) * ((Camera.main.transform.position - transform.position).magnitude * 0.25f);
+	//	Handlegroup.SetParent (transform);
 
 		NonUniformScalingHandles.SetActive (true);
 		NonUniformScaleFront.SetActive(true);
