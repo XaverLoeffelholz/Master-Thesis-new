@@ -27,7 +27,7 @@ public class Group : MonoBehaviour {
 
 	}
 
-	public void BreakGroup (){
+	public void BreakGroup () {
 		HideBoundingBox ();
 
 		for (int i = 0; i < objectList.Count; i++) {  
@@ -222,7 +222,6 @@ public class Group : MonoBehaviour {
 		DrawBoundingBox ();
 
 		// fade out objects not in group
-
     }
 
     public void DeSelectGroup(ModelingObject initiater)
@@ -241,9 +240,7 @@ public class Group : MonoBehaviour {
 
     public void Move(Vector3 distance, ModelingObject initiater)
     {
-		
-		
-        for (int i = 0; i < objectList.Count; i++)
+		for (int i = 0; i < objectList.Count; i++)
         {
             if (objectList[i] != initiater)
             {

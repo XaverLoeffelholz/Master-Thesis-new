@@ -80,6 +80,7 @@ public class Selection : MonoBehaviour
 	private GameObject collisionObject;
 	public GrabAnimation grabAnimation;
 
+	int count = 0;
 
     void Awake()
     {
@@ -104,6 +105,7 @@ public class Selection : MonoBehaviour
 			LaserPointer.transform.GetChild (0).gameObject.SetActive (false);
 		} else {
 			colliderSphere.DeActivateCollider ();
+			grabAnimation.Hide ();
 		}
     }
 
@@ -144,7 +146,7 @@ public class Selection : MonoBehaviour
 				currentFocus.GetComponent<StageHeightController> ().UnFocus (this);
 			} else if (currentFocus.CompareTag ("DistanceControl")) {
 				currentFocus.GetComponent<StageDistanceController> ().UnFocus (this);
-			}else if (currentFocus.CompareTag ("InfoPanel")) {
+			} else if (currentFocus.CompareTag ("InfoPanel")) {
 				currentFocus.GetComponent<Infopanel> ().UnFocus (this);
 			} else if (currentFocus.CompareTag ("SelectionButton")) {				
 				// compare selection button and object
@@ -275,6 +277,12 @@ public class Selection : MonoBehaviour
 
 
 						if (currentFocus != collisionObject || recheckFocus) {
+
+							//Debug.Log ("Object nr" + count);
+							//Debug.Log ("old Object" + currentFocus);
+							//Debug.Log ("new Object" + collisionObject);
+							count++;
+
 							recheckFocus = false;
 
 							if (collisionObject.CompareTag ("ModelingObject")) {		
@@ -395,7 +403,7 @@ public class Selection : MonoBehaviour
 						}
 
 					} else {
-						if (currentFocus != null) {
+						if (currentFocus != null && collisionObject == null) {
 							DeFocusCurrent (null);
 							temps = Time.time;
 
@@ -405,7 +413,7 @@ public class Selection : MonoBehaviour
 						}
 					}
 				} else {
-					if (currentFocus != null) {
+					if (currentFocus != null && collisionObject == null) {
 						DeFocusCurrent (null);
 						temps = Time.time;
 					}
@@ -496,9 +504,9 @@ public class Selection : MonoBehaviour
 
 							} else {
 								if (currentFocus.GetComponent<ModelingObject> ().group == null){
-									ObjectCreator.Instance.DuplicateObject (currentFocus.GetComponent<ModelingObject> (), null, 0.4f * pointOfCollision + 0.6f * currentFocus.transform.position);
+									ObjectCreator.Instance.DuplicateObject (currentFocus.GetComponent<ModelingObject> (), null, currentFocus.transform.position);
 								} else {
-									ObjectCreator.Instance.DuplicateGroup(currentFocus.GetComponent<ModelingObject> ().group, 0.4f * pointOfCollision + 0.6f * currentFocus.GetComponent<ModelingObject> ().group.GetBoundingBoxCenter());
+									ObjectCreator.Instance.DuplicateGroup(currentFocus.GetComponent<ModelingObject> ().group, currentFocus.GetComponent<ModelingObject> ().group.GetBoundingBoxCenter());
 								}
 
 								ModelingObject duplicatedObject = ObjectCreator.Instance.latestModelingObject;
@@ -523,7 +531,7 @@ public class Selection : MonoBehaviour
 								circleAnimation.StartAnimation ();
 							}
 							this.GetComponent<StageController> ().ShowPullVisual (true);
-							otherController.transform.GetComponent<StageController> ().ShowRotateObjectVisual (true);
+							//otherController.transform.GetComponent<StageController> ().ShowRotateObjectVisual (true);
 
 							//otherController.transform.GetComponent<StageController> ().ShowScaleRotationToggle (true);
 							currentFocus.GetComponent<TeleportationPosition> ().StartMoving (this);
@@ -570,6 +578,7 @@ public class Selection : MonoBehaviour
 
 			if (device.GetTouchUp (SteamVR_Controller.ButtonMask.Trigger)) {
 				triggerPressed = false;
+				grabbedIconOffset = Vector3.zero;
 
 				if (movingHandle){
 					currentFocus.GetComponent<handle> ().FinishUsingHandle ();
@@ -582,6 +591,7 @@ public class Selection : MonoBehaviour
 					otherController.triggerPressed = false;
 					otherController.movingHandle = false;
 
+					recheckFocus = true;
 
 					if (currentFocus.CompareTag ("ModelingObject")) {	
 						if (circleAnimation != null) {
@@ -616,9 +626,6 @@ public class Selection : MonoBehaviour
 								currentFocus.GetComponent<ModelingObject> ().Select (this, uiPositon.position);
 							}			
 						}
-
-						recheckFocus = true;
-
 					} else if (currentFocus.CompareTag ("TeleportPosition")) {
 						currentFocus.GetComponent<TeleportationPosition> ().StopMoving (this);
 						this.GetComponent<StageController> ().ShowPullVisual (false);
@@ -693,8 +700,11 @@ public class Selection : MonoBehaviour
 						if (Time.time - tempsUI > 0.1f) {
 							device.TriggerHapticPulse (1000);
 							tempsUI = Time.time;
-							currentFocus.GetComponent<UiElement> ().goal.ActivateMenu ();
 							currentFocus.GetComponent<UiElement> ().PerformAction (this);
+							if (currentFocus.GetComponent<UiElement> ().goal != null) {
+								currentFocus.GetComponent<UiElement> ().goal.ActivateMenu ();
+							}
+
 						}
 					} else if (currentFocus.CompareTag ("InfoPanel")) {
 						device.TriggerHapticPulse (1000);
@@ -702,8 +712,6 @@ public class Selection : MonoBehaviour
 					} else if (currentFocus.CompareTag ("TeleportTrigger")) {
 						Teleportation.Instance.JumpToPos (currentFocus.GetComponent<TeleportationTrigger> ().triggerPos);
 					}
-
-				} else {
 
 				}
 
@@ -724,7 +732,9 @@ public class Selection : MonoBehaviour
 				grabbedIcon.SetActive (false);
 			}
 
-			grabAnimation.Open ();
+			if (currentSelectionMode == selectionMode.directTouch) {
+				grabAnimation.Open ();
+			}
 		}
 
 
@@ -755,8 +765,7 @@ public class Selection : MonoBehaviour
 		//settingsButtonHelp.ToggleOnOff ();
 	}
 
-	public void ActivateController(bool value){
-		
+	public void ActivateController(bool value){		
 		LaserPointer.transform.GetChild(0).gameObject.SetActive(value);
 		controllerActive = value;
 	}

@@ -168,6 +168,8 @@ public class UIMenu : MonoBehaviour {
                 break;
 			case (buttonType.GroupBreak):
 				parentCanvas.currentModelingObject.group.BreakGroup ();
+				EndGroup ();
+				parentCanvas.currentModelingObject.ShowBoundingBox (false);
 				break;
             case (buttonType.GroupEnd):
                 EndGroup();

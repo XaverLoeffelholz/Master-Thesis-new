@@ -29,13 +29,14 @@ public class BiManualOperations : Singleton<BiManualOperations> {
 		if (controller1.currentFocus != null && controller2.currentFocus != null) {
 			if (controller1.currentFocus == controller2.currentFocus && controller1.currentFocus.CompareTag ("ModelingObject")) {
 				if (controller1.currentFocus.GetComponent<ModelingObject> ().group == null) {
-					controller1.duplicateMode = false;
-					controller2.duplicateMode = false;
-
-					controller1.scalingMode = true;
-					controller2.scalingMode = true;
-
 					if (controller1.triggerPressed && controller2.triggerPressed) {
+						
+						controller1.duplicateMode = false;
+						controller2.duplicateMode = false;
+
+						controller1.scalingMode = true;
+						controller2.scalingMode = true;
+
 						if (!scalingStarted) {
 							StartScalingRotating ();
 						} else {

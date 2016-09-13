@@ -184,6 +184,11 @@ public class StageController : MonoBehaviour {
 			LeanTween.moveLocalY (touchpad, touchpadInitialPos.y, 0.2f).setDelay(0.1f);
 
 			device.TriggerHapticPulse (1400);
+
+			if (currentControllerMode == controllerMode.rotatingObject && selection.otherController.currentFocus != null) {
+				ModelingObject currentModelingObject = selection.otherController.currentFocus.GetComponent<ModelingObject> ();
+				currentModelingObject.handles.ShowNonUniformScalingHandles();
+			}
         }
 
         if (touchDown)
@@ -273,16 +278,20 @@ public class StageController : MonoBehaviour {
 						selection.currentFocus.GetComponent<ObjectSelecter>().RePosition(Camera.main.transform.position);
 					}
 				}
+
+				if (selection.currentSelection != null) {
+					selection.currentSelection.GetComponent<ModelingObject> ().PositionHandles (true);
+				}
 			}
 			else if (currentControllerMode == controllerMode.rotatingObject)
 			{
 				if (selection.otherController.currentFocus != null && selection.otherController.currentFocus.CompareTag("ModelingObject")){
-					
-					// turn x value into rotation of stage
-					float amountX = Mathf.SmoothDamp(lastX, device.GetAxis().x, ref velocity, smoothTime) - lastX;
-					lastX = device.GetAxis().x;
 
-					amountOfMovementForHapticFeedback += amountX;
+					// turn x value into rotation of stage
+					float amountX = RasterManager.Instance.RasterAngle((device.GetAxis().x - lastX)*60f);
+					lastX = device.GetAxis ().x;
+
+					//amountOfMovementForHapticFeedback += amountX;
 
 					if (amountOfMovementForHapticFeedback > 2f) {
 						device.TriggerHapticPulse (1000);
@@ -291,8 +300,24 @@ public class StageController : MonoBehaviour {
 
 					ModelingObject currentModelingObject = selection.otherController.currentFocus.GetComponent<ModelingObject> ();
 
-					Vector3 bbCenterBeforeRotation = currentModelingObject.transform.InverseTransformPoint (currentModelingObject.GetBoundingBoxCenter ());
-					currentModelingObject.RotateAround (currentModelingObject.GetBoundingBoxTopCenter () - currentModelingObject.GetBoundingBoxTopCenter (), amountX * 150f, bbCenterBeforeRotation); 
+					if (currentModelingObject.group == null) {
+						currentModelingObject.handles.DisableHandles ();
+						currentModelingObject.HideBoundingBox (false);
+
+						//currentModelingObject
+						Vector3 bbCenterBeforeRotation = currentModelingObject.transform.InverseTransformPoint (currentModelingObject.GetBoundingBoxCenter ());
+
+						// define rotation axis
+						Vector3 p1Rotation = currentModelingObject.GetBoundingBoxCenter ();
+						Vector3 p2Rotation = p1Rotation + Vector3.up;
+
+						Vector3 rotationAxis = p2Rotation - p1Rotation;
+
+						currentModelingObject.RotateAround (rotationAxis, amountX, bbCenterBeforeRotation); 	
+					} else {
+						// if there is time, group rotation
+
+					}
 				}
 			}
 
