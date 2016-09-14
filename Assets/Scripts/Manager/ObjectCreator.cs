@@ -36,6 +36,18 @@ public class ObjectCreator : Singleton<ObjectCreator> {
 
     }
 
+	public void createObjectInLibrary(ModelingObject.ObjectType objectType){
+		if (objectType == ModelingObject.ObjectType.triangle) {
+			createNewObject(triangle, ModelingObject.ObjectType.triangle, null, null, library.GetComponent<library>().pos1.position, false, null, standardColor);       
+		} else if (objectType == ModelingObject.ObjectType.square) {
+			createNewObject(square, ModelingObject.ObjectType.square, null, null, library.GetComponent<library>().pos2.position, false, null, standardColor);
+		} if (objectType == ModelingObject.ObjectType.octagon) {
+			createNewObject(octagon, ModelingObject.ObjectType.octagon, null, null, library.GetComponent<library>().pos3.position, false, null, standardColor);
+		}	
+	}
+
+
+
     public void createSetofObjects()
     {
 		createNewObject(triangle, ModelingObject.ObjectType.triangle, null, null, library.GetComponent<library>().pos1.position, false, null, standardColor);       

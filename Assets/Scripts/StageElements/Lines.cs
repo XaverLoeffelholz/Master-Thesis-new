@@ -15,14 +15,20 @@ public class Lines : MonoBehaviour {
 	
 	}
 
-    public void DrawLinesWorldCoordinate(Vector3[] coordinates)
+	public void DrawLinesWorldCoordinate(Vector3[] coordinates, int startPoint)
     {
         if (coordinates.Length > 1)
         {
-            for (int i = 0; i < coordinates.Length; i++)
+			for (int i = 0; i < coordinates.Length; i++)
             {
-                GameObject line = Instantiate(linePrefab);
-                line.transform.SetParent(transform);
+				GameObject line;
+
+				if (i + startPoint < transform.childCount) {
+					line = transform.GetChild (i + startPoint).gameObject;
+				} else {
+					line = Instantiate (linePrefab);
+					line.transform.SetParent(transform);
+				}               
 
                 if (i < coordinates.Length - 1)
                 {
@@ -32,27 +38,6 @@ public class Lines : MonoBehaviour {
                 {
                     line.GetComponent<Line>().DrawLineWorldCoord(coordinates[i], coordinates[0]);
                 }
-            }
-        }
-    }
-
-    public void DrawLinesLocalCoordinates(Vector3[] coordinates)
-    {
-        if (coordinates.Length > 1)
-        {
-            for (int i=0; i < coordinates.Length; i++)
-            {
-                GameObject line = Instantiate(linePrefab);
-                line.transform.SetParent(transform);
-
-                if (i < coordinates.Length - 1)
-                {
-                    line.GetComponent<Line>().DrawLineWorldCoord(coordinates[i], coordinates[i + 1]);
-                } else
-                {
-                    line.GetComponent<Line>().DrawLineWorldCoord(coordinates[i], coordinates[0]);
-                }
-
             }
         }
     }

@@ -110,7 +110,7 @@ public class UiCanvasGroup : Singleton<UiCanvasGroup>{
     {
         LeanTween.alphaCanvas(canvGroup, 0f, 0.3f).setOnComplete(DeactivateMenus);
 		LeanTween.alphaCanvas (MenuBG, 0f, 0.3f);
-		ObjectsManager.Instance.HideAllHandles();
+		//ObjectsManager.Instance.HideAllHandles();
 
         visible = false;
     }

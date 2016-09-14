@@ -65,7 +65,7 @@ public class ObjectSelecter : MonoBehaviour {
 		if (active) {
 			if (connectedObject != null) {
 				connectedObject.HideBoundingBox (true);
-				connectedObject.boundingBox.DeActivateBoundingBoxCollider ();
+				//connectedObject.boundingBox.DeActivateBoundingBoxCollider ();
 			}
 
 			active = false;
@@ -120,7 +120,7 @@ public class ObjectSelecter : MonoBehaviour {
 
 	public void DeSelect(Selection controller)
 	{
-	    HideSelectionButton ();
+	    //HideSelectionButton ();
 	}
 
 	public void RePosition(Vector3 position)

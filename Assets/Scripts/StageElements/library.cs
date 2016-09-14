@@ -19,6 +19,8 @@ public class library : Singleton<library>{
 
 	public Infopanel libraryInfopanel;
 
+	private  ModelingObject.ObjectType typeOfTakenObject;
+
     // Use this for initialization
     void Start () {
 
@@ -41,14 +43,19 @@ public class library : Singleton<library>{
 		LeanTween.color (bottom, new Color (0.5f, 0.5f, 0.5f, 1f), 0.1f);
 	}
 
-    public void ClearLibrary()
+
+	public void ClearLibrary(ModelingObject.ObjectType type)
     {
+		/*
         foreach(Transform modelingObject in transform)
         {
             if(modelingObject.CompareTag("ModelingObject")){
                 Destroy(modelingObject.gameObject);
             }
         }
+		*/
+
+		typeOfTakenObject = type;
 
         Invoke("RefillLibrary", 0.3f);
 
@@ -57,7 +64,7 @@ public class library : Singleton<library>{
 
     public void RefillLibrary()
     {
-        ObjectCreator.Instance.createSetofObjects();
+		ObjectCreator.Instance.createObjectInLibrary (typeOfTakenObject);
     }
 
 	// library should be movable as objects

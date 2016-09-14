@@ -26,7 +26,7 @@ public class LineTest : MonoBehaviour {
     public void LinesCreation()
     {
         GameObject lines = Instantiate(linesPrefab);
-        lines.GetComponent<Lines>().DrawLinesWorldCoordinate(coordinates);
+        lines.GetComponent<Lines>().DrawLinesWorldCoordinate(coordinates, 0);
     }
 
 }

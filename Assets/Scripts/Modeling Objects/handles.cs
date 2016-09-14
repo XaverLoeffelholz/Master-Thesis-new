@@ -38,6 +38,8 @@ public class handles : MonoBehaviour {
 	public GameObject NonUniformScaleLeft;
 	public GameObject NonUniformScaleRight;
 
+	private ModelingObject connectedModelingObject;
+
     public bool objectFocused;
 
 	public Transform Handlegroup;
@@ -45,6 +47,7 @@ public class handles : MonoBehaviour {
     // Use this for initialization
     void Start () {
         objectFocused = false;
+		connectedModelingObject = transform.parent.GetComponent<ModelingObject> ();
     }
 	
 	// Update is called once per frame
@@ -66,9 +69,10 @@ public class handles : MonoBehaviour {
 
     public void ShowRotationHandles()
     {
-        DisableHandles();
-		transform.parent.GetComponent<ModelingObject>().PositionHandles(true);
-		transform.parent.GetComponent<ModelingObject>().RotateHandles();
+        //DisableHandles();
+		connectedModelingObject.PositionHandles(true);
+		connectedModelingObject.RotateHandles();
+		connectedModelingObject.ShowBoundingBox (false);
     }
 
 	public void HideRotationHandlesExcept(handle certainHandle){
@@ -91,14 +95,19 @@ public class handles : MonoBehaviour {
 
 	public void ShowNonUniformScalingHandles() {
 
-		if (transform.parent.GetComponent<ModelingObject> ().group == null) {
-			DisableHandles();
+		TopHandles.SetActive(false);
+		BottomHandles.SetActive(false);
+
+		faceBottomScale.SetActive(false);
+		faceTopScale.SetActive(false);
+
+		HeightTop.SetActive(false);
+		HeightBottom.SetActive(false);
+
+		if (connectedModelingObject.group == null) {
 			ShowRotationHandles ();
 
-			//	Handlegroup.SetParent (transform.root);
-			//	Handlegroup.localScale = new Vector3 (1f, 1f, 1f) * ((Camera.main.transform.position - transform.position).magnitude * 0.25f);
-			//	Handlegroup.SetParent (transform);
-
+			Handlegroup.gameObject.SetActive (true);
 			NonUniformScalingHandles.SetActive (true);
 			NonUniformScaleFront.SetActive(true);
 			NonUniformScaleBack.SetActive(true);
@@ -112,9 +121,9 @@ public class handles : MonoBehaviour {
     public void ShowFrustumHandles() {
 		
         DisableHandles();
-		transform.parent.GetComponent<ModelingObject> ().RepositionScalers ();
-		transform.parent.GetComponent<ModelingObject> ().PositionHandles (false);
-		transform.parent.GetComponent<ModelingObject>().RotateHandles();
+		connectedModelingObject.RepositionScalers ();
+		connectedModelingObject.PositionHandles (false);
+		connectedModelingObject.RotateHandles();
 
         //transform.parent.GetComponent<ModelingObject>().PositionHandles();
         //transform.parent.GetComponent<ModelingObject>().RotateHandles();
@@ -129,14 +138,14 @@ public class handles : MonoBehaviour {
         HeightBottom.SetActive(true);
 
         // change later
-        CenterBottomPosition.SetActive(true);
-        CenterTopPosition.SetActive(true);
+        //CenterBottomPosition.SetActive(true);
+        //CenterTopPosition.SetActive(true);
     }
 
     public void ShowFrustumCenterHandles()
     {
         DisableHandles();
-        transform.parent.GetComponent<ModelingObject>().PositionHandles(false);
+		connectedModelingObject.PositionHandles(false);
         CenterBottomPosition.SetActive(true);
         CenterTopPosition.SetActive(true);
     }

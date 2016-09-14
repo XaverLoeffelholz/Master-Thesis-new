@@ -9,6 +9,8 @@ public class BoundingBox : MonoBehaviour {
 
 	private bool active = false;
 
+	private GameObject linesGO;
+
 	// Use this for initialization
 	void Start () {
 
@@ -22,19 +24,24 @@ public class BoundingBox : MonoBehaviour {
 
 
 	public void DrawBoundingBox(){
-        ClearBoundingBox();
+        // ClearBoundingBox();
 
-        GameObject linesGO = Instantiate(linesPrefab);
-		linesGO.transform.SetParent(transform.GetChild(0));
+		if (linesGO == null) {
+			linesGO = Instantiate(linesPrefab);
+			linesGO.transform.SetParent(transform.GetChild(0));
+		}        
+
 		Lines lines = linesGO.GetComponent<Lines> ();
 
-		lines.DrawLinesWorldCoordinate(new Vector3[] {coordinates[0],coordinates[1],coordinates[2],coordinates[3]});
-		lines.DrawLinesWorldCoordinate(new Vector3[] {coordinates[4],coordinates[5],coordinates[6],coordinates[7]});
+		// this could be adapted to only updating the points and not redrawing 
 
-		lines.DrawLinesWorldCoordinate(new Vector3[] {coordinates[0],coordinates[4]});
-		lines.DrawLinesWorldCoordinate(new Vector3[] {coordinates[1],coordinates[5]});
-		lines.DrawLinesWorldCoordinate(new Vector3[] {coordinates[2],coordinates[6]});
-		lines.DrawLinesWorldCoordinate(new Vector3[] {coordinates[3],coordinates[7]});
+		lines.DrawLinesWorldCoordinate(new Vector3[] {coordinates[0],coordinates[1],coordinates[2],coordinates[3]}, 0);
+		lines.DrawLinesWorldCoordinate(new Vector3[] {coordinates[4],coordinates[5],coordinates[6],coordinates[7]}, 4);
+
+		lines.DrawLinesWorldCoordinate(new Vector3[] {coordinates[0],coordinates[4]},8);
+		lines.DrawLinesWorldCoordinate(new Vector3[] {coordinates[1],coordinates[5]},10);
+		lines.DrawLinesWorldCoordinate(new Vector3[] {coordinates[2],coordinates[6]},12);
+		lines.DrawLinesWorldCoordinate(new Vector3[] {coordinates[3],coordinates[7]},14);
     }
 
     public void ClearBoundingBox()

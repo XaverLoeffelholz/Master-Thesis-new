@@ -26,41 +26,53 @@ public class BiManualOperations : Singleton<BiManualOperations> {
 	
 	// Update is called once per frame
 	void FixedUpdate() {
-		if (controller1.currentFocus != null && controller2.currentFocus != null) {
-			if (controller1.currentFocus == controller2.currentFocus && controller1.currentFocus.CompareTag ("ModelingObject")) {
-				if (controller1.currentFocus.GetComponent<ModelingObject> ().group == null) {
-					if (controller1.triggerPressed && controller2.triggerPressed) {
+		if (controller1.currentFocus != null && controller2.currentFocus != null && controller1.currentFocus == controller2.currentFocus && controller1.currentFocus.CompareTag ("ModelingObject")) {
+
+			controller1.currentFocus.GetComponent<ModelingObject> ().handles.ShowNonUniformScalingHandles ();
+
+			if (controller1.currentFocus.GetComponent<ModelingObject> ().group == null) {
+				if (controller1.triggerPressed && controller2.triggerPressed) {
 						
-						controller1.duplicateMode = false;
-						controller2.duplicateMode = false;
+					controller1.duplicateMode = false;
+					controller2.duplicateMode = false;
 
-						controller1.scalingMode = true;
-						controller2.scalingMode = true;
+					controller1.scalingMode = true;
+					controller2.scalingMode = true;
 
-						if (!scalingStarted) {
-							StartScalingRotating ();
-						} else {
-							ScaleOrRotateObject ();
-						}
+					if (!scalingStarted) {
+						StartScalingRotating ();
 					} else {
-						scalingStarted = false;
-
-						if (controller1.scalingObject) {
-							controller1.currentFocus.GetComponent<ModelingObject> ().StartMoving (controller1, controller1.currentFocus.GetComponent<ModelingObject> ());
-						}
-
-						controller1.scalingObject = false;
-						controller2.scalingObject = false;
+						ScaleOrRotateObject ();
 					}
+				} else {
+					scalingStarted = false;
+
+					if (controller1.scalingObject) {
+						controller1.currentFocus.GetComponent<ModelingObject> ().StartMoving (controller1, controller1.currentFocus.GetComponent<ModelingObject> ());
+					}
+
+					controller1.scalingObject = false;
+					controller2.scalingObject = false;
 				}
-			} else {
-				controller1.scalingMode = false;
-				controller2.scalingMode = false;
 			}
 		} else {
 			controller1.scalingMode = false;
 			controller2.scalingMode = false;
 		}
+
+		/*
+		if (controller1.controllerActive && controller2.controllerActive){
+			if (Vector3.Angle (controller1.LaserPointer.transform.forward, controller2.LaserPointer.transform.forward) < 50f) {
+				if (controller1.currentFocus.CompareTag ("ModelingObject")) {
+					controller1.currentFocus.GetComponent<ModelingObject> ().handles.ShowNonUniformScalingHandles ();
+				}
+			} else {
+				if (controller1.currentFocus.CompareTag ("ModelingObject")) {
+				//	controller1.currentFocus.GetComponent<ModelingObject> ().handles.DisableHandles ();
+				}
+			}
+		}
+		*/
 	}
 
     public void StartScalingRotating()

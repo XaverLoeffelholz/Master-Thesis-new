@@ -109,14 +109,8 @@ public class UIMenu : MonoBehaviour {
 		switch (TypeOfMenu)
 		{
 		case (menuType.Rotation):
-			// sometimes wrong
-			parentCanvas.currentModelingObject.RotateHandles ();
 			parentCanvas.currentModelingObject.handles.ShowRotationHandles();
 			parentCanvas.currentModelingObject.ShowBoundingBox(true);
-			break;
-		case (menuType.NonUniformScaling):
-			// not existing anymore
-			parentCanvas.currentModelingObject.handles.DisableHandles();
 			break;
 		case (menuType.Color):
 			parentCanvas.currentModelingObject.handles.DisableHandles();
@@ -135,7 +129,6 @@ public class UIMenu : MonoBehaviour {
 			break;
 		case (menuType.MainMenu):
 			if (UiCanvasGroup.Instance.currentModelingObject.group == null) {
-				parentCanvas.currentModelingObject.RotateHandles ();
 				parentCanvas.currentModelingObject.handles.ShowNonUniformScalingHandles();
 			} else {
 				parentCanvas.currentModelingObject.handles.DisableHandles();
@@ -222,6 +215,8 @@ public class UIMenu : MonoBehaviour {
         // activate selection of item for group
         controller1.groupItemSelection = true;
         controller2.groupItemSelection = true;
+
+		newGroup.SelectGroup (parentCanvas.currentModelingObject);
     }
 
 

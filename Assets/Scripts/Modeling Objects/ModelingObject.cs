@@ -116,7 +116,7 @@ public class ModelingObject : MonoBehaviour
             transform.Rotate(0, 10f * Time.deltaTime, 0);
         }
 
-		if (moving && ((Time.time -timeOnMovementStart) > 0.25f)) {
+		if (moving && ((Time.time - timeOnMovementStart) > 0.15f)) {
 			onRaster = false;
 
 			if (inTrashArea) {
@@ -138,7 +138,8 @@ public class ModelingObject : MonoBehaviour
 			if (transform.parent.CompareTag ("Library")) {
 				outOfLibrary = true;
 				transform.SetParent (ObjectsManager.Instance.transform);
-				library.Instance.ClearLibrary ();                
+
+				library.Instance.ClearLibrary (typeOfObject);                
 
 				LeanTween.scale (this.gameObject, Vector3.one, 0.3f).setEase (LeanTweenType.easeInOutExpo);
 				LeanTween.rotateLocal (this.gameObject, Vector3.zero, 0.3f).setEase (LeanTweenType.easeInOutExpo);
@@ -217,6 +218,7 @@ public class ModelingObject : MonoBehaviour
 					Vector3 distance = transform.position - prevPosition;
 					//group.DrawBoundingBox ();
 					group.Move (distance, this);
+					group.DrawBoundingBox ();
 				}
 
 				lastPositionX = PositionOnMovementStart;
@@ -258,12 +260,12 @@ public class ModelingObject : MonoBehaviour
 						// prev position
 						GameObject lines = Instantiate(linesPrefab);
 						lines.transform.SetParent(DistanceVisualisation);
-						lines.GetComponent<Lines>().DrawLinesWorldCoordinate(new Vector3[] { boundingBox.coordinates[4], boundingBox.coordinates[5], boundingBox.coordinates[6], boundingBox.coordinates[7]});
+						lines.GetComponent<Lines>().DrawLinesWorldCoordinate(new Vector3[] { boundingBox.coordinates[4], boundingBox.coordinates[5], boundingBox.coordinates[6], boundingBox.coordinates[7]}, 0);
 
 						// new position
 						GameObject lines2 = Instantiate(linesPrefab);
 						lines2.transform.SetParent(DistanceVisualisation);
-						lines2.GetComponent<Lines>().DrawLinesWorldCoordinate(initialCoordinatesBoundingBox);
+						lines2.GetComponent<Lines>().DrawLinesWorldCoordinate(initialCoordinatesBoundingBox, 0);
 
 					}
 
@@ -748,7 +750,10 @@ public class ModelingObject : MonoBehaviour
         bottomFace.heightHandle = handles.HeightBottom.GetComponent<handle>();
         bottomFace.scaleHandle = handles.faceBottomScale.GetComponent<handle>();
 
-        handles.DisableHandles();
+		if (!moving && !selected) {
+			//handles.DisableHandles();
+		}
+        
 
     }
 
@@ -777,23 +782,27 @@ public class ModelingObject : MonoBehaviour
 
     public void UnFocus(Selection controller)
     {
-		if (focused && !selected)
+		if (focused && !selected && !moving)
         {
-            // ObjectSelector.SetActive(false);
-			UnHighlight();
-			HideBoundingBox (false);
+			if (group == null) {
+				// ObjectSelector.SetActive(false);
+				UnHighlight();
+				HideBoundingBox (false);
+				//objectSelector.HideSelectionButton ();
 
-			if (group != null && group.focused)
-            {
-				if (!controller.groupItemSelection) {
-					group.UnFocusGroup (this, controller);
-				}
-            }
+				focused = false;
 
-			//objectSelector.HideSelectionButton ();
-
-            //controller.DeAssignCurrentFocus(transform.gameObject);
-            focused = false;
+			} else {
+				if (group.focused)
+				{
+					if (!controller.groupItemSelection && !group.selected) {
+						UnHighlight();
+						HideBoundingBox (false);
+						focused = false;
+						group.UnFocusGroup (this, controller);
+					}
+				} 
+			}           
         }
     }
 
@@ -841,7 +850,7 @@ public class ModelingObject : MonoBehaviour
 			
 			if (group != null)
 			{
-				group.DeSelectGroup(this);
+				group.DeSelectGroup(this, controller);
 			}
 			
 			selected = false;
@@ -952,7 +961,7 @@ public class ModelingObject : MonoBehaviour
 			PositionOnMovementStart = 0.25f * boundingBox.coordinates[4] + 0.25f * boundingBox.coordinates[5] + 0.25f * boundingBox.coordinates[6] + 0.25f * boundingBox.coordinates[7];
 
 			bottomFace.center.possibleSnappingVertexBundle = null;
-			objectSelector.HideSelectionButton ();
+			//objectSelector.HideSelectionButton ();
 			//DisplayOutlineOfGroundFace ();
 
 			initialCoordinatesBoundingBox = new Vector3[4];
@@ -982,7 +991,8 @@ public class ModelingObject : MonoBehaviour
 				//group.HideBoundingBox ();
 			}
 
-			handles.ShowNonUniformScalingHandles ();
+			//handles.ShowNonUniformScalingHandles ();
+			handles.DisableHandles();
 			ShowBoundingBox (false);
 		}
     }
@@ -1019,7 +1029,7 @@ public class ModelingObject : MonoBehaviour
 
         GameObject lines = Instantiate(linesPrefab);
         lines.transform.SetParent(DistanceVisualisation);
-		lines.GetComponent<Lines>().DrawLinesWorldCoordinate(initialCoordinatesBoundingBox);
+		lines.GetComponent<Lines>().DrawLinesWorldCoordinate(initialCoordinatesBoundingBox, 0);
 
         /*
         GroundVisualOnStartMoving = Instantiate(GroundVisualPrefab);
@@ -1224,7 +1234,6 @@ public class ModelingObject : MonoBehaviour
 			Vector3 newPoint = scalingMatrix.MultiplyPoint3x4 (bottomFace.vertexBundles [i].coordinates - centerOfScaling);
 			bottomFace.vertexBundles [i].coordinates = newPoint + centerOfScaling;
 		}
-
 
 		for (int i = 0; i < faces.Length; i++) {
 			faces [i].UpdateCenter ();

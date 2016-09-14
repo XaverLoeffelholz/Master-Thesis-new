@@ -23,7 +23,7 @@ public class Selection : MonoBehaviour
 	public bool menuButtonPressed = false;
     [HideInInspector]
     public bool scalingObject = false;
-    private bool movingObject = false;
+    public bool movingObject = false;
     private bool movingHandle = false;
 
     public GameObject LaserPointer;
@@ -477,11 +477,13 @@ public class Selection : MonoBehaviour
 						CreatePointOfCollisionPrefab ();
 						movingObject = true;
 
+						duplicateHelp.Hide (false);
+
 						if (currentFocus.CompareTag ("ModelingObject")) {
 							//UiCanvasGroup.Instance.Hide ();
 
 							if (circleAnimation != null) {
-								circleAnimation.StartAnimation ();
+								//circleAnimation.StartAnimation ();
 							}
 
 							this.GetComponent<StageController> ().ShowPullVisual (true);
@@ -528,7 +530,7 @@ public class Selection : MonoBehaviour
 
 						} else if (currentFocus.CompareTag ("TeleportPosition")) {
 							if (circleAnimation != null) {
-								circleAnimation.StartAnimation ();
+								//circleAnimation.StartAnimation ();
 							}
 							this.GetComponent<StageController> ().ShowPullVisual (true);
 							//otherController.transform.GetComponent<StageController> ().ShowRotateObjectVisual (true);
@@ -537,25 +539,25 @@ public class Selection : MonoBehaviour
 							currentFocus.GetComponent<TeleportationPosition> ().StartMoving (this);
 						} else if (currentFocus.CompareTag ("Library")) {
 							if (circleAnimation != null) {
-								circleAnimation.StartAnimation ();
+								//circleAnimation.StartAnimation ();
 							}
 							this.GetComponent<StageController> ().ShowPullVisual (true);
 							library.Instance.StartMoving (this);
 						} else if (currentFocus.CompareTag ("HeightControl")) {
 							if (circleAnimation != null) {
-								circleAnimation.StartAnimation ();
+								//circleAnimation.StartAnimation ();
 							}
 							this.GetComponent<StageController> ().ShowPullVisual (true);
 							currentFocus.GetComponent<StageHeightController> ().StartMoving (this);
 						} else if (currentFocus.CompareTag ("DistanceControl")) {
 							if (circleAnimation != null) {
-								circleAnimation.StartAnimation ();
+								//circleAnimation.StartAnimation ();
 							}
 							this.GetComponent<StageController> ().ShowPullVisual (true);
 							currentFocus.GetComponent<StageDistanceController> ().StartMoving (this);
 						} else if (currentFocus.CompareTag ("Stage")) {
 							if (circleAnimation != null) {
-								circleAnimation.StartAnimation ();
+								//circleAnimation.StartAnimation ();
 							}
 							this.GetComponent<StageController> ().ShowPullVisual (true);
 							currentFocus.GetComponent<StageFreeMovement> ().StartMoving (this);
@@ -567,7 +569,9 @@ public class Selection : MonoBehaviour
 					if (pointOfCollisionGO == null) {
 						CreatePointOfCollisionPrefab ();
 					}
+
 					this.GetComponent<StageController> ().ShowPullVisual (true);
+
 					currentFocus.GetComponent<handle> ().ApplyChanges (pointOfCollisionGO, movingHandle);
 					//currentFocus.GetComponent<handle> ().connectedObject.GetComponent<ModelingObject> ().HideBoundingBox ();
 					movingHandle = true;
@@ -583,7 +587,16 @@ public class Selection : MonoBehaviour
 				if (movingHandle){
 					currentFocus.GetComponent<handle> ().FinishUsingHandle ();
 					movingHandle = false;
-					this.GetComponent<StageController> ().ShowPullVisual (false);
+
+					if (typeOfController == controllerType.mainController) {
+						this.GetComponent<StageController> ().ShowPullVisual (false);
+					} else {
+						if (otherController.movingObject) {
+							this.GetComponent<StageController> ().ShowRotateObjectVisual (true);
+						} else {
+							this.GetComponent<StageController> ().ShowPullVisual (false);
+						}
+					}
 				}
 
 
@@ -595,7 +608,7 @@ public class Selection : MonoBehaviour
 
 					if (currentFocus.CompareTag ("ModelingObject")) {	
 						if (circleAnimation != null) {
-							circleAnimation.StartAnimation ();
+							//circleAnimation.StartAnimation ();
 						}
 
 						device.TriggerHapticPulse (1800);
@@ -652,6 +665,8 @@ public class Selection : MonoBehaviour
 				}
 
 				movingObject = false;
+
+				duplicateHelp.Hide (true);
 
 				if (currentFocus != null) {
 

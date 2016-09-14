@@ -25,6 +25,8 @@ public class ObjectsManager : Singleton<ObjectsManager>
 
     public void HideAllHandles()
     {
+		Debug.Log ("Hide all handls");
+		
         foreach(Transform model in this.transform)
         {
             if (model.CompareTag("ModelingObject"))

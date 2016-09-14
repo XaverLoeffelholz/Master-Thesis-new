@@ -290,14 +290,16 @@ public class handle : MonoBehaviour {
 
 		input = Mathf.SmoothDamp(prevScalingAmount, input, ref velocity, smoothTime);
 
-		float RasteredDistanceCenters = RasterManager.Instance.Raster((centerOfScaling - touchPointForScaling).magnitude * Mathf.Abs(1f + (input - prevScalingAmount)));
+		float RasteredDistanceCenters = Mathf.Max(RasterManager.Instance.Raster((centerOfScaling - touchPointForScaling).magnitude * Mathf.Abs(1f + (input - prevScalingAmount))), RasterManager.Instance.rasterLevel * 2);
 		input = (RasteredDistanceCenters / ((centerOfScaling - touchPointForScaling).magnitude)) - 1f + prevScalingAmount;
 
 		float adjustedInput = Mathf.Abs (1f + ((input - prevScalingAmount) * 0.6f));
 
-		if (adjustedInput > RasterManager.Instance.rasterLevel * 2) {
-			connectedModelingObject.ScaleNonUniform (adjustedInput, direction.normalized, typeOfHandle, centerOfScaling);
-		}
+		//if (adjustedInput > RasterManager.Instance.rasterLevel * 2) {
+
+		connectedModelingObject.ScaleNonUniform (adjustedInput, direction.normalized, typeOfHandle, centerOfScaling);
+
+		//}
 
 		prevScalingAmount = input;
 	}

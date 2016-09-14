@@ -49,7 +49,7 @@ public class DuplicateHelp : MonoBehaviour {
 	}
 
 	public void Hide(bool value){
-		if (value) {
+		if (value && active) {
 			LeanTween.alphaCanvas (transform.GetComponent<CanvasGroup>(), 1f, 0.2f);
 		} else {
 			LeanTween.alphaCanvas (transform.GetComponent<CanvasGroup>(), 0f, 0.2f);

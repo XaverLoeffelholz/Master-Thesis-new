@@ -20,7 +20,7 @@ public class StageFreeMovement : MonoBehaviour {
 
 			Vector3 newPositionWorld = prevPosition + (newPositionController - lastPositionController);
 			lastPositionController = newPositionController;
-			transform.parent.position = new Vector3(Mathf.Max(Mathf.Min(newPositionWorld.x,5f), -5f), Mathf.Max(Mathf.Min(newPositionWorld.y,5f), -2.8f), Mathf.Max(Mathf.Min(newPositionWorld.z,5f), -5f));
+			transform.parent.position = new Vector3(Mathf.Max(Mathf.Min(newPositionWorld.x,5f), -5f), Mathf.Max(Mathf.Min(newPositionWorld.y,5f), -2.8f), Mathf.Max(Mathf.Min(newPositionWorld.z,12f), -5f));
 		}
 	}
 

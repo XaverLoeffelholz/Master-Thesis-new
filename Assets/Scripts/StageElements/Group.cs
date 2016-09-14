@@ -12,6 +12,7 @@ public class Group : MonoBehaviour {
 	public BoundingBox boundingBox;
 	public bool focused;
 	public handles handles;
+	public bool selected;
 
     // Use this for initialization
     void Start () {
@@ -150,33 +151,34 @@ public class Group : MonoBehaviour {
 
 	public void FocusGroup(ModelingObject initiater, Selection controller)
     {
-		focused = true;
+		if (!focused) {
+			focused = true;
 
-		DrawBoundingBox ();
+			DrawBoundingBox ();
 
-        for (int i = 0; i < objectList.Count; i++) {         
-            if (objectList[i] != initiater)
-            {
-				objectList [i].Highlight ();
-				objectList [i].ShowBoundingBox (false);
-            }
-        }
+			for (int i = 0; i < objectList.Count; i++) {         
+				if (objectList[i] != initiater)
+				{
+					objectList [i].Highlight ();
+					objectList [i].ShowBoundingBox (false);
+				}
+			}
+		}
     }
 
 	public void UnFocusGroup(ModelingObject initiater, Selection controller)
     {
-		focused = false;
+		if (!selected) {
+			focused = false;
 
-		boundingBox.ClearBoundingBox ();
+			boundingBox.ClearBoundingBox ();
 
-        for (int i = 0; i < objectList.Count; i++)
-        {
-            if (objectList[i] != initiater)
-            {
+			for (int i = 0; i < objectList.Count; i++)
+			{
 				objectList [i].UnHighlight ();
 				objectList [i].HideBoundingBox (false);
-            }
-        }
+			}
+		}
     }
 
     public void RotateGroup(ModelingObject initiater, Vector3 angleAxis, float angle)
@@ -205,37 +207,19 @@ public class Group : MonoBehaviour {
         {
           //  ObjectCreator.Instance.DuplicateObject(objectList[i], newGroup);
         }
-
-        // problem: Objects all just on top of other elements
     }
 
     public void SelectGroup(ModelingObject initiater)
     {
-        for (int i = 0; i < objectList.Count; i++)
-        {
-            if (objectList[i] != initiater)
-            {
-               // objectList[i].ShowOutline(true);
-            }
-        }
-
+		selected = true;
 		DrawBoundingBox ();
-
-		// fade out objects not in group
     }
 
-    public void DeSelectGroup(ModelingObject initiater)
-    {
-        for (int i = 0; i < objectList.Count; i++)
-        {
-            if (objectList[i] != initiater)
-            {
-               // objectList[i].ShowOutline(false);
-            }
-        }
-
+	public void DeSelectGroup(ModelingObject initiator, Selection controller)
+    {		
+		selected = false;
 		boundingBox.ClearBoundingBox ();
-
+		UnFocusGroup (initiator, controller);
     }
 
     public void Move(Vector3 distance, ModelingObject initiater)
