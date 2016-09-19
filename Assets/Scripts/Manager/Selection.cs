@@ -6,12 +6,14 @@ using System;
 public class Selection : MonoBehaviour
 {
 	public enum controllerType { mainController, SecondaryController};
-
-	public enum selectionMode { laserpointer, directTouch };		
-
-	public selectionMode currentSelectionMode;
     public controllerType typeOfController;
 
+    public enum selectionMode { laserpointer, directTouch };
+    public selectionMode currentSelectionMode;
+
+    public enum settingSelectionMode { alwaysOpen, SettingsButton };
+    public settingSelectionMode currentSettingSelectionMode;
+    
     public GameObject currentFocus;
     public GameObject currentSelection;
 	public Vector3 pointOfCollision;

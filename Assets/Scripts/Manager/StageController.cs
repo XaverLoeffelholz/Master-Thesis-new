@@ -3,10 +3,13 @@ using System.Collections;
 
 public class StageController : MonoBehaviour {
 
-	public enum controllerMode { scalingStage, rotatingStage, pullPushObject, toggleRotateScale, rotatingObject };
+    public enum RotationScalingTechnique { touchpads, gesture };
+    public RotationScalingTechnique currentRotationScalingTechnique;
 
+    public enum controllerMode { scalingStage, rotatingStage, pullPushObject, toggleRotateScale, rotatingObject };
 	public controllerMode standardControllerMode;
 	public controllerMode currentControllerMode;
+
 
 	public bool freeMovementStage;
 

@@ -3,14 +3,39 @@ using System.Collections;
 
 public class StageFreeMovement : MonoBehaviour {
 
-	private bool moving = false;
+    public enum stageMovement { free, handles }
+    public stageMovement currentStageMovement;
+
+    private bool moving = false;
 	private Selection controllerForMovement;
 	private Vector3 lastPositionController;
 
+    public GameObject stageHandles;
+    public MeshCollider stageCollider;
+    
+
 	// Use this for initialization
 	void Start () {
-	
+	    if (currentStageMovement == stageMovement.free)
+        {
+            SetFreeStageMovement();
+        } else
+        {
+            UseHandlesForStageMovement();
+        }
 	}
+
+    public void SetFreeStageMovement()
+    {
+        stageHandles.SetActive(false);
+        stageCollider.enabled = false;
+    }
+
+    public void UseHandlesForStageMovement()
+    {
+        stageHandles.SetActive(true);
+        stageCollider.enabled = true;
+    }
 	
 	// Update is called once per frame
 	void Update () {
