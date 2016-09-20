@@ -11,8 +11,8 @@ public class Line : MonoBehaviour {
 
     void Start()
     {
-		initialscaleStage = ObjectsManager.Instance.transform.parent.parent.transform.localScale.x; 
-		initialscaleLine = 0.006f * ObjectsManager.Instance.transform.parent.parent.transform.localScale.x;
+		initialscaleStage = 1f; 
+		initialscaleLine = line.transform.lossyScale.x;
     }
 
     // Update is called once per frame
@@ -24,7 +24,12 @@ public class Line : MonoBehaviour {
         Quaternion newRotation = Quaternion.LookRotation(p1.transform.position - p2.transform.position);
         line.transform.rotation = newRotation;
 	
-		float newScale = Mathf.Min((ObjectsManager.Instance.transform.parent.parent.transform.localScale.x / initialscaleStage), 2f);
+		float newScale = initialscaleLine / line.transform.lossyScale.x;
+
+		if (ObjectsManager.Instance.transform.parent.parent.transform.localScale.x > 0.9f) {
+			newScale = Mathf.Min (1.5f, newScale);
+		}
+		//float newScale = Mathf.Min((ObjectsManager.Instance.transform.parent.parent.transform.localScale.x / initialscaleStage), 2f);
 
 		line.transform.localScale = new Vector3(initialscaleLine * newScale, initialscaleLine * newScale, (p1.transform.localPosition - p2.transform.localPosition).magnitude + initialscaleLine * newScale);
     }

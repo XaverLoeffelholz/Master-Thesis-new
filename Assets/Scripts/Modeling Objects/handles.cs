@@ -106,7 +106,6 @@ public class handles : MonoBehaviour {
 
 		if (connectedModelingObject.group == null) {
 			ShowRotationHandles ();
-
 			Handlegroup.gameObject.SetActive (true);
 			NonUniformScalingHandles.SetActive (true);
 			NonUniformScaleFront.SetActive(true);

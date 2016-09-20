@@ -68,6 +68,8 @@ public class handle : MonoBehaviour {
 	private float smoothTime = 0.03f;
 	private float velocity = 0.0f;
 
+	private float initialScale;
+
     // Use this for initialization
     void Start () {
 		if (arrow != null) {
@@ -81,11 +83,14 @@ public class handle : MonoBehaviour {
 		if (arrow != null) {
 			initialSizeArrow = arrow.transform.localScale;
 		}
+
+		//initialScale = transform.lossyScale.x;
     }
 	
 	// Update is called once per frame
 	void FixedUpdate () {
-
+		Vector3 currentScale = transform.localScale;
+		transform.localScale = (1f / transform.lossyScale.x) * currentScale;
     }
 
 	private float CalculateInputFromPoint(Vector3 pointOfCollision, Vector3 pos1, Vector3 pos2)
@@ -425,11 +430,10 @@ public class handle : MonoBehaviour {
 					// Hover effect: Scale bigger & change color
 					LeanTween.scale (arrow, new Vector3 (initialSizeArrow.x * 1.2f, initialSizeArrow.y * 1.2f, initialSizeArrow.z * 1.2f), 0.06f);
 					LeanTween.color (arrow, hoverColor, 0.06f);
+				}
 
-					if (rotationArrow != null) {
-						LeanTween.color (rotationArrow, hoverColor, 0.06f);
-					}
-
+				if (rotationArrow != null) {
+					LeanTween.color (rotationArrow, hoverColor, 0.06f);
 				}
 
                 controller.AssignCurrentFocus(transform.gameObject);

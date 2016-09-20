@@ -217,11 +217,12 @@ public class Selection : MonoBehaviour
 				}
 			}
 
+			/*
 			if (device.GetTouchDown (SteamVR_Controller.ButtonMask.Trigger)) {
 				grabAnimation.Close ();
 			} else if (device.GetTouchUp (SteamVR_Controller.ButtonMask.Trigger)) {
 				grabAnimation.Open ();
-			}
+			}*/
 
 			RaycastHit hit;
 
@@ -232,6 +233,7 @@ public class Selection : MonoBehaviour
 					|| currentSelectionMode == selectionMode.directTouch) {					
 
 					if (currentSelectionMode == selectionMode.laserpointer) {
+						pointOfCollision = hit.point;
 						AdjustLengthPointer (hit.distance);
 					}
 
@@ -377,12 +379,7 @@ public class Selection : MonoBehaviour
 							}
 						}
 
-						if (currentSelectionMode == selectionMode.laserpointer) {
-							// Set position of collision
-							pointOfCollision = hit.point;
-						} else {
-							pointOfCollision = colliderSphere.transform.position;
-						}
+
 
 						if (grabIcon != null && grabIcon.activeSelf) {
 							grabIcon.transform.LookAt (Camera.main.transform);
@@ -475,7 +472,6 @@ public class Selection : MonoBehaviour
 							grabIcon.SetActive (false);
 						}
 
-
 						CreatePointOfCollisionPrefab ();
 						movingObject = true;
 
@@ -483,6 +479,8 @@ public class Selection : MonoBehaviour
 
 						if (currentFocus.CompareTag ("ModelingObject")) {
 							//UiCanvasGroup.Instance.Hide ();
+
+							Logger.Instance.AddLine (Logger.typeOfLog.triggerOnObject);
 
 							if (circleAnimation != null) {
 								//circleAnimation.StartAnimation ();
@@ -546,38 +544,48 @@ public class Selection : MonoBehaviour
 							this.GetComponent<StageController> ().ShowPullVisual (true);
 							library.Instance.StartMoving (this);
 						} else if (currentFocus.CompareTag ("HeightControl")) {
-							if (circleAnimation != null) {
-								//circleAnimation.StartAnimation ();
-							}
 							this.GetComponent<StageController> ().ShowPullVisual (true);
 							currentFocus.GetComponent<StageHeightController> ().StartMoving (this);
+							Logger.Instance.AddLine (Logger.typeOfLog.stage);
+
 						} else if (currentFocus.CompareTag ("DistanceControl")) {
-							if (circleAnimation != null) {
-								//circleAnimation.StartAnimation ();
-							}
 							this.GetComponent<StageController> ().ShowPullVisual (true);
 							currentFocus.GetComponent<StageDistanceController> ().StartMoving (this);
+							Logger.Instance.AddLine (Logger.typeOfLog.stage);
+
+
 						} else if (currentFocus.CompareTag ("Stage")) {
 							if (circleAnimation != null) {
 								//circleAnimation.StartAnimation ();
 							}
 							this.GetComponent<StageController> ().ShowPullVisual (true);
 							currentFocus.GetComponent<StageFreeMovement> ().StartMoving (this);
+							Logger.Instance.AddLine (Logger.typeOfLog.stage);
 						}
 					}
 
 
 				} else if (triggerPressed && (movingHandle || currentFocus.CompareTag ("Handle"))) {
-					if (pointOfCollisionGO == null) {
-						CreatePointOfCollisionPrefab ();
+					handle currentHandle = currentFocus.GetComponent<handle> ();
+
+					if (!movingHandle) {
+						CreatePointOfCollisionPrefab ();				
+
+						if (currentHandle.typeOfHandle == handle.handleType.Rotation) {
+							Logger.Instance.AddLine (Logger.typeOfLog.RotationHandle);
+						} else if (currentHandle.typeOfHandle == handle.handleType.Height || currentHandle.typeOfHandle == handle.handleType.ScaleFace) {
+							Logger.Instance.AddLine (Logger.typeOfLog.FrustumHandle);
+						} else if (currentHandle.typeOfHandle == handle.handleType.ScaleX || currentHandle.typeOfHandle == handle.handleType.ScaleY || currentHandle.typeOfHandle == handle.handleType.ScaleZ
+						            || currentHandle.typeOfHandle == handle.handleType.ScaleMinusX || currentHandle.typeOfHandle == handle.handleType.ScaleMinusY || currentHandle.typeOfHandle == handle.handleType.ScaleMinusZ) {
+							Logger.Instance.AddLine (Logger.typeOfLog.nonUniformScaleHandle);
+						} 
 					}
 
 					this.GetComponent<StageController> ().ShowPullVisual (true);
+					currentHandle.ApplyChanges (pointOfCollisionGO, movingHandle);
 
-					currentFocus.GetComponent<handle> ().ApplyChanges (pointOfCollisionGO, movingHandle);
-					//currentFocus.GetComponent<handle> ().connectedObject.GetComponent<ModelingObject> ().HideBoundingBox ();
+					//currentHandle.connectedObject.GetComponent<ModelingObject> ().HideBoundingBox ();
 					movingHandle = true;
-
 				}
 			}
 
@@ -754,6 +762,12 @@ public class Selection : MonoBehaviour
 			}
 		}
 
+		if (typeOfController == controllerType.mainController) {
+			if (device.GetTouchDown (SteamVR_Controller.ButtonMask.Trigger) && currentFocus == null) {
+				Logger.Instance.AddLine (Logger.typeOfLog.triggerNoTarget);
+			}
+		}
+
 
 		if (typeOfController == controllerType.SecondaryController) {
 			if (device.GetTouchDown (SteamVR_Controller.ButtonMask.Trigger) && !scalingMode) {
@@ -787,7 +801,9 @@ public class Selection : MonoBehaviour
 		controllerActive = value;
 	}
 
-    public void SelectLatestObject()
+	//public void Show
+
+	public void SelectLatestObject()
     {
 		// deselect current object
 
@@ -800,7 +816,7 @@ public class Selection : MonoBehaviour
 		collidingFace = UiCanvasGroup.Instance.currentModelingObject.GetFaceFromCollisionCoordinate (pointOfCollision);
 	}
 
-    public void CreatePointOfCollisionPrefab()
+	public void CreatePointOfCollisionPrefab()
     {
 		if (pointOfCollisionGO == null) {
 			pointOfCollisionGO = (GameObject)Instantiate (pointOfCollisionPrefab, pointOfCollision, new Quaternion (0f, 0f, 0, 0f));

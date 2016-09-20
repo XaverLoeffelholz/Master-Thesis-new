@@ -28,13 +28,13 @@ public class StageFreeMovement : MonoBehaviour {
     public void SetFreeStageMovement()
     {
         stageHandles.SetActive(false);
-        stageCollider.enabled = false;
+        stageCollider.enabled = true;
     }
 
     public void UseHandlesForStageMovement()
     {
         stageHandles.SetActive(true);
-        stageCollider.enabled = true;
+        stageCollider.enabled = false;
     }
 	
 	// Update is called once per frame

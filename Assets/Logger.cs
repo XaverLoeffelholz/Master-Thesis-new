@@ -4,15 +4,13 @@ using System.IO;
 using System.Text;
 using System.Collections;
 
-public class Logger : MonoBehaviour {
+public class Logger : Singleton<Logger> {
 
-    public enum typeOfLog { triggerNoTarget, touchpadLeft, touchpadRight, nonUniformScaleHandle, RotationHandle, FrustumHandle, stage, uiElement };
+	public enum typeOfLog { triggerOnObject, triggerNoTarget, touchpadScaleStage, touchpadRotateStage, touchpadMoveObject, touchpadRotateObject, nonUniformScaleHandle, RotationHandle, FrustumHandle, stage, uiElement };
     public enum generalType { touchpad, triggerInteraction };
 
-
-    private string filePath = @"\";
+    private string filePath = @"C:\Users\user\Documents\MasterThesis Xaver - new Repo\test.csv";
     public string UserID;
-    private string fileName;
     private FileStream fs;
 
     private float countTimeFrom;
@@ -20,11 +18,13 @@ public class Logger : MonoBehaviour {
     public StageFreeMovement stageMovement;
     public StageController stageController;
     public Selection selection;
+	public int sessionNumber;
 
     // Use this for initialization
     void Start () {
         countTimeFrom = Time.time;
 
+		CreateTextFile ();
     }
 	
 	// Update is called once per frame
@@ -39,23 +39,27 @@ public class Logger : MonoBehaviour {
 
     public void CreateTextFile()
     {
-        fs = File.Create(filePath);        
+		fs = File.Create(filePath);  
+		fs.Dispose ();
+	 	
+		String header = "UserID, General Type of Interaction, Time, Specific Type of Interaction, Settings Selection Mode, Stage movement, stage rotation and scaling, session number \n";
+		File.AppendAllText(filePath, header);
     }
 
     public void AddLine(Logger.typeOfLog logtype)
     {
         generalType currentType;
 
-        if (logtype == typeOfLog.touchpadLeft || logtype == typeOfLog.touchpadRight)
+		if (logtype == typeOfLog.touchpadMoveObject || logtype == typeOfLog.touchpadRotateObject || logtype == typeOfLog.touchpadRotateStage || logtype == typeOfLog.touchpadScaleStage)
         {
-
-            currentType = generalType.touchpad; 
+			currentType = generalType.touchpad; 
         } else
         {
             currentType = generalType.triggerInteraction;
         }
 
-       string text = UserID + "," + currentType + "," + (Time.time - countTimeFrom) + "," + logtype + "," + selection.currentSettingSelectionMode + "," + stageMovement.currentStageMovement + "," + stageController.currentRotationScalingTechnique + ;
-       File.AppendAllText(filePath, text);
+		string text = UserID + "," + currentType + "," + (Time.time - countTimeFrom) + "," + logtype + "," + selection.currentSettingSelectionMode + "," + stageMovement.currentStageMovement + "," + stageController.currentRotationScalingTechnique + "," + sessionNumber + "\n";
+        
+		File.AppendAllText(filePath, text);
     }
 }

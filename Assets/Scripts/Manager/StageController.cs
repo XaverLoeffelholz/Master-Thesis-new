@@ -10,7 +10,6 @@ public class StageController : MonoBehaviour {
 	public controllerMode standardControllerMode;
 	public controllerMode currentControllerMode;
 
-
 	public bool freeMovementStage;
 
     public Transform stage;
@@ -19,6 +18,7 @@ public class StageController : MonoBehaviour {
     private float lastY;
     private float lastX;
     private bool touchDown;
+	private bool grip;
     SteamVR_TrackedObject trackedObj;
 
     [HideInInspector]
@@ -49,6 +49,11 @@ public class StageController : MonoBehaviour {
 
 	private float smoothTime = 0.01F;
 	private float velocity = 0.0F;
+
+	private Quaternion lastRotation;
+	private float lastDistance;
+	private Vector3 lastVector;
+	public RotationScalingVisualization rotScalVis;
 
     void Awake()
     {
@@ -158,15 +163,16 @@ public class StageController : MonoBehaviour {
 
 
     // Update is called once per frame
-    void FixedUpdate()
-    {
-		
+    void Update()
+    {		
         var device = SteamVR_Controller.Input((int)trackedObj.index);
 
-        if (device.GetTouchDown(SteamVR_Controller.ButtonMask.Touchpad)){
+		if (device.GetTouchDown(SteamVR_Controller.ButtonMask.Touchpad)){
             touchDown = true;
+
             lastX = device.GetAxis().x;
             lastY = device.GetAxis().y;
+
 			amountOfMovementForHapticFeedback = 0f;
 
 			LeanTween.color (line, lineColorTouch, 0.1f);
@@ -176,12 +182,21 @@ public class StageController : MonoBehaviour {
 			if (currentControllerMode != controllerMode.pullPushObject) {
 				device.TriggerHapticPulse (2000);
 			}
+
+			if (currentControllerMode == controllerMode.pullPushObject) {
+				Logger.Instance.AddLine (Logger.typeOfLog.touchpadMoveObject);
+			} else if (currentControllerMode == controllerMode.scalingStage) {
+				Logger.Instance.AddLine (Logger.typeOfLog.touchpadScaleStage);
+			} else if (currentControllerMode == controllerMode.rotatingStage) {
+				Logger.Instance.AddLine (Logger.typeOfLog.touchpadRotateStage);
+			} else if (currentControllerMode == controllerMode.rotatingObject) {
+				Logger.Instance.AddLine (Logger.typeOfLog.touchpadRotateObject);
+			}
         }
 
-        if (device.GetTouchUp(SteamVR_Controller.ButtonMask.Touchpad))
+		if (device.GetTouchUp(SteamVR_Controller.ButtonMask.Touchpad))
         {
             touchDown = false;
-
 			LeanTween.color (line, lineColorNormal, 0.1f);
 			LeanTween.scale (touchpad, touchpadInitialScale, 0.2f).setDelay(0.1f); 
 			LeanTween.moveLocalY (touchpad, touchpadInitialPos.y, 0.2f).setDelay(0.1f);
@@ -194,13 +209,42 @@ public class StageController : MonoBehaviour {
 			}
         }
 
+		if (currentRotationScalingTechnique == RotationScalingTechnique.gesture && device.GetTouchDown (SteamVR_Controller.ButtonMask.Grip) && selection.typeOfController == Selection.controllerType.mainController) {			
+			// Check if other grip is also pressed, maybe one is enough
+
+			selection.ActivateController (false);
+
+			grip = true;
+
+			// get angle between contollers at point of press 
+			Vector3 VectorBetweenControllers = transform.position- selection.otherController.transform.position;
+			VectorBetweenControllers = new Vector3 (VectorBetweenControllers.x, 0f, VectorBetweenControllers.z);
+
+			Vector3 posController1 = new Vector3 (transform.position.x, 0f, transform.position.z);
+			Vector3 posController2 = new Vector3 (selection.otherController.transform.position.x, 0f, selection.otherController.transform.position.z);
+			lastRotation = Quaternion.LookRotation(posController1 - posController2);
+
+			lastDistance = Mathf.Abs((transform.position - selection.otherController.transform.position).magnitude);
+			lastVector = posController1 - posController2;
+			// create line between both controllers
+
+
+			rotScalVis.ShowVisualization ();
+		}
+
+		if (currentRotationScalingTechnique == RotationScalingTechnique.gesture && device.GetTouchUp (SteamVR_Controller.ButtonMask.Grip) && selection.typeOfController == Selection.controllerType.mainController) {			
+			grip = false;
+			selection.ActivateController (true);
+			rotScalVis.HideVisualization();
+		}
+
+
         if (touchDown)
         {
-			if (currentControllerMode == controllerMode.pullPushObject)
-            {
-                // turn y value into scale of stage          
-				float amountY = Mathf.SmoothDamp(lastY, device.GetAxis().y,ref velocity, smoothTime) - lastY;
-                lastY = device.GetAxis().y;
+			if (currentControllerMode == controllerMode.pullPushObject) {
+				// turn y value into scale of stage          
+				float amountY = Mathf.SmoothDamp (lastY, device.GetAxis ().y, ref velocity, smoothTime) - lastY;
+				lastY = device.GetAxis ().y;
 
 				amountOfMovementForHapticFeedback += amountY;
 
@@ -210,6 +254,7 @@ public class StageController : MonoBehaviour {
 				}
 
 				if (selection.pointOfCollisionGO != null) {
+					
 					// get vector between controller and current object
 					Vector3 ObjectToController = selection.pointOfCollisionGO.transform.position - transform.position;
 
@@ -226,21 +271,17 @@ public class StageController : MonoBehaviour {
 					selection.AdjustLengthPointer (distance);
 
 					// move line to point
-					float posLine = ((distance - (Mathf.Floor(distance/5f) * 5f)) / 5f);
+					float posLine = ((distance - (Mathf.Floor (distance / 5f) * 5f)) / 5f);
 					line.transform.localPosition = minPosLine + posLine * (maxPosLine - minPosLine);
 
-					float scale = Mathf.Sqrt((Mathf.Abs(posLine - 0.5f)) / 0.5f);
-					line.transform.localScale = new Vector3 (Mathf.Max(lineInitialScale.x * (1f-scale), lineInitialScale.x*0.7f), lineInitialScale.y, lineInitialScale.z);
+					float scale = Mathf.Sqrt ((Mathf.Abs (posLine - 0.5f)) / 0.5f);
+					line.transform.localScale = new Vector3 (Mathf.Max (lineInitialScale.x * (1f - scale), lineInitialScale.x * 0.7f), lineInitialScale.y, lineInitialScale.z);
 				} 
 
-
- 
-            }
-			else if (currentControllerMode == controllerMode.scalingStage)
-            {
-                // turn y value into scale of stage          
-				float amountY = Mathf.SmoothDamp(lastY, device.GetAxis().y, ref velocity, smoothTime) - lastY;
-                lastY = device.GetAxis().y;
+			} else if (currentRotationScalingTechnique == RotationScalingTechnique.touchpads && currentControllerMode == controllerMode.scalingStage) {
+				// turn y value into scale of stage          
+				float amountY = Mathf.SmoothDamp (lastY, device.GetAxis ().y, ref velocity, smoothTime) - lastY;
+				lastY = device.GetAxis ().y;
 
 				amountOfMovementForHapticFeedback += amountY;
 
@@ -252,18 +293,16 @@ public class StageController : MonoBehaviour {
 				ScaleStage (amountY);
 
 				if (selection.currentFocus != null) {
-					if (selection.currentFocus.CompareTag("ModelingObject")){
-						selection.currentFocus.GetComponent<ModelingObject>().objectSelector.RePosition(Camera.main.transform.position);
-					} else if (selection.currentFocus.CompareTag("SelectionButton")){
-						selection.currentFocus.GetComponent<ObjectSelecter>().RePosition(Camera.main.transform.position);
+					if (selection.currentFocus.CompareTag ("ModelingObject")) {
+						selection.currentFocus.GetComponent<ModelingObject> ().objectSelector.RePosition (Camera.main.transform.position);
+					} else if (selection.currentFocus.CompareTag ("SelectionButton")) {
+						selection.currentFocus.GetComponent<ObjectSelecter> ().RePosition (Camera.main.transform.position);
 					}
 				}
-            }
-			else if (currentControllerMode == controllerMode.rotatingStage)
-			{
+			} else if (currentRotationScalingTechnique == RotationScalingTechnique.touchpads && currentControllerMode == controllerMode.rotatingStage) {
 				// turn x value into rotation of stage
-				float amountX = Mathf.SmoothDamp(lastX, device.GetAxis().x, ref velocity, smoothTime) - lastX;
-				lastX = device.GetAxis().x;
+				float amountX = Mathf.SmoothDamp (lastX, device.GetAxis ().x, ref velocity, smoothTime) - lastX;
+				lastX = device.GetAxis ().x;
 
 				amountOfMovementForHapticFeedback += amountX;
 
@@ -272,26 +311,24 @@ public class StageController : MonoBehaviour {
 					amountOfMovementForHapticFeedback = 0f;
 				}
 
-				RotateStage (amountX);
+				RotateStage (amountX * 25f);
 
 				if (selection.currentFocus != null) {
-					if (selection.currentFocus.CompareTag("ModelingObject")){
-						selection.currentFocus.GetComponent<ModelingObject>().objectSelector.RePosition(Camera.main.transform.position);
-					} else if (selection.currentFocus.CompareTag("SelectionButton")){
-						selection.currentFocus.GetComponent<ObjectSelecter>().RePosition(Camera.main.transform.position);
+					if (selection.currentFocus.CompareTag ("ModelingObject")) {
+						selection.currentFocus.GetComponent<ModelingObject> ().objectSelector.RePosition (Camera.main.transform.position);
+					} else if (selection.currentFocus.CompareTag ("SelectionButton")) {
+						selection.currentFocus.GetComponent<ObjectSelecter> ().RePosition (Camera.main.transform.position);
 					}
 				}
 
 				if (selection.currentSelection != null) {
 					selection.currentSelection.GetComponent<ModelingObject> ().PositionHandles (true);
 				}
-			}
-			else if (currentControllerMode == controllerMode.rotatingObject)
-			{
-				if (selection.otherController.currentFocus != null && selection.otherController.currentFocus.CompareTag("ModelingObject")){
+			} else if (currentControllerMode == controllerMode.rotatingObject) {
+				if (selection.otherController.currentFocus != null && selection.otherController.currentFocus.CompareTag ("ModelingObject")) {
 
 					// turn x value into rotation of stage
-					float amountX = RasterManager.Instance.RasterAngle((device.GetAxis().x - lastX)*60f);
+					float amountX = RasterManager.Instance.RasterAngle ((device.GetAxis ().x - lastX) * 60f);
 					lastX = device.GetAxis ().x;
 
 					//amountOfMovementForHapticFeedback += amountX;
@@ -324,7 +361,36 @@ public class StageController : MonoBehaviour {
 				}
 			}
 
+
         }
+
+		if (grip) {
+			Vector3 posController1 = new Vector3 (transform.position.x, 0f, transform.position.z);
+			Vector3 posController2 = new Vector3 (selection.otherController.transform.position.x, 0f, selection.otherController.transform.position.z);
+			Vector3 newVector = posController1 - posController2;
+
+			Quaternion newRotation = Quaternion.LookRotation(newVector);
+			float difference = Quaternion.Angle (newRotation, lastRotation);
+
+
+			Vector3 crossProduct = Vector3.Cross (newVector, lastVector);
+			lastVector = newVector;
+
+			if (crossProduct.y > 0) {
+				difference = difference * (-1f);
+			}
+			
+			lastRotation = newRotation;
+
+		//	Debug.Log ("difference bei " + difference);
+
+			RotateStage (difference);
+
+			float scalingAmount = (Mathf.Abs((transform.position - selection.otherController.transform.position).magnitude)) - lastDistance;
+			lastDistance = (Mathf.Abs ((transform.position - selection.otherController.transform.position).magnitude));
+
+			ScaleStage (scalingAmount);
+		}
 
     }
 
@@ -357,7 +423,7 @@ public class StageController : MonoBehaviour {
 	}
 
 	public void RotateStage(float amountX){
-		stage.Rotate(0, amountX * 25f, 0);
+		stage.Rotate(0, amountX, 0);
 
 		// move line to point
 		float posLine = ((stage.localRotation.eulerAngles.y - (Mathf.Floor(stage.localRotation.eulerAngles.y/90f) * 90f)) / 90f);

@@ -8,6 +8,9 @@ public class RasterManager : Singleton<RasterManager> {
     public float rasterLevelAngles;
 	public float smoothTime = 0.3F;
 
+	public float maxValue;
+	public float minValue;
+
     // Use this for initialization
     void Start () {
 	
@@ -27,7 +30,9 @@ public class RasterManager : Singleton<RasterManager> {
     public float Raster(float input)
     {
         float count = Mathf.Round(input/rasterLevel);
-        float rasteredFloat = count * rasterLevel;
+		float rasteredFloat = Mathf.Max (Mathf.Min (count * rasterLevel, maxValue), minValue);
+
+
         return rasteredFloat;
     }
 
