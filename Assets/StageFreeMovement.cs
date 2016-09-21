@@ -25,6 +25,16 @@ public class StageFreeMovement : MonoBehaviour {
         }
 	}
 
+	public void UpdateStageMovement(){
+		if (currentStageMovement == stageMovement.free)
+		{
+			SetFreeStageMovement();
+		} else
+		{
+			UseHandlesForStageMovement();
+		}
+	}
+
     public void SetFreeStageMovement()
     {
         stageHandles.SetActive(false);

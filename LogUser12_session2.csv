@@ -1,0 +1,26 @@
+UserID, General Type of Interaction, Time, Specific Type of Interaction, Settings Selection Mode, Stage movement, stage rotation and scaling, session number 
+12,triggerInteraction,8.863997,stage,alwaysOpen,handles,touchpads,2
+12,triggerInteraction,9.705091,triggerOnObject,alwaysOpen,handles,touchpads,2
+12,triggerInteraction,11.01976,nonUniformScaleHandle,alwaysOpen,handles,touchpads,2
+12,triggerInteraction,12.92479,triggerOnObject,alwaysOpen,handles,touchpads,2
+12,touchpad,14.11759,touchpadRotateStage,alwaysOpen,handles,touchpads,2
+12,touchpad,14.52867,touchpadRotateStage,alwaysOpen,handles,touchpads,2
+12,triggerInteraction,15.47151,RotationHandle,alwaysOpen,handles,touchpads,2
+12,touchpad,16.84171,touchpadRotateStage,alwaysOpen,handles,touchpads,2
+12,touchpad,17.19306,touchpadRotateStage,alwaysOpen,handles,touchpads,2
+12,triggerInteraction,18.49755,RotationHandle,alwaysOpen,handles,touchpads,2
+12,touchpad,19.69737,touchpadRotateStage,alwaysOpen,handles,touchpads,2
+12,triggerInteraction,21.0247,triggerNoTarget,alwaysOpen,handles,touchpads,2
+12,triggerInteraction,21.76623,triggerOnObject,alwaysOpen,handles,touchpads,2
+12,triggerInteraction,26.3524,triggerOnObject,alwaysOpen,handles,touchpads,2
+12,touchpad,26.85863,touchpadMoveObject,alwaysOpen,handles,touchpads,2
+12,touchpad,29.32665,touchpadRotateStage,alwaysOpen,handles,touchpads,2
+12,triggerInteraction,32.62401,RotationHandle,alwaysOpen,handles,touchpads,2
+12,triggerInteraction,34.17389,RotationHandle,alwaysOpen,handles,touchpads,2
+12,triggerInteraction,35.22115,triggerOnObject,alwaysOpen,handles,touchpads,2
+12,triggerInteraction,36.61824,RotationHandle,alwaysOpen,handles,touchpads,2
+12,triggerInteraction,41.93967,RotationHandle,alwaysOpen,handles,touchpads,2
+12,triggerInteraction,44.75393,triggerOnObject,alwaysOpen,handles,touchpads,2
+12,triggerInteraction,46.16185,triggerOnObject,alwaysOpen,handles,touchpads,2
+12,touchpad,46.5533,touchpadMoveObject,alwaysOpen,handles,touchpads,2
+12,touchpad,46.87741,touchpadMoveObject,alwaysOpen,handles,touchpads,2

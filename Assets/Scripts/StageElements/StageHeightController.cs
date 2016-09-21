@@ -11,7 +11,7 @@ public class StageHeightController : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
-		stageScaler = transform.parent;
+		stageScaler = transform.parent.parent;
 	}
 	
 	// Update is called once per frame

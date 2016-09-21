@@ -24,16 +24,12 @@ public class BoundingBox : MonoBehaviour {
 
 
 	public void DrawBoundingBox(){
-        // ClearBoundingBox();
-
 		if (linesGO == null) {
 			linesGO = Instantiate(linesPrefab);
 			linesGO.transform.SetParent(transform.GetChild(0));
 		}        
 
 		Lines lines = linesGO.GetComponent<Lines> ();
-
-		// this could be adapted to only updating the points and not redrawing 
 
 		lines.DrawLinesWorldCoordinate(new Vector3[] {coordinates[0],coordinates[1],coordinates[2],coordinates[3]}, 0);
 		lines.DrawLinesWorldCoordinate(new Vector3[] {coordinates[4],coordinates[5],coordinates[6],coordinates[7]}, 4);
@@ -53,13 +49,4 @@ public class BoundingBox : MonoBehaviour {
         }
     }
 
-	public void ActivateBoundingBoxCollider(){
-		active = true;
-		//boundingBoxCollider.GetComponent<BoxCollider>().enabled = true;
-	}
-
-	public void DeActivateBoundingBoxCollider(){
-		active = false;
-		//boundingBoxCollider.GetComponent<BoxCollider>().enabled = false;
-	}
 }

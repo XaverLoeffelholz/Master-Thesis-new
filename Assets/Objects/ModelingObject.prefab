@@ -8643,6 +8643,7 @@ MonoBehaviour:
   hoverColor: {r: 0.2650303, g: 0.6374196, b: 0.9485294, a: 1}
   boundingBoxCorner1: {x: 0, y: 0, z: 0}
   boundingBoxCorner2: {x: 0, y: 0, z: 0}
+  rotationVisualPrefab: {fileID: 0}
 --- !u!114 &11401318
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -8670,6 +8671,7 @@ MonoBehaviour:
   hoverColor: {r: 0.05055148, g: 0.3407368, b: 0.625, a: 1}
   boundingBoxCorner1: {x: 0, y: 0, z: 0}
   boundingBoxCorner2: {x: 0, y: 0, z: 0}
+  rotationVisualPrefab: {fileID: 0}
 --- !u!114 &11401408
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -8697,6 +8699,7 @@ MonoBehaviour:
   hoverColor: {r: 0.9191176, g: 0.6532634, b: 0.08109864, a: 1}
   boundingBoxCorner1: {x: 0, y: 0, z: 0}
   boundingBoxCorner2: {x: 0, y: 0, z: 0}
+  rotationVisualPrefab: {fileID: 105352, guid: 2d58ffc0e1fcdf54db487d44a716095a, type: 2}
 --- !u!114 &11402198
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -8724,6 +8727,7 @@ MonoBehaviour:
   hoverColor: {r: 0, g: 0, b: 0, a: 0}
   boundingBoxCorner1: {x: 0, y: 0, z: 0}
   boundingBoxCorner2: {x: 0, y: 0, z: 0}
+  rotationVisualPrefab: {fileID: 0}
 --- !u!114 &11402550
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -8773,6 +8777,7 @@ MonoBehaviour:
   hoverColor: {r: 0.05055148, g: 0.3407368, b: 0.625, a: 1}
   boundingBoxCorner1: {x: 0, y: 0, z: 0}
   boundingBoxCorner2: {x: 0, y: 0, z: 0}
+  rotationVisualPrefab: {fileID: 0}
 --- !u!114 &11409358
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -8800,6 +8805,7 @@ MonoBehaviour:
   hoverColor: {r: 0.2650303, g: 0.6374196, b: 0.9485294, a: 1}
   boundingBoxCorner1: {x: 0, y: 0, z: 0}
   boundingBoxCorner2: {x: 0, y: 0, z: 0}
+  rotationVisualPrefab: {fileID: 0}
 --- !u!114 &11411210
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -8849,6 +8855,7 @@ MonoBehaviour:
   hoverColor: {r: 0.9191176, g: 0.6532634, b: 0.08109864, a: 1}
   boundingBoxCorner1: {x: 0, y: 0, z: 0}
   boundingBoxCorner2: {x: 0, y: 0, z: 0}
+  rotationVisualPrefab: {fileID: 105352, guid: 2d58ffc0e1fcdf54db487d44a716095a, type: 2}
 --- !u!114 &11415088
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -8876,6 +8883,7 @@ MonoBehaviour:
   hoverColor: {r: 0.2650303, g: 0.6374196, b: 0.9485294, a: 1}
   boundingBoxCorner1: {x: 0, y: 0, z: 0}
   boundingBoxCorner2: {x: 0, y: 0, z: 0}
+  rotationVisualPrefab: {fileID: 0}
 --- !u!114 &11424518
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -8903,6 +8911,7 @@ MonoBehaviour:
   hoverColor: {r: 0.9191176, g: 0.6532634, b: 0.08109864, a: 1}
   boundingBoxCorner1: {x: 0, y: 0, z: 0}
   boundingBoxCorner2: {x: 0, y: 0, z: 0}
+  rotationVisualPrefab: {fileID: 105352, guid: 2d58ffc0e1fcdf54db487d44a716095a, type: 2}
 --- !u!114 &11426212
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -8930,6 +8939,7 @@ MonoBehaviour:
   hoverColor: {r: 0.9191176, g: 0.6532634, b: 0.08109864, a: 1}
   boundingBoxCorner1: {x: 0, y: 0, z: 0}
   boundingBoxCorner2: {x: 0, y: 0, z: 0}
+  rotationVisualPrefab: {fileID: 105352, guid: 2d58ffc0e1fcdf54db487d44a716095a, type: 2}
 --- !u!114 &11430578
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -8968,6 +8978,7 @@ MonoBehaviour:
   hoverColor: {r: 0.9191176, g: 0.6532634, b: 0.08109864, a: 1}
   boundingBoxCorner1: {x: 0, y: 0, z: 0}
   boundingBoxCorner2: {x: 0, y: 0, z: 0}
+  rotationVisualPrefab: {fileID: 105352, guid: 2d58ffc0e1fcdf54db487d44a716095a, type: 2}
 --- !u!114 &11435648
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -9036,6 +9047,7 @@ MonoBehaviour:
   hoverColor: {r: 0, g: 0, b: 0, a: 0}
   boundingBoxCorner1: {x: 0, y: 0, z: 0}
   boundingBoxCorner2: {x: 0, y: 0, z: 0}
+  rotationVisualPrefab: {fileID: 0}
 --- !u!114 &11443162
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -9074,6 +9086,7 @@ MonoBehaviour:
   hoverColor: {r: 0.05055148, g: 0.3407368, b: 0.625, a: 1}
   boundingBoxCorner1: {x: 0, y: 0, z: 0}
   boundingBoxCorner2: {x: 0, y: 0, z: 0}
+  rotationVisualPrefab: {fileID: 0}
 --- !u!114 &11444898
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -9101,6 +9114,7 @@ MonoBehaviour:
   hoverColor: {r: 0.9191176, g: 0.6532634, b: 0.08109864, a: 1}
   boundingBoxCorner1: {x: 0, y: 0, z: 0}
   boundingBoxCorner2: {x: 0, y: 0, z: 0}
+  rotationVisualPrefab: {fileID: 105352, guid: 2d58ffc0e1fcdf54db487d44a716095a, type: 2}
 --- !u!114 &11445406
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -9139,6 +9153,7 @@ MonoBehaviour:
   hoverColor: {r: 0.2650303, g: 0.6374196, b: 0.9485294, a: 1}
   boundingBoxCorner1: {x: 0, y: 0, z: 0}
   boundingBoxCorner2: {x: 0, y: 0, z: 0}
+  rotationVisualPrefab: {fileID: 0}
 --- !u!114 &11453334
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -9203,6 +9218,7 @@ MonoBehaviour:
   hoverColor: {r: 0.2650303, g: 0.6374196, b: 0.9485294, a: 1}
   boundingBoxCorner1: {x: 0, y: 0, z: 0}
   boundingBoxCorner2: {x: 0, y: 0, z: 0}
+  rotationVisualPrefab: {fileID: 0}
 --- !u!114 &11458388
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -9230,6 +9246,7 @@ MonoBehaviour:
   hoverColor: {r: 0.05055148, g: 0.3407368, b: 0.625, a: 1}
   boundingBoxCorner1: {x: 0, y: 0, z: 0}
   boundingBoxCorner2: {x: 0, y: 0, z: 0}
+  rotationVisualPrefab: {fileID: 0}
 --- !u!114 &11458728
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -9257,6 +9274,7 @@ MonoBehaviour:
   hoverColor: {r: 0.9191176, g: 0.6532634, b: 0.08109864, a: 1}
   boundingBoxCorner1: {x: 0, y: 0, z: 0}
   boundingBoxCorner2: {x: 0, y: 0, z: 0}
+  rotationVisualPrefab: {fileID: 105352, guid: 2d58ffc0e1fcdf54db487d44a716095a, type: 2}
 --- !u!114 &11471622
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -9298,6 +9316,7 @@ MonoBehaviour:
   hoverColor: {r: 0.9191176, g: 0.6532634, b: 0.08109864, a: 1}
   boundingBoxCorner1: {x: 0, y: 0, z: 0}
   boundingBoxCorner2: {x: 0, y: 0, z: 0}
+  rotationVisualPrefab: {fileID: 105352, guid: 2d58ffc0e1fcdf54db487d44a716095a, type: 2}
 --- !u!114 &11472058
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -9325,6 +9344,7 @@ MonoBehaviour:
   hoverColor: {r: 0.9191176, g: 0.6532634, b: 0.08109864, a: 1}
   boundingBoxCorner1: {x: 0, y: 0, z: 0}
   boundingBoxCorner2: {x: 0, y: 0, z: 0}
+  rotationVisualPrefab: {fileID: 105352, guid: 2d58ffc0e1fcdf54db487d44a716095a, type: 2}
 --- !u!114 &11474684
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -9352,6 +9372,7 @@ MonoBehaviour:
   hoverColor: {r: 0.9191176, g: 0.6532634, b: 0.08109864, a: 1}
   boundingBoxCorner1: {x: 0, y: 0, z: 0}
   boundingBoxCorner2: {x: 0, y: 0, z: 0}
+  rotationVisualPrefab: {fileID: 105352, guid: 2d58ffc0e1fcdf54db487d44a716095a, type: 2}
 --- !u!114 &11477642
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -9379,6 +9400,7 @@ MonoBehaviour:
   hoverColor: {r: 0.9191176, g: 0.6532634, b: 0.08109864, a: 1}
   boundingBoxCorner1: {x: 0, y: 0, z: 0}
   boundingBoxCorner2: {x: 0, y: 0, z: 0}
+  rotationVisualPrefab: {fileID: 105352, guid: 2d58ffc0e1fcdf54db487d44a716095a, type: 2}
 --- !u!114 &11485432
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -9418,6 +9440,7 @@ MonoBehaviour:
   hoverColor: {r: 0.2650303, g: 0.6374196, b: 0.9485294, a: 1}
   boundingBoxCorner1: {x: 0, y: 0, z: 0}
   boundingBoxCorner2: {x: 0, y: 0, z: 0}
+  rotationVisualPrefab: {fileID: 0}
 --- !u!114 &11486358
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -9481,6 +9504,7 @@ MonoBehaviour:
   hoverColor: {r: 0.9191176, g: 0.6532634, b: 0.08109864, a: 1}
   boundingBoxCorner1: {x: 0, y: 0, z: 0}
   boundingBoxCorner2: {x: 0, y: 0, z: 0}
+  rotationVisualPrefab: {fileID: 105352, guid: 2d58ffc0e1fcdf54db487d44a716095a, type: 2}
 --- !u!114 &11496580
 MonoBehaviour:
   m_ObjectHideFlags: 1

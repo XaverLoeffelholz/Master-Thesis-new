@@ -70,6 +70,9 @@ public class handle : MonoBehaviour {
 
 	private float initialScale;
 
+	public GameObject rotationVisualPrefab;
+	private GameObject rotationVisual;
+
     // Use this for initialization
     void Start () {
 		if (arrow != null) {
@@ -315,6 +318,10 @@ public class handle : MonoBehaviour {
 			handles.ShowNonUniformScalingHandles();
 		}
 
+		if (rotationVisual != null) {
+			Destroy (rotationVisual);
+		}
+
 		connectedModelingObject.ShowBoundingBox (false);
 	}
 
@@ -402,10 +409,18 @@ public class handle : MonoBehaviour {
 
 		connectedModelingObject.RotateAround(rotationAxis, RasterManager.Instance.RasterAngle(Mathf.Min(newRotationAmount-prevRotationAmount, 20f)), bbCenterBeforeRotation);
 
-		prevRotationAmount = RasterManager.Instance.RasterAngle(newRotationAmount);
+		if (rotationVisual == null) {
+			rotationVisual = Instantiate (rotationVisualPrefab);
+			rotationVisual.transform.localScale = Vector3.one * (transform.position - connectedModelingObject.GetBoundingBoxCenter ()).magnitude * 2f;	
+		}
 
-		//connectedModelingObject.CalculateBoundingBox ();
-		//connectedModelingObject.boundingBox.DrawBoundingBox ();
+		rotationVisual.transform.position = connectedModelingObject.GetBoundingBoxCenter ();
+		rotationVisual.transform.rotation = Quaternion.LookRotation (p2Rotation - p1Rotation);
+
+		// draw new line (delete old one)
+		rotationVisual.transform.GetChild(2).transform.Rotate(new Vector3(0f, RasterManager.Instance.RasterAngle(Mathf.Min(newRotationAmount-prevRotationAmount, 20f)),0f));
+
+		prevRotationAmount = RasterManager.Instance.RasterAngle(newRotationAmount);
     }
 
     private void SetRotateStepTrue()

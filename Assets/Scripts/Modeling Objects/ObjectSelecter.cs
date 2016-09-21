@@ -52,11 +52,11 @@ public class ObjectSelecter : MonoBehaviour {
 		buttonGameObject.SetActive (true);
 		active = true;
 		Collider.SetActive (true);
+
 		LeanTween.alpha (buttonGameObject, 1f, 0.15f);
 
 		if (connectedObject != null) {
 			connectedObject.ShowBoundingBox (true);
-			connectedObject.boundingBox.ActivateBoundingBoxCollider ();
 		} 
 
     }
@@ -81,17 +81,6 @@ public class ObjectSelecter : MonoBehaviour {
 		}
 	}
 
-	public void FocusConnectedObject(Selection controller){
-		if (connectedObject != null) {
-			connectedObject.Focus (controller);
-		} 
-	}
-
-	public void UnFocusConnectedObject(Selection controller){
-		if (connectedObject != null) {
-			connectedObject.UnFocus (controller);
-		} 
-	}
 
 	public void UnFocus(Selection controller){
 		if (active) {
@@ -120,7 +109,9 @@ public class ObjectSelecter : MonoBehaviour {
 
 	public void DeSelect(Selection controller)
 	{
-	    //HideSelectionButton ();
+		if (controller.currentSettingSelectionMode == Selection.settingSelectionMode.SettingsButton) {
+			HideSelectionButton ();
+		}
 	}
 
 	public void RePosition(Vector3 position)
@@ -144,9 +135,9 @@ public class ObjectSelecter : MonoBehaviour {
 		LeanTween.color(buttonGameObject, UiCanvasGroup.Instance.clickColor, 0.01f).setEase(LeanTweenType.easeInOutCubic);
 		LeanTween.color(buttonGameObject, UiCanvasGroup.Instance.normalColor, 0.01f).setEase(LeanTweenType.easeInOutCubic).setDelay(0.02f);
 
-		LeanTween.alpha (buttonGameObject, 0f, 0.25f);
-		LeanTween.scale (gameObject, gameObject.transform.localScale*2f, 0.4f).setEase (LeanTweenType.easeInOutCubic);
-		LeanTween.move (gameObject, position, 0.4f).setEase (LeanTweenType.easeInOutCubic);
+		LeanTween.alpha (buttonGameObject, 0f, 0.35f);
+		LeanTween.scale (gameObject, gameObject.transform.localScale*1.4f, 0.4f).setEase (LeanTweenType.easeInOutCubic);
+		LeanTween.move (gameObject, position, 0.6f).setEase (LeanTweenType.easeInOutCubic);
 	}
 
 	public void DeactivateCollider(){

@@ -59,6 +59,7 @@ public class ModelingObject : MonoBehaviour
 
     private Vector3 lastPositionX;
     private Vector3 lastPositionY;
+	private Vector3 lastPositionZ;
     private bool firstTimeMoving = true;
 
     private bool snapped = false;
@@ -116,7 +117,7 @@ public class ModelingObject : MonoBehaviour
             transform.Rotate(0, 10f * Time.deltaTime, 0);
         }
 
-		if (moving && ((Time.time - timeOnMovementStart) > 0.15f)) {
+		if (moving && (controllerForMovement.currentSettingSelectionMode == Selection.settingSelectionMode.SettingsButton || ((Time.time - timeOnMovementStart) > 0.15f))) {
 			onRaster = false;
 
 			if (inTrashArea) {
@@ -218,19 +219,30 @@ public class ModelingObject : MonoBehaviour
 					Vector3 distance = transform.position - prevPosition;
 					//group.DrawBoundingBox ();
 					group.Move (distance, this);
-					group.DrawBoundingBox ();
+					//group.DrawBoundingBox ();
 				}
 
 				lastPositionX = PositionOnMovementStart;
 				lastPositionY = PositionOnMovementStart;
+				lastPositionZ = PositionOnMovementStart;
 
 				if ((transform.position - prevPosition).magnitude != null){
-					CalculateBoundingBox ();
+					//CalculateBoundingBox ();
+				}
+			}
+
+			if (new Vector2 (transform.localPosition.x, transform.localPosition.z).magnitude > 3.6f) {
+				if (!inTrashArea) {
+					EnterTrashArea ();
+				}
+			} else {
+				if (inTrashArea) {
+					ExitTrashArea ();
 				}
 			}
 			 
 
-			if (!outOfLibrary) {
+			if (!outOfLibrary && !inTrashArea) {
 				
 				// maybe check local positon
 				int countX = RasterManager.Instance.getNumberOfGridUnits(transform.InverseTransformPoint(GetBoundingBoxBottomCenter()).x, transform.InverseTransformPoint(PositionOnMovementStart).x);
@@ -285,7 +297,36 @@ public class ModelingObject : MonoBehaviour
 					}
 
 					lastPositionX = DistanceVisualX.transform.position;
-					lastPositionY = DistanceVisualX.transform.position;
+					lastPositionZ = DistanceVisualX.transform.position;
+				}
+
+				// show amount of movement on z
+				if (bottomFace.center.coordinates.z != transform.InverseTransformPoint(PositionOnMovementStart).z)
+				{
+					// use raster manager
+					int countZ = RasterManager.Instance.getNumberOfGridUnits(transform.InverseTransformPoint(GetBoundingBoxBottomCenter()).z, transform.InverseTransformPoint(PositionOnMovementStart).z);
+
+					for (int i = 0; i <= Mathf.Abs(countZ); i++)
+					{
+						GameObject DistanceVisualZ = Instantiate(DistanceVisualPrefab);
+						DistanceVisualZ.transform.SetParent(DistanceVisualisation);
+						DistanceVisualZ.transform.localEulerAngles = new Vector3(0f, 0f, 0f);
+						DistanceVisualZ.transform.localScale = new Vector3(1f, 1f, 1f);
+						DistanceVisualZ.transform.GetChild(0).localEulerAngles = new Vector3(0f, 90f, 0f);
+						DistanceVisualZ.transform.position = lastPositionX;
+
+						if (bottomFace.center.coordinates.z > transform.InverseTransformPoint(PositionOnMovementStart).z)
+						{
+							DistanceVisualZ.transform.localPosition += new Vector3(0f, 0f, i * RasterManager.Instance.rasterLevel);
+						}
+						else
+						{
+							DistanceVisualZ.transform.localPosition += new Vector3(0f, 0f, i * RasterManager.Instance.rasterLevel * (-1.0f));
+						}
+
+						lastPositionZ = DistanceVisualZ.transform.position;
+					}
+
 				}
 
 				// show amount of movement on y
@@ -300,7 +341,7 @@ public class ModelingObject : MonoBehaviour
 						DistanceVisualY.transform.SetParent(DistanceVisualisation);
 						DistanceVisualY.transform.localEulerAngles = new Vector3(0f, 0f, 0f);
 						DistanceVisualY.transform.localScale = new Vector3(1f, 1f, 1f);
-						DistanceVisualY.transform.position = lastPositionX;
+						DistanceVisualY.transform.position = lastPositionZ;
 
 						if (bottomFace.center.coordinates.y > transform.InverseTransformPoint(PositionOnMovementStart).y)
 						{
@@ -317,45 +358,9 @@ public class ModelingObject : MonoBehaviour
 				}
 
 
-				// show amount of movement on z
-				if (bottomFace.center.coordinates.z != transform.InverseTransformPoint(PositionOnMovementStart).z)
-				{
-					// use raster manager
-					int countZ = RasterManager.Instance.getNumberOfGridUnits(transform.InverseTransformPoint(GetBoundingBoxBottomCenter()).z, transform.InverseTransformPoint(PositionOnMovementStart).z);
-
-					for (int i = 0; i <= Mathf.Abs(countZ); i++)
-					{
-						GameObject DistanceVisualZ = Instantiate(DistanceVisualPrefab);
-						DistanceVisualZ.transform.SetParent(DistanceVisualisation);
-						DistanceVisualZ.transform.localEulerAngles = new Vector3(0f, 0f, 0f);
-						DistanceVisualZ.transform.localScale = new Vector3(1f, 1f, 1f);
-						DistanceVisualZ.transform.GetChild(0).localEulerAngles = new Vector3(0f, 90f, 0f);
-						DistanceVisualZ.transform.position = lastPositionY;
-
-						if (bottomFace.center.coordinates.z > transform.InverseTransformPoint(PositionOnMovementStart).z)
-						{
-							DistanceVisualZ.transform.localPosition += new Vector3(0f, 0f, i * RasterManager.Instance.rasterLevel);
-						}
-						else
-						{
-							DistanceVisualZ.transform.localPosition += new Vector3(0f, 0f, i * RasterManager.Instance.rasterLevel * (-1.0f));
-						}
-					}
-
-				}
-
-
 			}
 
-			if (new Vector2 (transform.localPosition.x, transform.localPosition.z).magnitude > 3.6f) {
-				if (!inTrashArea) {
-					EnterTrashArea ();
-				}
-			} else {
-				if (inTrashArea) {
-					ExitTrashArea ();
-				}
-			}
+
 		}		
 
     }
@@ -666,13 +671,6 @@ public class ModelingObject : MonoBehaviour
 		handles.NonUniformScaleLeft.transform.position = GetBoundingBoxLeftCenter ();
 		handles.NonUniformScaleRight.transform.position = GetBoundingBoxRightCenter ();
 
-
-		//handles.NonUniformScaleTop.transform.localScale = sizeHandles;
-		//handles.NonUniformScaleBottom.transform.localScale = sizeHandles;
-		//handles.NonUniformScaleFront.transform.localScale = sizeHandles;
-		//handles.NonUniformScaleBack.transform.localScale = sizeHandles;
-		//handles.NonUniformScaleLeft.transform.localScale = sizeHandles;
-		//handles.NonUniformScaleRight.transform.localScale = sizeHandles;
     }
 
     public void RotateHandles()
@@ -769,8 +767,8 @@ public class ModelingObject : MonoBehaviour
 				group.FocusGroup(this, controller);
             }
 
-			if (!transform.parent.CompareTag("Library") && !controller.groupItemSelection && !moving){
-			//	objectSelector.ShowSelectionButton (controller);
+			if (controller.currentSettingSelectionMode == Selection.settingSelectionMode.SettingsButton && !transform.parent.CompareTag("Library") && !controller.groupItemSelection && !moving){
+			 	objectSelector.ShowSelectionButton (controller);
 			}
 
             controller.AssignCurrentFocus(transform.gameObject);
@@ -780,7 +778,7 @@ public class ModelingObject : MonoBehaviour
         }
     }
 
-    public void UnFocus(Selection controller)
+	public void UnFocus(Selection controller)
     {
 		if (focused && !selected && !moving)
         {
@@ -788,7 +786,10 @@ public class ModelingObject : MonoBehaviour
 				// ObjectSelector.SetActive(false);
 				UnHighlight();
 				HideBoundingBox (false);
-				//objectSelector.HideSelectionButton ();
+
+				if (controller.currentSettingSelectionMode == Selection.settingSelectionMode.SettingsButton) {
+					objectSelector.HideSelectionButton ();
+				}
 
 				focused = false;
 
@@ -829,8 +830,10 @@ public class ModelingObject : MonoBehaviour
 			selected = true;
 
 			// move selection button
-			objectSelector.active = false;
-		//	objectSelector.MoveAndFace (uiPosition);
+			if (controller.currentSettingSelectionMode == Selection.settingSelectionMode.SettingsButton) {
+				objectSelector.active = false;
+				objectSelector.MoveAndFace (uiPosition);
+			}
 
 			controller.AssignCurrentSelection(transform.gameObject);
 			handles.gameObject.transform.GetChild(0).gameObject.SetActive(true);
@@ -840,14 +843,12 @@ public class ModelingObject : MonoBehaviour
 
 			//ShowOutline(true);
 			ShowBoundingBox (true);
-			boundingBox.DeActivateBoundingBoxCollider ();
 		}      
     }
 		
     public void DeSelect(Selection controller)
-    {		
-		if (selected) {
-			
+    {	
+		if (selected) {			
 			if (group != null)
 			{
 				group.DeSelectGroup(this, controller);
@@ -857,15 +858,14 @@ public class ModelingObject : MonoBehaviour
 			//ShowOutline(false);
 
 			objectSelector.DeSelect (controller);
+
 			controller.DeAssignCurrentSelection(transform.gameObject);
 			handles.DisableHandles();
-            boundingBox.ClearBoundingBox();
 
             UnFocus (controller);
 		}
     }
-
-  
+	  
 
     public void CalculateBoundingBox()
     {
@@ -961,7 +961,7 @@ public class ModelingObject : MonoBehaviour
 			PositionOnMovementStart = 0.25f * boundingBox.coordinates[4] + 0.25f * boundingBox.coordinates[5] + 0.25f * boundingBox.coordinates[6] + 0.25f * boundingBox.coordinates[7];
 
 			bottomFace.center.possibleSnappingVertexBundle = null;
-			//objectSelector.HideSelectionButton ();
+			objectSelector.HideSelectionButton ();
 			//DisplayOutlineOfGroundFace ();
 
 			initialCoordinatesBoundingBox = new Vector3[4];
@@ -1022,6 +1022,12 @@ public class ModelingObject : MonoBehaviour
 		colliderSphere.transform.GetComponent<SphereCollider> ().enabled = false;
 		meshCollider.enabled = true;
 		outOfLibrary = false;
+
+		if (controller.currentSettingSelectionMode == Selection.settingSelectionMode.SettingsButton) {
+			if (!selected) {
+				handles.DisableHandles();
+			}
+		}
 	}
 
 	public void DisplayOutlineOfGroundFace(){
@@ -1185,9 +1191,7 @@ public class ModelingObject : MonoBehaviour
 
     public void StartScaling(bool initiater)
     {
-		boundingBox.DeActivateBoundingBoxCollider ();
-
-        if (group == null)
+		if (group == null)
         {
             relativeTo = GetBoundingBoxBottomCenter();
             initialDistancceCenterBottomScaler = scalerObject.coordinates - relativeTo;
@@ -1326,8 +1330,10 @@ public class ModelingObject : MonoBehaviour
 				group.TrashGroup(this);
 			}
 
+
 			transform.gameObject.SetActive(false);
-			Trash.Instance.TrashAreaActive(false);
+
+			//Trash.Instance.TrashAreaActive(false);
 		}
 		
 
@@ -1578,7 +1584,10 @@ public class ModelingObject : MonoBehaviour
 		bottomFace.RepositionScaler ();
 	}
 
-	public void EnterTrashArea(){
+	public void EnterTrashArea(){		
+		handles.DisableHandles ();
+		HideBoundingBox (true);
+
 		inTrashArea = true;
 
 		Color newColor = transform.GetChild(0).GetComponent<Renderer>().material.color;

@@ -111,7 +111,6 @@ public class Selection : MonoBehaviour
 		}
     }
 
-
 	void DeFocusCurrent(GameObject newObject){
 
 		if (grabIcon != null) {
@@ -124,15 +123,9 @@ public class Selection : MonoBehaviour
 				if (newObject != null && newObject.CompareTag ("SelectionButton")) {
 					if (newObject.GetComponent<ObjectSelecter> ().connectedObject != currentFocus.GetComponent<ModelingObject> ()) {
 						currentFocus.GetComponent<ModelingObject> ().UnFocus (this);
-						if (typeOfController == controllerType.mainController) {
-							//settingsButtonHelp.Hide ();
-						}
 					}
 				} else {
 					currentFocus.GetComponent<ModelingObject> ().UnFocus (this);
-					if (typeOfController == controllerType.mainController) {
-						//settingsButtonHelp.Hide ();
-					}
 				}
 			} else if (currentFocus.CompareTag ("Handle")) {
 				currentFocus.GetComponent<handle> ().UnFocus (this);
@@ -150,24 +143,19 @@ public class Selection : MonoBehaviour
 				currentFocus.GetComponent<StageDistanceController> ().UnFocus (this);
 			} else if (currentFocus.CompareTag ("InfoPanel")) {
 				currentFocus.GetComponent<Infopanel> ().UnFocus (this);
-			} else if (currentFocus.CompareTag ("SelectionButton")) {				
+			} else if (currentFocus.CompareTag ("SelectionButton")) {
+				
 				// compare selection button and object
 				if (newObject != null && newObject.CompareTag ("ModelingObject")) {
 					if (currentFocus.GetComponent<ObjectSelecter> ().connectedObject != newObject.GetComponent<ModelingObject> ()) {
 						currentFocus.GetComponent<ObjectSelecter> ().UnFocus (this);
 						currentFocus.GetComponent<ObjectSelecter> ().connectedObject.UnFocus (this);
-						if (typeOfController == controllerType.mainController) {
-							//settingsButtonHelp.Hide ();
-						}
 					} else {
 						currentFocus.GetComponent<ObjectSelecter> ().UnFocus (this);
 					}
 				} else {
 					currentFocus.GetComponent<ObjectSelecter> ().UnFocus (this);
 					currentFocus.GetComponent<ObjectSelecter> ().connectedObject.UnFocus (this);
-					if (typeOfController == controllerType.mainController) {
-						//settingsButtonHelp.Hide ();
-					}
 				} 
 			}
 
@@ -281,10 +269,6 @@ public class Selection : MonoBehaviour
 
 
 						if (currentFocus != collisionObject || recheckFocus) {
-
-							//Debug.Log ("Object nr" + count);
-							//Debug.Log ("old Object" + currentFocus);
-							//Debug.Log ("new Object" + collisionObject);
 							count++;
 
 							recheckFocus = false;
@@ -312,7 +296,7 @@ public class Selection : MonoBehaviour
 								currentFocus = collisionObject;
 								currentFocus.GetComponent<TeleportationTrigger> ().Focus (this);
 								device.TriggerHapticPulse (600);
-							} else if (!UiCanvasGroup.Instance.visible && collisionObject.CompareTag ("SelectionButton")) {
+							} else if (collisionObject.CompareTag ("SelectionButton")) {
 								DeFocusCurrent (collisionObject);
 								currentFocus = collisionObject;
 								currentFocus.GetComponent<ObjectSelecter> ().Focus (this);
@@ -354,9 +338,10 @@ public class Selection : MonoBehaviour
 									grabIcon.transform.localScale = initialScaleGrabIcon * hit.distance; 
 									grabIcon.SetActive (true);
 								}
-							}else if (collisionObject.CompareTag ("Stage")) {
+							} else if (collisionObject.CompareTag ("Stage") && typeOfController == controllerType.mainController) {
 								DeFocusCurrent (collisionObject);
 								currentFocus = collisionObject;
+
 								currentFocus.GetComponent<StageFreeMovement> ().Focus (this);
 								device.TriggerHapticPulse (300);
 								if (currentSelectionMode == selectionMode.laserpointer) {
@@ -368,7 +353,9 @@ public class Selection : MonoBehaviour
 								currentFocus = collisionObject;
 								currentFocus.GetComponent<Infopanel> ().Focus (this);
 								device.TriggerHapticPulse (600);
-							}								
+							} else {
+								DeFocusCurrent (null);
+							}
 
 						}
 
@@ -412,7 +399,7 @@ public class Selection : MonoBehaviour
 						}
 					}
 				} else {
-					if (currentFocus != null && collisionObject == null) {
+					if (currentFocus != null || (currentSelectionMode == selectionMode.directTouch && collisionObject == null)) {
 						DeFocusCurrent (null);
 						temps = Time.time;
 					}
@@ -420,7 +407,7 @@ public class Selection : MonoBehaviour
 					if (currentSelectionMode == selectionMode.laserpointer) {
 						AdjustLengthPointer (50f);
 					}
-				}
+				} 
 			} 
 
 
@@ -461,10 +448,13 @@ public class Selection : MonoBehaviour
 							grabbedIcon = Instantiate (grabbedIconPrefab);
 						}
 
-						if (grabbedIcon != null && grabIcon != null  && !grabbedIcon.activeSelf) {
+						if (grabbedIcon != null && grabIcon != null) {
 							grabbedIcon.SetActive (true);
-
+							Debug.Log ("grabIcon.transform.position  " + grabIcon.transform.position);
+							Debug.Log ("currentFocus.transform.position " + currentFocus.transform.position);
 							grabbedIconOffset = grabIcon.transform.position - currentFocus.transform.position; 
+							Debug.Log ("So viel Offset " + grabbedIconOffset);
+
 							grabbedIcon.transform.position = currentFocus.transform.position + grabbedIconOffset;
 						}
 
@@ -534,9 +524,9 @@ public class Selection : MonoBehaviour
 							}
 							this.GetComponent<StageController> ().ShowPullVisual (true);
 							//otherController.transform.GetComponent<StageController> ().ShowRotateObjectVisual (true);
-
 							//otherController.transform.GetComponent<StageController> ().ShowScaleRotationToggle (true);
 							currentFocus.GetComponent<TeleportationPosition> ().StartMoving (this);
+
 						} else if (currentFocus.CompareTag ("Library")) {
 							if (circleAnimation != null) {
 								//circleAnimation.StartAnimation ();
@@ -544,20 +534,24 @@ public class Selection : MonoBehaviour
 							this.GetComponent<StageController> ().ShowPullVisual (true);
 							library.Instance.StartMoving (this);
 						} else if (currentFocus.CompareTag ("HeightControl")) {
+							
 							this.GetComponent<StageController> ().ShowPullVisual (true);
 							currentFocus.GetComponent<StageHeightController> ().StartMoving (this);
 							Logger.Instance.AddLine (Logger.typeOfLog.stage);
 
 						} else if (currentFocus.CompareTag ("DistanceControl")) {
+							
 							this.GetComponent<StageController> ().ShowPullVisual (true);
 							currentFocus.GetComponent<StageDistanceController> ().StartMoving (this);
 							Logger.Instance.AddLine (Logger.typeOfLog.stage);
 
 
 						} else if (currentFocus.CompareTag ("Stage")) {
+							
 							if (circleAnimation != null) {
 								//circleAnimation.StartAnimation ();
 							}
+
 							this.GetComponent<StageController> ().ShowPullVisual (true);
 							currentFocus.GetComponent<StageFreeMovement> ().StartMoving (this);
 							Logger.Instance.AddLine (Logger.typeOfLog.stage);
@@ -632,6 +626,7 @@ public class Selection : MonoBehaviour
 						otherController.transform.GetComponent<StageController> ().ShowRotateObjectVisual (false);
 
 						if (currentFocus.GetComponent<ModelingObject> ().inTrashArea) {
+							UiCanvasGroup.Instance.CloseMenu (this);
 							currentFocus.GetComponent<ModelingObject> ().TrashObject (true);
 							trashInfopanel.CloseInfoPanel ();
 
@@ -641,12 +636,18 @@ public class Selection : MonoBehaviour
 							if (currentSelection != null) {
 								if (currentSelection != currentFocus) {
 									//currentSelection.GetComponent<ModelingObject> ().DeSelect (this);
-									currentFocus.GetComponent<ModelingObject> ().Select (this, uiPositon.position);
+
+									if (currentSettingSelectionMode == settingSelectionMode.alwaysOpen) {
+										currentFocus.GetComponent<ModelingObject> ().Select (this, uiPositon.position);
+									}
+
 								} else {
-									UiCanvasGroup.Instance.ShowAgain (uiPositon.position);
+									UiCanvasGroup.Instance.ShowAgain (uiPositon.position);								
 								}
 							} else {
-								currentFocus.GetComponent<ModelingObject> ().Select (this, uiPositon.position);
+								if (currentSettingSelectionMode == settingSelectionMode.alwaysOpen) {
+									currentFocus.GetComponent<ModelingObject> ().Select (this, uiPositon.position);
+								}
 							}			
 						}
 					} else if (currentFocus.CompareTag ("TeleportPosition")) {

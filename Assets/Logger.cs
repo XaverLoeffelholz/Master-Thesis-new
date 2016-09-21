@@ -9,7 +9,7 @@ public class Logger : Singleton<Logger> {
 	public enum typeOfLog { triggerOnObject, triggerNoTarget, touchpadScaleStage, touchpadRotateStage, touchpadMoveObject, touchpadRotateObject, nonUniformScaleHandle, RotationHandle, FrustumHandle, stage, uiElement };
     public enum generalType { touchpad, triggerInteraction };
 
-    private string filePath = @"C:\Users\user\Documents\MasterThesis Xaver - new Repo\test.csv";
+    private string filePath = @"C:\Users\user\Documents\MasterThesis Xaver - new Repo\";
     public string UserID;
     private FileStream fs;
 
@@ -22,9 +22,7 @@ public class Logger : Singleton<Logger> {
 
     // Use this for initialization
     void Start () {
-        countTimeFrom = Time.time;
 
-		CreateTextFile ();
     }
 	
 	// Update is called once per frame
@@ -39,6 +37,9 @@ public class Logger : Singleton<Logger> {
 
     public void CreateTextFile()
     {
+		filePath += "LogUser" + UserID + "_session" + sessionNumber + ".csv";
+
+		RestartTimer ();
 		fs = File.Create(filePath);  
 		fs.Dispose ();
 	 	

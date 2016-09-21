@@ -26,15 +26,14 @@ public class StageController : MonoBehaviour {
     private Selection selection;
 
 	public GameObject pullIcon;
+	public GameObject rotateIcon;
 	public GameObject normalIcon;
-	public GameObject toggle;
-	public GameObject toggle2;
-	public GameObject toggleBG;
 
 	public GameObject line;
 	private Vector3 lineInitialScale;
 	public Color lineColorNormal;
 	public Color lineColorTouch;
+	public GameObject iconBG;
 
 	public bool recognizeNewSwipe;
 
@@ -87,77 +86,57 @@ public class StageController : MonoBehaviour {
 			line.transform.localScale = new Vector3 (Mathf.Max(lineInitialScale.x * (1f-scale), lineInitialScale.x*0.7f), lineInitialScale.y, lineInitialScale.z);
 		}
 
-		if (selection.currentSelectionMode == Selection.selectionMode.directTouch) {
-			ScaleStage (-0.6f);
-			stage.parent.position =  stage.parent.position + new Vector3 (0f, 0f, -1.2f);
-		}
-
+		ShowPullVisual (false);
     }
+
+	public void UpdateRotationScalingTechnique(){
+		ShowPullVisual (false);
+	}
 
 
 	public void ShowPullVisual(bool value){		
 		if (value) {
 			currentControllerMode = controllerMode.pullPushObject;
 			pullIcon.SetActive (true);
+			rotateIcon.SetActive (false);
 			normalIcon.SetActive (false);
-			toggle.SetActive (false);
-			toggle2.SetActive (false);
-			toggleBG.SetActive (false);
+			line.SetActive (true);
+			iconBG.SetActive (true);
 		} else {
 			currentControllerMode = standardControllerMode;
 			pullIcon.SetActive (false);
-			normalIcon.SetActive (true);
-			toggle.SetActive (false);
-			toggle2.SetActive (false);
-			toggleBG.SetActive (false);
+			rotateIcon.SetActive (false);
+			if (currentRotationScalingTechnique == RotationScalingTechnique.touchpads) {
+				normalIcon.SetActive (true);
+				iconBG.SetActive (true);
+			} else {
+				normalIcon.SetActive (false);
+				line.SetActive (false);
+				iconBG.SetActive (false);
+			}
 		}
 	}
 
-	public void ShowRotateObjectVisual(bool value){		
+	public void ShowRotateObjectVisual(bool value){			
 		if (value) {
 			currentControllerMode = controllerMode.rotatingObject;
-			pullIcon.SetActive (false);
-			normalIcon.SetActive (true);
-			toggle.SetActive (false);
-			toggle2.SetActive (false);
-			toggleBG.SetActive (false);
-		} else {
-			currentControllerMode = standardControllerMode;
-			pullIcon.SetActive (false);
-			normalIcon.SetActive (true);
-			toggle.SetActive (false);
-			toggle2.SetActive (false);
-			toggleBG.SetActive (false);
-		}
-	}
-
-
-	public void ShowScaleRotationToggle(bool value) {
-		
-		if (value) {
-			currentControllerMode = controllerMode.toggleRotateScale;
-			toggleBG.SetActive (true);
-
-			recognizeNewSwipe = true;
-
-			if (BiManualOperations.Instance.currentBimanualMode == BiManualOperations.bimanualMode.scaling) {
-				toggle.SetActive (true);
-				toggle2.SetActive (false);
-			} else {
-				toggle.SetActive (false);
-				toggle2.SetActive (true);
-			}
-
+			rotateIcon.SetActive (true);
 			pullIcon.SetActive (false);
 			normalIcon.SetActive (false);
-
+			line.SetActive (true);
 		} else {
 			currentControllerMode = standardControllerMode;
-			toggle.SetActive (false);
-			toggle2.SetActive (false);
+			rotateIcon.SetActive (false);
 			pullIcon.SetActive (false);
-			normalIcon.SetActive (true);
-			toggleBG.SetActive (false);
+		
+			if (currentRotationScalingTechnique == RotationScalingTechnique.touchpads) {
+				normalIcon.SetActive (true);
+				iconBG.SetActive (true);
+			} else {
+				normalIcon.SetActive (false);
+				line.SetActive (false);
+				iconBG.SetActive (false);
+			}
 		}
 	}
 
@@ -175,37 +154,49 @@ public class StageController : MonoBehaviour {
 
 			amountOfMovementForHapticFeedback = 0f;
 
-			LeanTween.color (line, lineColorTouch, 0.1f);
-			LeanTween.scale (touchpad, touchpadInitialScale * 1.2f, 0.2f); 
-			LeanTween.moveLocalY (touchpad, touchpadInitialPos.y + 0.003f, 0.2f);
+			if (currentRotationScalingTechnique == RotationScalingTechnique.touchpads
+				|| (currentRotationScalingTechnique == RotationScalingTechnique.gesture 
+					&& (currentControllerMode == controllerMode.pullPushObject || currentControllerMode == controllerMode.rotatingObject))) {
+				
+				LeanTween.color (line, lineColorTouch, 0.1f);
+				LeanTween.scale (touchpad, touchpadInitialScale * 1.2f, 0.2f); 
+				LeanTween.moveLocalY (touchpad, touchpadInitialPos.y + 0.003f, 0.2f);
 
-			if (currentControllerMode != controllerMode.pullPushObject) {
-				device.TriggerHapticPulse (2000);
+				if (currentControllerMode != controllerMode.pullPushObject) {
+					device.TriggerHapticPulse (2000);
+				}
+
+				if (currentControllerMode == controllerMode.pullPushObject) {
+					Logger.Instance.AddLine (Logger.typeOfLog.touchpadMoveObject);
+				} else if (currentControllerMode == controllerMode.scalingStage) {
+					Logger.Instance.AddLine (Logger.typeOfLog.touchpadScaleStage);
+				} else if (currentControllerMode == controllerMode.rotatingStage) {
+					Logger.Instance.AddLine (Logger.typeOfLog.touchpadRotateStage);
+				} else if (currentControllerMode == controllerMode.rotatingObject) {
+					Logger.Instance.AddLine (Logger.typeOfLog.touchpadRotateObject);
+				}
 			}
 
-			if (currentControllerMode == controllerMode.pullPushObject) {
-				Logger.Instance.AddLine (Logger.typeOfLog.touchpadMoveObject);
-			} else if (currentControllerMode == controllerMode.scalingStage) {
-				Logger.Instance.AddLine (Logger.typeOfLog.touchpadScaleStage);
-			} else if (currentControllerMode == controllerMode.rotatingStage) {
-				Logger.Instance.AddLine (Logger.typeOfLog.touchpadRotateStage);
-			} else if (currentControllerMode == controllerMode.rotatingObject) {
-				Logger.Instance.AddLine (Logger.typeOfLog.touchpadRotateObject);
-			}
         }
 
 		if (device.GetTouchUp(SteamVR_Controller.ButtonMask.Touchpad))
         {
             touchDown = false;
-			LeanTween.color (line, lineColorNormal, 0.1f);
-			LeanTween.scale (touchpad, touchpadInitialScale, 0.2f).setDelay(0.1f); 
-			LeanTween.moveLocalY (touchpad, touchpadInitialPos.y, 0.2f).setDelay(0.1f);
 
-			device.TriggerHapticPulse (1400);
+			if (currentRotationScalingTechnique == RotationScalingTechnique.touchpads
+			    || (currentRotationScalingTechnique == RotationScalingTechnique.gesture
+			    && (currentControllerMode == controllerMode.pullPushObject || currentControllerMode == controllerMode.rotatingObject))) {
+				
+				LeanTween.color (line, lineColorNormal, 0.1f);
+				LeanTween.scale (touchpad, touchpadInitialScale, 0.2f).setDelay (0.1f); 
+				LeanTween.moveLocalY (touchpad, touchpadInitialPos.y, 0.2f).setDelay (0.1f);
 
-			if (currentControllerMode == controllerMode.rotatingObject && selection.otherController.currentFocus != null) {
-				ModelingObject currentModelingObject = selection.otherController.currentFocus.GetComponent<ModelingObject> ();
-				currentModelingObject.handles.ShowNonUniformScalingHandles();
+				device.TriggerHapticPulse (1400);
+
+				if (currentControllerMode == controllerMode.rotatingObject && selection.otherController.currentFocus != null) {
+					ModelingObject currentModelingObject = selection.otherController.currentFocus.GetComponent<ModelingObject> ();
+					currentModelingObject.handles.ShowNonUniformScalingHandles ();
+				}
 			}
         }
 
@@ -399,28 +390,6 @@ public class StageController : MonoBehaviour {
 
     }
 
-	public void ScaleObjectMode(){
-		BiManualOperations.Instance.currentBimanualMode = BiManualOperations.bimanualMode.scaling;
-		recognizeNewSwipe = true;
-
-		toggle.SetActive (true);
-		toggle2.SetActive (false);
-	}
-
-	public void RotateObjectMode(){
-		
-		BiManualOperations.Instance.currentBimanualMode = BiManualOperations.bimanualMode.rotating;
-		recognizeNewSwipe = true;
-
-		toggle.SetActive (false);
-		toggle2.SetActive (true);
-	}
-
-
-
-	public void ToggleMode(){
-
-	}
 
 	public void RotateStage(float amountX){
 		stage.Rotate(0, amountX, 0);
@@ -441,7 +410,7 @@ public class StageController : MonoBehaviour {
 	//	Vector3 libraryStage = library.localScale;
 	//	libraryStage = libraryStage + (libraryStage * amountY);
 
-		if (scaleStage.x >= 0.25f && scaleStage.x <= 4f)
+		if (scaleStage.x >= 0.5f && scaleStage.x <= 4f)
 		{
 			stage.parent.localScale = scaleStage; 
 		//	library.localScale = libraryStage;
