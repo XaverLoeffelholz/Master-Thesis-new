@@ -1,0 +1,5 @@
+UserID, General Type of Interaction, Time, Specific Type of Interaction, Settings Selection Mode, Stage movement, stage rotation and scaling, session number 
+3495,triggerInteraction,15.46692,triggerOnObject,alwaysOpen,free,touchpads,1
+3495,navigation,19.88044,touchpadScaleStage,alwaysOpen,free,touchpads,1
+3495,navigation,20.7883,touchpadScaleStage,alwaysOpen,free,touchpads,1
+3495,navigation,22.81165,touchpadScaleStage,alwaysOpen,free,touchpads,1

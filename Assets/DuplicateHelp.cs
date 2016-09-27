@@ -14,6 +14,8 @@ public class DuplicateHelp : MonoBehaviour {
 
 	private bool active = true;
 
+	public CanvasGroup NavHelp;
+
 	// Use this for initialization
 	void Start () {
 		standardColor = textMain.GetComponent<Text> ().color;
@@ -21,9 +23,9 @@ public class DuplicateHelp : MonoBehaviour {
 
 	// Update is called once per frame
 	void Update () {
-		transform.position = controller2.transform.position;
-
-		transform.LookAt (controller2.transform);
+		transform.position =  controller2.transform.position;
+		transform.localRotation = controller2.transform.localRotation;
+	//	transform.LookAt (controller2.transform);
 	}
 
 	public void DuplicateActive(){
@@ -51,8 +53,10 @@ public class DuplicateHelp : MonoBehaviour {
 	public void Hide(bool value){
 		if (value && active) {
 			LeanTween.alphaCanvas (transform.GetComponent<CanvasGroup>(), 1f, 0.2f);
+			LeanTween.alphaCanvas (NavHelp, 1f, 0.2f);
 		} else {
 			LeanTween.alphaCanvas (transform.GetComponent<CanvasGroup>(), 0f, 0.2f);
+			LeanTween.alphaCanvas (NavHelp, 0f, 0.2f);
 		}
 	}
 

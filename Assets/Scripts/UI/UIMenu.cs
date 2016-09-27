@@ -74,7 +74,7 @@ public class UIMenu : MonoBehaviour {
             {
 				if (child.name == "UI Close"){
 					child.gameObject.SetActive(true);
-					child.GetComponent<RectTransform>().anchoredPosition3D = new Vector3(500f, -50f, 0f);
+					child.GetComponent<RectTransform>().anchoredPosition3D = new Vector3(0f, 0f, 0f);
 				} else {			
 					if(!child.gameObject.CompareTag("UIElementNotInUse")){						
 						// check if it is a group 

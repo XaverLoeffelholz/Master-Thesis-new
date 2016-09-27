@@ -1,0 +1,26 @@
+UserID, General Type of Interaction, Time, Specific Type of Interaction, Settings Selection Mode, Stage movement, stage rotation and scaling, session number 
+779,triggerInteraction,5.595593,triggerOnObject,alwaysOpen,free,touchpads,1
+779,triggerInteraction,6.627401,RotationHandle,alwaysOpen,free,touchpads,1
+779,triggerInteraction,9.930222,RotationHandle,alwaysOpen,free,touchpads,1
+779,navigation,11.35215,touchpadRotateStage,alwaysOpen,free,touchpads,1
+779,navigation,11.74948,touchpadRotateStage,alwaysOpen,free,touchpads,1
+779,navigation,12.07856,touchpadRotateStage,alwaysOpen,free,touchpads,1
+779,triggerInteraction,12.70737,RotationHandle,alwaysOpen,free,touchpads,1
+779,triggerInteraction,15.63619,RotationHandle,alwaysOpen,free,touchpads,1
+779,navigation,17.10051,touchpadRotateStage,alwaysOpen,free,touchpads,1
+779,navigation,17.55146,touchpadRotateStage,alwaysOpen,free,touchpads,1
+779,navigation,17.94902,touchpadRotateStage,alwaysOpen,free,touchpads,1
+779,navigation,18.48825,touchpadRotateStage,alwaysOpen,free,touchpads,1
+779,triggerInteraction,19.05001,triggerOnObject,alwaysOpen,free,touchpads,1
+779,navigation,19.34584,touchpadMoveObject,alwaysOpen,free,touchpads,1
+779,triggerInteraction,20.35814,triggerNoTarget,alwaysOpen,free,touchpads,1
+779,triggerInteraction,21.04145,stage,alwaysOpen,free,touchpads,1
+779,triggerInteraction,22.01114,RotationHandle,alwaysOpen,free,touchpads,1
+779,navigation,28.60312,touchpadRotateStage,alwaysOpen,free,touchpads,1
+779,triggerInteraction,29.23277,triggerOnObject,alwaysOpen,free,touchpads,1
+779,navigation,29.59562,touchpadMoveObject,alwaysOpen,free,touchpads,1
+779,triggerInteraction,33.93252,RotationHandle,alwaysOpen,free,touchpads,1
+779,triggerInteraction,36.06983,RotationHandle,alwaysOpen,free,touchpads,1
+779,triggerInteraction,37.79953,RotationHandle,alwaysOpen,free,touchpads,1
+779,triggerInteraction,39.45354,RotationHandle,alwaysOpen,free,touchpads,1
+779,triggerInteraction,41.20357,RotationHandle,alwaysOpen,free,touchpads,1

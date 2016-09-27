@@ -9,6 +9,9 @@ public class UiElement : MonoBehaviour {
 	public bool focused;
     public UIMenu.buttonType typeOfButton;
 
+	Vector3 currentTargetPos = Vector3.zero;
+	Vector3 velocity = Vector3.zero;
+	float smoothTime = 0.3f;
 
 	// Use this for initialization
 	void Start () {
@@ -16,15 +19,25 @@ public class UiElement : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-
+		if (focused) {
+			Vector3 newPos = Vector3.SmoothDamp (currentTargetPos, UiCanvasGroup.Instance.headset.transform.position, ref velocity, smoothTime);
+			transform.LookAt (newPos);
+			currentTargetPos = newPos;
+		} else {
+			// evtl noch tweenen
+			transform.LookAt (UiCanvasGroup.Instance.controller1.transform.position);
+			transform.rotation = Quaternion.Euler (0f, transform.rotation.eulerAngles.y, 0f);
+		}
     }
 
     public void Focus(Selection controller)
     {
 		if (!focused) {
+			currentTargetPos = UiCanvasGroup.Instance.controller1.transform.position;
+
             controller.AssignCurrentFocus(transform.gameObject);
 			LeanTween.alphaText(title, 1.0f, 0.2f);
-			LeanTween.scale(this.gameObject, new Vector3(1.2f, 1.2f, 1.2f), 0.3f);
+			LeanTween.scale(this.gameObject, new Vector3(1.1f, 1.1f, 1.1f), 0.3f);
 
 			if (typeOfButton != UIMenu.buttonType.CloseMenu && typeOfButton != UIMenu.buttonType.Color) {
 				LeanTween.color (this.GetComponent<RectTransform> (), UiCanvasGroup.Instance.hoverColor, 0.2f);
@@ -49,7 +62,7 @@ public class UiElement : MonoBehaviour {
 		if (focused) {
             controller.DeAssignCurrentFocus(transform.gameObject);
 			LeanTween.alphaText(title, 0.0f, 0.2f);
-			LeanTween.scale(this.gameObject, new Vector3(1.0f, 1.0f, 1.0f), 0.3f);
+			LeanTween.scale(this.gameObject, new Vector3(0.9f, 0.9f, 0.9f), 0.3f);
 
 			if (typeOfButton != UIMenu.buttonType.CloseMenu && typeOfButton != UIMenu.buttonType.Color) {
 				LeanTween.color (this.GetComponent<RectTransform> (), UiCanvasGroup.Instance.normalColor, 0.2f);

@@ -44,6 +44,9 @@ public class handles : MonoBehaviour {
 
 	public Transform Handlegroup;
 
+	public GameObject linesGO;
+	public GameObject rotationSliceGO;
+
     // Use this for initialization
     void Start () {
         objectFocused = false;

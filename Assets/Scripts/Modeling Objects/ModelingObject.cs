@@ -563,92 +563,156 @@ public class ModelingObject : MonoBehaviour
 		// get Closest bounding box coordinate 
 		Vector3 closesBBcorner = GetPosOfClosestVertex(Camera.main.transform.position, boundingBox.coordinates);
 
-		handles.RotateUp0.transform.position = 0.5f * boundingBox.coordinates [0] + 0.5f * boundingBox.coordinates [1];
+		// evtl neu schreiben, nur 3 Handles, die immer positionieren
+
+		//handles.RotateUp0.transform.position = 0.5f * boundingBox.coordinates [0] + 0.5f * boundingBox.coordinates [1];
 		if (closesBBcorner == boundingBox.coordinates [0] || closesBBcorner == boundingBox.coordinates [1]) {	
 			handles.RotateUp0.SetActive (showRotationHandles);
-			//handles.RotateUp0.transform.localScale = sizeHandles;
+
+			if (closesBBcorner == boundingBox.coordinates [0]){
+				handles.RotateUp0.transform.position = boundingBox.coordinates [1];
+			} else {
+				handles.RotateUp0.transform.position = boundingBox.coordinates [0];
+			}
+
 		} else {
 			handles.RotateUp0.SetActive (false);
 		}
 
-		handles.RotateUp1.transform.position = 0.5f * boundingBox.coordinates [1] + 0.5f * boundingBox.coordinates [2];
+		//handles.RotateUp1.transform.position = 0.5f * boundingBox.coordinates [1] + 0.5f * boundingBox.coordinates [2];
 		if (closesBBcorner == boundingBox.coordinates [1] || closesBBcorner == boundingBox.coordinates [2]) {			
 			handles.RotateUp1.SetActive (showRotationHandles);
-			//handles.RotateUp1.transform.localScale = sizeHandles;
+
+			if (closesBBcorner == boundingBox.coordinates [1]){
+				handles.RotateUp1.transform.position = boundingBox.coordinates [2];
+			} else {
+				handles.RotateUp1.transform.position = boundingBox.coordinates [1];
+			}
+
 		} else {
 			handles.RotateUp1.SetActive (false);
 		}
 
-		handles.RotateUp2.transform.position = 0.5f * boundingBox.coordinates [2] + 0.5f * boundingBox.coordinates [3];
+		//handles.RotateUp2.transform.position = 0.5f * boundingBox.coordinates [2] + 0.5f * boundingBox.coordinates [3];
 		if (closesBBcorner == boundingBox.coordinates [2] || closesBBcorner == boundingBox.coordinates [3]) {			
 			handles.RotateUp2.SetActive (showRotationHandles);
-			//handles.RotateUp2.transform.localScale = sizeHandles;
+
+			if (closesBBcorner == boundingBox.coordinates [2]){
+				handles.RotateUp2.transform.position = boundingBox.coordinates [3];
+			} else {
+				handles.RotateUp2.transform.position = boundingBox.coordinates [2];
+			}
 		} else {
 			handles.RotateUp2.SetActive (false);
 		}
 
-		handles.RotateUp3.transform.position = 0.5f * boundingBox.coordinates [3] + 0.5f * boundingBox.coordinates [0];
+		//handles.RotateUp3.transform.position = 0.5f * boundingBox.coordinates [3] + 0.5f * boundingBox.coordinates [0];
 		if (closesBBcorner == boundingBox.coordinates [3] || closesBBcorner == boundingBox.coordinates [0]) {
 			handles.RotateUp3.SetActive (showRotationHandles);
-			//handles.RotateUp3.transform.localScale = sizeHandles;
+
+			if (closesBBcorner == boundingBox.coordinates [3]){
+				handles.RotateUp3.transform.position = boundingBox.coordinates [0];
+			} else {
+				handles.RotateUp3.transform.position = boundingBox.coordinates [3];
+			}
+
 		} else {
 			handles.RotateUp3.SetActive (false);
 		}
 
-		handles.RotateDown0.transform.position = 0.5f * boundingBox.coordinates [4] + 0.5f * boundingBox.coordinates [5];
+		//handles.RotateDown0.transform.position = 0.5f * boundingBox.coordinates [4] + 0.5f * boundingBox.coordinates [5];
 		if (closesBBcorner == boundingBox.coordinates [4] || closesBBcorner == boundingBox.coordinates [5]) {			
 			handles.RotateDown0.SetActive (showRotationHandles);
-			//handles.RotateDown0.transform.localScale = sizeHandles;
+
+			if (closesBBcorner == boundingBox.coordinates [4]){
+				handles.RotateDown0.transform.position = boundingBox.coordinates [5];
+			} else {
+				handles.RotateDown0.transform.position = boundingBox.coordinates [4];
+			}
+
 		} else {
 			handles.RotateDown0.SetActive (false);
 		}
 
-		handles.RotateDown1.transform.position = 0.5f * boundingBox.coordinates[5] + 0.5f * boundingBox.coordinates[6];
+		//handles.RotateDown1.transform.position = 0.5f * boundingBox.coordinates[5] + 0.5f * boundingBox.coordinates[6];
 		if (closesBBcorner == boundingBox.coordinates [5] || closesBBcorner == boundingBox.coordinates [6]) {			
 			handles.RotateDown1.SetActive (showRotationHandles);
-			//handles.RotateDown1.transform.localScale = sizeHandles;
+
+			if (closesBBcorner == boundingBox.coordinates [5]){
+				handles.RotateDown1.transform.position = boundingBox.coordinates [6];
+			} else {
+				handles.RotateDown1.transform.position = boundingBox.coordinates [5];
+			}
+
 		} else {
 			handles.RotateDown1.SetActive (false);
 		}
 
-		handles.RotateDown2.transform.position = 0.5f * boundingBox.coordinates[6] + 0.5f * boundingBox.coordinates[7];
+		//handles.RotateDown2.transform.position = 0.5f * boundingBox.coordinates[6] + 0.5f * boundingBox.coordinates[7];
 		if (closesBBcorner == boundingBox.coordinates [6] || closesBBcorner == boundingBox.coordinates [7]) {			
 			handles.RotateDown2.SetActive (showRotationHandles);
-			//handles.RotateDown2.transform.localScale = sizeHandles;
+
+			if (closesBBcorner == boundingBox.coordinates [6]){
+				handles.RotateDown2.transform.position = boundingBox.coordinates [7];
+			} else {
+				handles.RotateDown2.transform.position = boundingBox.coordinates [6];
+			}
+
 		} else {
 			handles.RotateDown2.SetActive (false);
 		}
 
-		handles.RotateDown3.transform.position = 0.5f * boundingBox.coordinates[7] + 0.5f * boundingBox.coordinates[4];
+		//handles.RotateDown3.transform.position = 0.5f * boundingBox.coordinates[7] + 0.5f * boundingBox.coordinates[4];
 		if (closesBBcorner == boundingBox.coordinates [7] || closesBBcorner == boundingBox.coordinates [4]) {			
 			handles.RotateDown3.SetActive (showRotationHandles);
-			//handles.RotateDown3.transform.localScale = sizeHandles;
+
+			if (closesBBcorner == boundingBox.coordinates [7]){
+				handles.RotateDown3.transform.position = boundingBox.coordinates [4];
+			} else {
+				handles.RotateDown3.transform.position = boundingBox.coordinates [7];
+			}
+
 		} else {
 			handles.RotateDown3.SetActive (false);
 		}
 
-		handles.RotateSide0.transform.position = 0.5f * boundingBox.coordinates[0] + 0.5f * boundingBox.coordinates[4];
+		//handles.RotateSide0.transform.position = 0.5f * boundingBox.coordinates[0] + 0.5f * boundingBox.coordinates[4];
 		if (closesBBcorner == boundingBox.coordinates [0] || closesBBcorner == boundingBox.coordinates [4]) {			
 			handles.RotateSide0.SetActive (showRotationHandles);
-			//handles.RotateSide0.transform.localScale = sizeHandles;
+
+			if (closesBBcorner == boundingBox.coordinates [0]){
+				handles.RotateSide0.transform.position = boundingBox.coordinates [4];
+			} else {
+				handles.RotateSide0.transform.position = boundingBox.coordinates [0];
+			}
+
 		} else {
 			handles.RotateSide0.SetActive (false);
 		}
 
-		handles.RotateSide1.transform.position = 0.5f * boundingBox.coordinates[1] + 0.5f * boundingBox.coordinates[5];
-
+		//handles.RotateSide1.transform.position = 0.5f * boundingBox.coordinates[1] + 0.5f * boundingBox.coordinates[5];
 		if (closesBBcorner == boundingBox.coordinates [1] || closesBBcorner == boundingBox.coordinates [5]) {			
 			handles.RotateSide1.SetActive (showRotationHandles);
-			//handles.RotateSide1.transform.localScale = sizeHandles;
+
+			if (closesBBcorner == boundingBox.coordinates [1]){
+				handles.RotateSide1.transform.position = boundingBox.coordinates [5];
+			} else {
+				handles.RotateSide1.transform.position = boundingBox.coordinates [1];
+			}
+
 		} else {
 			handles.RotateSide1.SetActive (false);
 		}
 
-		handles.RotateSide2.transform.position = 0.5f * boundingBox.coordinates[2] + 0.5f * boundingBox.coordinates[6];
-
+		//handles.RotateSide2.transform.position = 0.5f * boundingBox.coordinates[2] + 0.5f * boundingBox.coordinates[6];
 		if (closesBBcorner == boundingBox.coordinates [2] || closesBBcorner == boundingBox.coordinates [6]) {			
 			handles.RotateSide2.SetActive (showRotationHandles);
-			//handles.RotateSide2.transform.localScale = sizeHandles;
+
+			if (closesBBcorner == boundingBox.coordinates [2]){
+				handles.RotateSide2.transform.position = boundingBox.coordinates [6];
+			} else {
+				handles.RotateSide2.transform.position = boundingBox.coordinates [2];
+			}
 		} else {
 			handles.RotateSide2.SetActive (false);
 		}
@@ -657,7 +721,12 @@ public class ModelingObject : MonoBehaviour
 
 		if (closesBBcorner == boundingBox.coordinates [3] || closesBBcorner == boundingBox.coordinates [7]) {			
 			handles.RotateSide3.SetActive (showRotationHandles);
-		//	handles.RotateSide3.transform.localScale = sizeHandles;
+
+			if (closesBBcorner == boundingBox.coordinates [3]){
+				handles.RotateSide1.transform.position = boundingBox.coordinates [7];
+			} else {
+				handles.RotateSide1.transform.position = boundingBox.coordinates [3];
+			}
 		} else {
 			handles.RotateSide3.SetActive (false);
 		}

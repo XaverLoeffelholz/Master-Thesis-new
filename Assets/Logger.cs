@@ -6,8 +6,8 @@ using System.Collections;
 
 public class Logger : Singleton<Logger> {
 
-	public enum typeOfLog { triggerOnObject, triggerNoTarget, touchpadScaleStage, touchpadRotateStage, touchpadMoveObject, touchpadRotateObject, nonUniformScaleHandle, RotationHandle, FrustumHandle, stage, uiElement };
-    public enum generalType { touchpad, triggerInteraction };
+	public enum typeOfLog { triggerOnObject, triggerNoTarget, touchpadScaleStage, touchpadRotateStage, touchpadMoveObject, touchpadRotateObject, nonUniformScaleHandle, RotationHandle, FrustumHandle, stage, uiElement, gestureNavigation };
+    public enum generalType { navigation, triggerInteraction };
 
     private string filePath = @"C:\Users\user\Documents\MasterThesis Xaver - new Repo\";
     public string UserID;
@@ -51,9 +51,9 @@ public class Logger : Singleton<Logger> {
     {
         generalType currentType;
 
-		if (logtype == typeOfLog.touchpadMoveObject || logtype == typeOfLog.touchpadRotateObject || logtype == typeOfLog.touchpadRotateStage || logtype == typeOfLog.touchpadScaleStage)
+		if (logtype == typeOfLog.touchpadMoveObject || logtype == typeOfLog.touchpadRotateObject || logtype == typeOfLog.touchpadRotateStage || logtype == typeOfLog.touchpadScaleStage  || logtype == typeOfLog.gestureNavigation)
         {
-			currentType = generalType.touchpad; 
+			currentType = generalType.navigation; 
         } else
         {
             currentType = generalType.triggerInteraction;

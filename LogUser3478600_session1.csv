@@ -1,0 +1,20 @@
+UserID, General Type of Interaction, Time, Specific Type of Interaction, Settings Selection Mode, Stage movement, stage rotation and scaling, session number 
+3478600,triggerInteraction,19.77094,triggerNoTarget,alwaysOpen,free,gesture,1
+3478600,triggerInteraction,20.21319,triggerNoTarget,alwaysOpen,free,gesture,1
+3478600,triggerInteraction,29.81727,triggerNoTarget,alwaysOpen,free,gesture,1
+3478600,triggerInteraction,30.08266,triggerNoTarget,alwaysOpen,free,gesture,1
+3478600,triggerInteraction,53.769,triggerOnObject,alwaysOpen,free,gesture,1
+3478600,triggerInteraction,54.64695,triggerOnObject,alwaysOpen,free,gesture,1
+3478600,triggerInteraction,57.18766,triggerOnObject,alwaysOpen,free,gesture,1
+3478600,navigation,58.51136,touchpadRotateObject,alwaysOpen,free,gesture,1
+3478600,triggerInteraction,61.26583,triggerOnObject,alwaysOpen,free,gesture,1
+3478600,triggerInteraction,63.22021,triggerOnObject,alwaysOpen,free,gesture,1
+3478600,navigation,64.28265,touchpadRotateObject,alwaysOpen,free,gesture,1
+3478600,navigation,65.10114,touchpadRotateObject,alwaysOpen,free,gesture,1
+3478600,navigation,65.49136,touchpadRotateObject,alwaysOpen,free,gesture,1
+3478600,navigation,65.92236,touchpadRotateObject,alwaysOpen,free,gesture,1
+3478600,navigation,67.03388,touchpadRotateObject,alwaysOpen,free,gesture,1
+3478600,navigation,67.49752,touchpadRotateObject,alwaysOpen,free,gesture,1
+3478600,triggerInteraction,70.16093,triggerOnObject,alwaysOpen,free,gesture,1
+3478600,navigation,70.86295,touchpadRotateObject,alwaysOpen,free,gesture,1
+3478600,navigation,71.27205,touchpadRotateObject,alwaysOpen,free,gesture,1

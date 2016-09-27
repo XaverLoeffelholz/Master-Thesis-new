@@ -6,6 +6,7 @@ using System.Collections.Generic;
 public class UiCanvasGroup : Singleton<UiCanvasGroup>{
     public bool visible;
     public Transform player;
+	public Transform headset;
     private CanvasGroup canvGroup;
 
     public float positioningWidth;
@@ -43,7 +44,9 @@ public class UiCanvasGroup : Singleton<UiCanvasGroup>{
 	void Update () {
         if (visible)
         {
-            transform.LookAt(player.transform);
+          //  transform.LookAt(headset);
+			//transform.position = controller2.transform.position + controller2.LaserPointer.transform.forward * 0.1f;
+			transform.position = controller2.transform.position;
         }
 
     }
@@ -117,11 +120,9 @@ public class UiCanvasGroup : Singleton<UiCanvasGroup>{
 
 	public void TemporarilyHide(){
 	//	LeanTween.alphaCanvas(canvGroup, 0f, 0.3f).setOnComplete(DeactivateMenus);
-		LeanTween.alphaCanvas(canvGroup, 0f, 0.3f);
-		LeanTween.alphaCanvas (MenuBG, 0f, 0.3f);
 
-		canvGroup.blocksRaycasts = false;
-		canvGroup.interactable = false;
+		LeanTween.alphaCanvas(canvGroup, 0f, 0.3f).setOnComplete(DeactivateMenus);
+		LeanTween.alphaCanvas (MenuBG, 0f, 0.3f);
 
 		visible = false;
 	}
@@ -130,8 +131,6 @@ public class UiCanvasGroup : Singleton<UiCanvasGroup>{
 		if (!visible) {
 			LeanTween.alphaCanvas(canvGroup, 1f, 0.3f);
 			LeanTween.alphaCanvas (MenuBG, 1f, 0.3f);
-			canvGroup.blocksRaycasts = true;
-			canvGroup.interactable = true;
 
 			if (currentMenu != null) {
 				currentMenu.ActivateMenu ();
@@ -157,11 +156,11 @@ public class UiCanvasGroup : Singleton<UiCanvasGroup>{
 
         for (int i=0; i < elements.Count; i++)
         {
-            float x = ((i+1) * positioningWidth) - width / 2;
+			float y = ((i+1) * positioningHeight);
 
-            float y = - (((Mathf.Sin((float) (i+1) / (float) elements.Count * Mathf.PI)) * positioningHeight) - height / 2);
+          //  float y = - (((Mathf.Sin((float) (i+1) / (float) elements.Count * Mathf.PI)) * positioningHeight) - height / 2);
 
-            elements[i].GetComponent<RectTransform>().anchoredPosition3D = new Vector3(x, 700f, 0f);
+            elements[i].GetComponent<RectTransform>().anchoredPosition3D = new Vector3(0, y, 0f);
         }
     }
 }

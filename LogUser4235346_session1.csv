@@ -1,0 +1,20 @@
+UserID, General Type of Interaction, Time, Specific Type of Interaction, Settings Selection Mode, Stage movement, stage rotation and scaling, session number 
+4235346,triggerInteraction,13.78813,triggerOnObject,alwaysOpen,free,touchpads,1
+4235346,triggerInteraction,29.75216,triggerOnObject,alwaysOpen,free,touchpads,1
+4235346,triggerInteraction,31.31651,triggerOnObject,alwaysOpen,free,touchpads,1
+4235346,triggerInteraction,33.95496,triggerOnObject,alwaysOpen,free,touchpads,1
+4235346,triggerInteraction,35.09727,triggerOnObject,alwaysOpen,free,touchpads,1
+4235346,triggerInteraction,37.34028,triggerOnObject,alwaysOpen,free,touchpads,1
+4235346,triggerInteraction,38.69732,triggerOnObject,alwaysOpen,free,touchpads,1
+4235346,triggerInteraction,39.23824,triggerOnObject,alwaysOpen,free,touchpads,1
+4235346,triggerInteraction,43.10575,triggerOnObject,alwaysOpen,free,touchpads,1
+4235346,triggerInteraction,47.44835,triggerOnObject,alwaysOpen,free,touchpads,1
+4235346,triggerInteraction,51.8422,triggerOnObject,alwaysOpen,free,touchpads,1
+4235346,triggerInteraction,52.91183,triggerOnObject,alwaysOpen,free,touchpads,1
+4235346,triggerInteraction,53.71527,triggerOnObject,alwaysOpen,free,touchpads,1
+4235346,triggerInteraction,55.11016,triggerOnObject,alwaysOpen,free,touchpads,1
+4235346,navigation,63.17984,touchpadScaleStage,alwaysOpen,free,touchpads,1
+4235346,navigation,65.45377,touchpadScaleStage,alwaysOpen,free,touchpads,1
+4235346,triggerInteraction,66.39196,RotationHandle,alwaysOpen,free,touchpads,1
+4235346,navigation,69.43381,touchpadRotateStage,alwaysOpen,free,touchpads,1
+4235346,triggerInteraction,72.42751,triggerOnObject,alwaysOpen,free,touchpads,1

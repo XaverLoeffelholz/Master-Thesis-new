@@ -82,6 +82,10 @@ public class Selection : MonoBehaviour
 	private GameObject collisionObject;
 	public GrabAnimation grabAnimation;
 
+	public Transform grip;
+	public Transform grip2;
+	public Transform trigger;
+
 	int count = 0;
 
     void Awake()
@@ -109,6 +113,8 @@ public class Selection : MonoBehaviour
 			colliderSphere.DeActivateCollider ();
 			grabAnimation.Hide ();
 		}
+
+
     }
 
 	void DeFocusCurrent(GameObject newObject){
@@ -180,9 +186,35 @@ public class Selection : MonoBehaviour
     }
 
 	// Update is called once per frame
-    // maybe also try update?
 	void Update () {
-        var device = SteamVR_Controller.Input((int)trackedObj.index);       
+
+        var device = SteamVR_Controller.Input((int)trackedObj.index);    
+
+		if (grip == null && typeOfController == controllerType.mainController) {
+			if (transform.GetChild (0).childCount == 16) {
+				grip = transform.GetChild(0).GetChild(7);
+				grip2 = transform.GetChild(0).GetChild(6);
+
+				grip.GetComponent<Renderer> ().material.color = Color.green;
+				grip.GetComponent<Renderer> ().material.EnableKeyword ("_EMISSION");
+				grip.GetComponent<Renderer> ().material.SetColor ("_EmissionColor", Color.green);
+				grip2.GetComponent<Renderer> ().material.EnableKeyword ("_EMISSION");
+				grip2.GetComponent<Renderer> ().material.color = Color.green;
+				grip2.GetComponent<Renderer> ().material.SetColor ("_EmissionColor", Color.green);
+			}
+		}
+
+		if (trigger == null  && typeOfController == controllerType.SecondaryController) {
+			if (transform.GetChild (0).childCount == 16) {
+				trigger = transform.GetChild (0).GetChild (15);
+
+				trigger.GetComponent<Renderer> ().material.color = Color.green;
+				trigger.GetComponent<Renderer> ().material.EnableKeyword ("_EMISSION");
+				trigger.GetComponent<Renderer> ().material.SetColor ("_EmissionColor", Color.green);
+				//trigger.GetComponent<Renderer> ().material.SetColor ("_EmissionColor", Color.white);
+			}
+		}
+
 
 		if (controllerActive) {
 			if ((movingObject || scalingObject) && currentFocus != null) {
@@ -450,10 +482,7 @@ public class Selection : MonoBehaviour
 
 						if (grabbedIcon != null && grabIcon != null) {
 							grabbedIcon.SetActive (true);
-							Debug.Log ("grabIcon.transform.position  " + grabIcon.transform.position);
-							Debug.Log ("currentFocus.transform.position " + currentFocus.transform.position);
 							grabbedIconOffset = grabIcon.transform.position - currentFocus.transform.position; 
-							Debug.Log ("So viel Offset " + grabbedIconOffset);
 
 							grabbedIcon.transform.position = currentFocus.transform.position + grabbedIconOffset;
 						}
@@ -575,8 +604,8 @@ public class Selection : MonoBehaviour
 						} 
 					}
 
-					this.GetComponent<StageController> ().ShowPullVisual (true);
-					currentHandle.ApplyChanges (pointOfCollisionGO, movingHandle);
+					//this.GetComponent<StageController> ().ShowPullVisual (true);
+					currentHandle.ApplyChanges (pointOfCollisionGO, movingHandle, this);
 
 					//currentHandle.connectedObject.GetComponent<ModelingObject> ().HideBoundingBox ();
 					movingHandle = true;
@@ -780,16 +809,16 @@ public class Selection : MonoBehaviour
 				otherController.duplicateMode = false;
 				duplicateHelp.DuplicateNotActive ();
 			}
+		}   
 
-			if (device.GetTouchDown (SteamVR_Controller.ButtonMask.ApplicationMenu)) {
-				buttonOnController.transform.localPosition = standardPosButton + new Vector3 (0f, -0.002f, 0f);
-				ToggleOnOffHelp ();
-			}
+		if (device.GetTouchDown (SteamVR_Controller.ButtonMask.ApplicationMenu)) {
+			buttonOnController.transform.localPosition = standardPosButton + new Vector3 (0f, -0.002f, 0f);
+			ToggleOnOffHelp ();
+		}
 
-			if (device.GetTouchUp (SteamVR_Controller.ButtonMask.ApplicationMenu)) {
-				buttonOnController.transform.localPosition = standardPosButton;
-			}
-		}        
+		if (device.GetTouchUp (SteamVR_Controller.ButtonMask.ApplicationMenu)) {
+			buttonOnController.transform.localPosition = standardPosButton;
+		}
     }
 
 	public void ToggleOnOffHelp(){

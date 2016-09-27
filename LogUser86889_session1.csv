@@ -1,0 +1,6 @@
+UserID, General Type of Interaction, Time, Specific Type of Interaction, Settings Selection Mode, Stage movement, stage rotation and scaling, session number 
+86889,navigation,12.68127,gestureNavigation,alwaysOpen,free,gesture,1
+86889,navigation,18.5911,gestureNavigation,alwaysOpen,free,gesture,1
+86889,navigation,22.67529,gestureNavigation,alwaysOpen,free,gesture,1
+86889,triggerInteraction,27.01668,triggerOnObject,alwaysOpen,free,gesture,1
+86889,navigation,27.54547,gestureNavigation,alwaysOpen,free,gesture,1

@@ -1,0 +1,8 @@
+UserID, General Type of Interaction, Time, Specific Type of Interaction, Settings Selection Mode, Stage movement, stage rotation and scaling, session number 
+3267347,triggerInteraction,13.11692,triggerOnObject,alwaysOpen,free,touchpads,1
+3267347,triggerInteraction,14.66508,RotationHandle,alwaysOpen,free,touchpads,1
+3267347,triggerInteraction,18.03194,RotationHandle,alwaysOpen,free,touchpads,1
+3267347,triggerInteraction,62.47876,triggerOnObject,alwaysOpen,free,touchpads,1
+3267347,triggerInteraction,68.10963,nonUniformScaleHandle,alwaysOpen,free,touchpads,1
+3267347,triggerInteraction,69.34915,stage,alwaysOpen,free,touchpads,1
+3267347,triggerInteraction,70.89223,RotationHandle,alwaysOpen,free,touchpads,1

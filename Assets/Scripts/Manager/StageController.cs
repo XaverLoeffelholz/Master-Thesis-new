@@ -221,6 +221,8 @@ public class StageController : MonoBehaviour {
 
 
 			rotScalVis.ShowVisualization ();
+
+			Logger.Instance.AddLine (Logger.typeOfLog.gestureNavigation);
 		}
 
 		if (currentRotationScalingTechnique == RotationScalingTechnique.gesture && device.GetTouchUp (SteamVR_Controller.ButtonMask.Grip) && selection.typeOfController == Selection.controllerType.mainController) {			
