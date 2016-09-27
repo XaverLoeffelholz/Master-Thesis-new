@@ -483,9 +483,6 @@ public class handle : MonoBehaviour {
 			rotationVisual = Instantiate (rotationVisualPrefab);
 			rotationVisual.transform.localScale = Vector3.one * (transform.position - connectedModelingObject.GetBoundingBoxCenter ()).magnitude * 2f;	
 
-		//	float startAngle = Vector3.Angle (pointOfCollision.transform.position - connectedModelingObject.GetBoundingBoxCenter (), rotationVisual.transform.GetChild (1).transform.up);
-
-
 			RotationOnStartLine = Instantiate (handles.linesGO);
 			CurrentRotationLine = Instantiate (handles.linesGO);
 			firstIntersectionPoint = lastIntersectionPoint;
@@ -506,38 +503,9 @@ public class handle : MonoBehaviour {
 			lastIntersectionPoint
 		}, 0);
 
-		prevRotationAmount = newRotationAmount;
+        rotationVisual.GetComponent<RotationVisual>().RotationVisualisation(firstIntersectionPoint, lastIntersectionPoint);
 
-		// to do: 
-		//float angleBetweenStartAndNow = Vector3.Angle(lastIntersectionPoint-centerOfRotation, firstIntersectionPoint-centerOfRotation);
-
-		float currentRotationAmountFromStart = newRotationAmount - firstRotationAmount;
-
-		if (currentRotationAmountFromStart > 180) {
-			currentRotationAmountFromStart = currentRotationAmountFromStart - 360f;
-		}
-
-		// write extra function to display slices
-
-
-
-		// display 5 degree pieces
-		int numberOfSlices = (int) Mathf.Abs(RasterManager.Instance.RasterAngle(currentRotationAmountFromStart) / RasterManager.Instance.rasterLevelAngles);
-
-		//Debug.Log ("number of slices" + numberOfSlices);
-
-
-
-		// klappt nicht so geil, werden auch noch nicht geloescht
-
-		for (int i = 0; i < numberOfSlices; i++) {
-			GameObject newSlice = Instantiate (handles.rotationSliceGO);
-			newSlice.transform.SetParent (rotationVisual.transform);
-			newSlice.transform.position = rotationVisual.transform.position;
-			newSlice.transform.rotation = Quaternion.LookRotation (firstIntersectionPoint - centerOfRotation, rotationVisual.transform.forward);		
-			newSlice.transform.RotateAround(newSlice.transform.position, rotationAxis, 5f * i);
-		}
-
+        prevRotationAmount = newRotationAmount;     
 
 		// adjust length of laserpointer
 		controller.AdjustLengthPointer (rayDistance);

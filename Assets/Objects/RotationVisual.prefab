@@ -26,6 +26,7 @@ GameObject:
   serializedVersion: 4
   m_Component:
   - 4: {fileID: 491314}
+  - 114: {fileID: 11409900}
   m_Layer: 0
   m_Name: RotationVisual
   m_TagString: Untagged
@@ -50,6 +51,21 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+--- !u!1 &154732
+GameObject:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  serializedVersion: 4
+  m_Component:
+  - 4: {fileID: 416108}
+  m_Layer: 0
+  m_Name: SlicesContainer
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
 --- !u!4 &406708
 Transform:
   m_ObjectHideFlags: 1
@@ -59,10 +75,21 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 38.61739, y: 38.61741, z: 38.61741}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children: []
   m_Father: {fileID: 498262}
   m_RootOrder: 0
+--- !u!4 &416108
+Transform:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 154732}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 491314}
+  m_RootOrder: 1
 --- !u!4 &491314
 Transform:
   m_ObjectHideFlags: 1
@@ -72,9 +99,9 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 0.24894999}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children:
   - {fileID: 498262}
+  - {fileID: 416108}
   m_Father: {fileID: 0}
   m_RootOrder: 0
 --- !u!4 &498262
@@ -86,7 +113,6 @@ Transform:
   m_LocalRotation: {x: 0.7071068, y: 0, z: 0, w: 0.7071067}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 0.17322794, y: 0.17322794, z: 0.17322794}
-  m_LocalEulerAnglesHint: {x: 90, y: 0, z: 0}
   m_Children:
   - {fileID: 406708}
   m_Father: {fileID: 491314}
@@ -174,6 +200,19 @@ Animator:
   m_WarningMessage: 
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
+--- !u!114 &11409900
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 105352}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: eb0aae8de8efaa348927da3ebfd0fa47, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  firstSlice: {fileID: 124438, guid: 3a86d4f9add6bdc4ca41800ede2fda68, type: 2}
+  SlicesContainer: {fileID: 416108}
 --- !u!1001 &100100000
 Prefab:
   m_ObjectHideFlags: 1
