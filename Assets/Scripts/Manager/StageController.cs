@@ -347,6 +347,9 @@ public class StageController : MonoBehaviour {
 						Vector3 rotationAxis = p2Rotation - p1Rotation;
 
 						currentModelingObject.RotateAround (rotationAxis, amountX, bbCenterBeforeRotation); 	
+
+						// Should also have visual, or we kick it
+
 					} else {
 						// if there is time, group rotation
 

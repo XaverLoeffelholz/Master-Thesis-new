@@ -6,6 +6,8 @@ public class RotationVisual : MonoBehaviour {
 	public GameObject firstSlice;
     public Transform SlicesContainer;
 
+	public GameObject RightangleVisual;
+
     // Use this for initialization
     void Start () {
         
@@ -24,9 +26,13 @@ public class RotationVisual : MonoBehaviour {
         float endangle = Vector3.Angle(transform.up, point2 - transform.position);
         float directionEnd = Mathf.Sign(Vector3.Dot(Vector3.Cross(transform.up, point2 - transform.position), transform.forward));
 
-        // Raster Angles
-        CreateSlices(startAngle * directionStart, endangle * directionEnd);
+       
+		CreateSlices(RasterManager.Instance.RasterAngle(startAngle * directionStart), RasterManager.Instance.RasterAngle(endangle * directionEnd));
     }
+
+	public void ShowRightAngleVisual(bool value){
+		RightangleVisual.SetActive (value);
+	}
 
     public void CreateSlices(float startAngle, float endangle){
 
@@ -77,10 +83,12 @@ public class RotationVisual : MonoBehaviour {
         {
             GameObject newSlice = Instantiate(firstSlice);
             newSlice.transform.position = transform.position;
+
             newSlice.transform.localEulerAngles = transform.localEulerAngles;
             newSlice.transform.Rotate(new Vector3(0f, 0f, startAngle + i * 5f));
 
-             newSlice.transform.SetParent(SlicesContainer);
+            newSlice.transform.SetParent(SlicesContainer);
+			newSlice.transform.localScale = new Vector3 (0.15f,0.15f,0.15f);
         }
 
      

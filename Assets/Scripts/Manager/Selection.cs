@@ -756,6 +756,7 @@ public class Selection : MonoBehaviour
 							device.TriggerHapticPulse (1000);
 							tempsUI = Time.time;
 							currentFocus.GetComponent<UiElement> ().PerformAction (this);
+
 							if (currentFocus.GetComponent<UiElement> ().goal != null) {
 								currentFocus.GetComponent<UiElement> ().goal.ActivateMenu ();
 							}

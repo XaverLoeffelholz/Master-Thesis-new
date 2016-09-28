@@ -80,6 +80,15 @@ public class handle : MonoBehaviour {
 	private GameObject RotationOnStartLine;
 	private GameObject CurrentRotationLine;
 
+	// rotationParameters
+	private Vector3 p1Rotation;
+	private Vector3 p2Rotation;
+	private Vector3 rotationAxis;
+	private Plane currentPlane;
+	private Plane currentPlaneOtherDirection;
+	private Vector3 centerOfRotation = Vector3.zero;
+	private Vector3 rotationRelativeTo;
+
     // Use this for initialization
     void Start () {
 		if (arrow != null) {
@@ -305,16 +314,19 @@ public class handle : MonoBehaviour {
 
 		input = Mathf.SmoothDamp(prevScalingAmount, input, ref velocity, smoothTime);
 
+		// check if we can also raster just the touchpoint
+		//centerOfScaling = RasterManager.Instance.Raster(centerOfScaling);
+		//touchPointForScaling = RasterManager.Instance.Raster(touchPointForScaling);
+
 		float RasteredDistanceCenters = Mathf.Max(RasterManager.Instance.Raster((centerOfScaling - touchPointForScaling).magnitude * Mathf.Abs(1f + (input - prevScalingAmount))), RasterManager.Instance.rasterLevel * 2);
 		input = (RasteredDistanceCenters / ((centerOfScaling - touchPointForScaling).magnitude)) - 1f + prevScalingAmount;
 
 		float adjustedInput = Mathf.Abs (1f + ((input - prevScalingAmount) * 0.6f));
 
-		//if (adjustedInput > RasterManager.Instance.rasterLevel * 2) {
-
 		connectedModelingObject.ScaleNonUniform (adjustedInput, direction.normalized, typeOfHandle, centerOfScaling);
 
-		//}
+		// correct center if object is off grid
+		connectedModelingObject.transform.localPosition = RasterManager.Instance.Raster(connectedModelingObject.transform.localPosition);
 
 		prevScalingAmount = input;
 	}
@@ -391,28 +403,30 @@ public class handle : MonoBehaviour {
 
 	private void Rotate(GameObject pointOfCollision, Selection controller)
     {
-		// define rotation axis
-		Vector3 p1Rotation = connectedModelingObject.GetBoundingBoxCenter();
-		Vector3 p2Rotation = p1Rotation + (p1.transform.position - p2.transform.position);
+		if (newRotation) {
+			// define rotation axis
+			p1Rotation = connectedModelingObject.GetBoundingBoxCenter();
+			p2Rotation = p1Rotation + (p1.transform.position - p2.transform.position);
 
-		Vector3 rotationAxis = connectedModelingObject.transform.InverseTransformDirection(p2Rotation - p1Rotation);
+			rotationAxis = connectedModelingObject.transform.InverseTransformDirection(p2Rotation - p1Rotation);
 
-		Plane currentPlane = new Plane ((p1Rotation-p2Rotation).normalized, transform.position);
-		Plane currentPlaneOtherDirection = new Plane ((-1f) * (p1Rotation-p2Rotation).normalized, transform.position);
+			currentPlane = new Plane ((p1Rotation-p2Rotation).normalized, transform.position);
+			currentPlaneOtherDirection = new Plane ((-1f) * (p1Rotation-p2Rotation).normalized, transform.position);
 
-		// get center of rotaion:
-		Ray rayCenterToPlane = new Ray (p1Rotation, (p1Rotation-p2Rotation).normalized * (-1f));
-		Ray rayCenterToPlaneOtherDir = new Ray (p1Rotation, (p1Rotation-p2Rotation).normalized);
+			// get center of rotaion:
+			Ray rayCenterToPlane = new Ray (p1Rotation, (p1Rotation-p2Rotation).normalized * (-1f));
+			Ray rayCenterToPlaneOtherDir = new Ray (p1Rotation, (p1Rotation-p2Rotation).normalized);
 
-		Vector3 centerOfRotation = Vector3.zero;
+			float rayDistanceToCenter;
 
-		float rayDistanceToCenter;
+			if (currentPlane.Raycast (rayCenterToPlane, out rayDistanceToCenter)) {
+				centerOfRotation = rayCenterToPlane.GetPoint (rayDistanceToCenter);
+			} else if (currentPlaneOtherDirection.Raycast (rayCenterToPlaneOtherDir, out rayDistanceToCenter)) {
+				centerOfRotation = rayCenterToPlaneOtherDir.GetPoint (rayDistanceToCenter);
+			}	
 
-		if (currentPlane.Raycast (rayCenterToPlane, out rayDistanceToCenter)) {
-			centerOfRotation = rayCenterToPlane.GetPoint (rayDistanceToCenter);
-		} else if (currentPlaneOtherDirection.Raycast (rayCenterToPlaneOtherDir, out rayDistanceToCenter)) {
-			centerOfRotation = rayCenterToPlaneOtherDir.GetPoint (rayDistanceToCenter);
-		}	
+			rotationRelativeTo = transform.position;
+		}
 
 		Ray ray = new Ray (controller.LaserPointer.transform.position, controller.LaserPointer.transform.forward);
 
@@ -427,13 +441,14 @@ public class handle : MonoBehaviour {
 				}
 
 				Vector3 intersectionPoint = Vector3.SmoothDamp (lastIntersectionPoint, ray.GetPoint (rayDistance), ref velocityRotation, smoothTimeRotation);
+				Vector3 adjustedIntersectPoint = p1Rotation + (intersectionPoint - p1Rotation).normalized * 1.5f;
 
-				float direction = Mathf.Sign (Vector3.Dot (Vector3.Cross (transform.position - p1Rotation, intersectionPoint - p1Rotation), currentPlane.normal));
+				float direction = Mathf.Sign (Vector3.Dot (Vector3.Cross (rotationRelativeTo - p1Rotation, adjustedIntersectPoint - p1Rotation), currentPlane.normal));
 
 				lastIntersectionPoint = intersectionPoint;
 
 				// to do: check Angle to center on point of intersection
-				newRotationAmount = Vector3.Angle (transform.position - centerOfRotation, intersectionPoint - centerOfRotation) * direction * (-1f);
+				newRotationAmount = Vector3.Angle (rotationRelativeTo - centerOfRotation, intersectionPoint - centerOfRotation) * direction * (-1f);
 			}
 
 		} else if (currentPlaneOtherDirection.Raycast (ray, out rayDistance)) {	
@@ -444,22 +459,50 @@ public class handle : MonoBehaviour {
 				}
 
 				Vector3 intersectionPoint = Vector3.SmoothDamp(lastIntersectionPoint, ray.GetPoint (rayDistance), ref velocityRotation, smoothTimeRotation);
+				Vector3 adjustedIntersectPoint = p1Rotation + (intersectionPoint - p1Rotation).normalized * 1.5f;
 
-				float direction = Mathf.Sign (Vector3.Dot (Vector3.Cross (transform.position - p1Rotation, intersectionPoint - p1Rotation), currentPlaneOtherDirection.normal));
+				float direction = Mathf.Sign (Vector3.Dot (Vector3.Cross (rotationRelativeTo - p1Rotation, adjustedIntersectPoint - p1Rotation), currentPlaneOtherDirection.normal));
 
 				lastIntersectionPoint = intersectionPoint;
 
 				// to do: check Angle to center on point of intersection
-				newRotationAmount = Vector3.Angle (transform.position - centerOfRotation, intersectionPoint - centerOfRotation) * direction;
+				newRotationAmount = Vector3.Angle (rotationRelativeTo - centerOfRotation, intersectionPoint - centerOfRotation) * direction;
 			}
 		}
+
+	//	Debug.Log ("rotate to " + newRotationAmount + ", in " + Time.time);
 
 		if (newRotationAmount < 0) {
 			newRotationAmount = 360f + newRotationAmount;
 		}
 
-		// maybe do sometihing to prevent jumping around -> maybe smooth and check on release if it is not on raster
 
+		if (rotationVisual == null) {
+			rotationVisual = Instantiate (rotationVisualPrefab);
+			rotationVisual.transform.localScale = Vector3.one * (transform.position - connectedModelingObject.GetBoundingBoxCenter ()).magnitude * 1.5f;	
+
+			RotationOnStartLine = Instantiate (handles.linesGO);
+			CurrentRotationLine = Instantiate (handles.linesGO);
+			firstIntersectionPoint = lastIntersectionPoint;
+		}
+
+		rotationVisual.transform.position = centerOfRotation;
+		rotationVisual.transform.rotation = Quaternion.LookRotation (p2Rotation - p1Rotation);
+
+
+		float count = Mathf.Round(newRotationAmount / 90f);
+
+		if (Mathf.Abs (newRotationAmount - (count * 90f)) <= 15f && velocityRotation.sqrMagnitude < 0.5f) {
+			//smoothTimeRotation = 0.5f;
+			newRotationAmount = count * 90f;
+
+			// show somehow that we have a 90 degree angle
+			rotationVisual.GetComponent<RotationVisual> ().ShowRightAngleVisual (true);
+		} else {
+			rotationVisual.GetComponent<RotationVisual> ().ShowRightAngleVisual (false);
+		}
+
+		// here we need to make sure it does not jump around
 		newRotationAmount = RasterManager.Instance.RasterAngle (newRotationAmount);
 
 		if (newRotation) {
@@ -474,38 +517,16 @@ public class handle : MonoBehaviour {
 			shortestRotationAmount = shortestRotationAmount - 360f;
 		}
 
-		// rotate around this axis
-		Vector3 bbCenterBeforeRotation = connectedModelingObject.transform.InverseTransformPoint (connectedModelingObject.GetBoundingBoxCenter ());
-
-		connectedModelingObject.RotateAround((p1Rotation-p2Rotation).normalized, shortestRotationAmount, bbCenterBeforeRotation);
-
-		if (rotationVisual == null) {
-			rotationVisual = Instantiate (rotationVisualPrefab);
-			rotationVisual.transform.localScale = Vector3.one * (transform.position - connectedModelingObject.GetBoundingBoxCenter ()).magnitude * 2f;	
-
-			RotationOnStartLine = Instantiate (handles.linesGO);
-			CurrentRotationLine = Instantiate (handles.linesGO);
-			firstIntersectionPoint = lastIntersectionPoint;
-		}
-
-		rotationVisual.transform.position = centerOfRotation;
-		rotationVisual.transform.rotation = Quaternion.LookRotation (p2Rotation - p1Rotation);
-
-
-		// vielleicht auch Rastern
-		RotationOnStartLine.GetComponent<Lines> ().DrawLinesWorldCoordinate (new Vector3[] {
-			centerOfRotation,
-			firstIntersectionPoint
-		}, 0);
+		connectedModelingObject.RotateAround(rotationAxis.normalized, shortestRotationAmount, connectedModelingObject.transform.InverseTransformPoint (p1Rotation));
 
 		CurrentRotationLine.GetComponent<Lines> ().DrawLinesWorldCoordinate (new Vector3[] {
 			centerOfRotation,
 			lastIntersectionPoint
 		}, 0);
 
-        rotationVisual.GetComponent<RotationVisual>().RotationVisualisation(firstIntersectionPoint, lastIntersectionPoint);
+       rotationVisual.GetComponent<RotationVisual>().RotationVisualisation(firstIntersectionPoint, lastIntersectionPoint);
 
-        prevRotationAmount = newRotationAmount;     
+       prevRotationAmount = newRotationAmount;     
 
 		// adjust length of laserpointer
 		controller.AdjustLengthPointer (rayDistance);

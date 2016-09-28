@@ -117,6 +117,8 @@ public class handles : MonoBehaviour {
 			NonUniformScaleBottom.SetActive(true);
 			NonUniformScaleLeft.SetActive(true);
 			NonUniformScaleRight.SetActive(true);
+
+			connectedModelingObject.ShowBoundingBox (false);
 		}
 	}
 

@@ -47,6 +47,7 @@ public class UiCanvasGroup : Singleton<UiCanvasGroup>{
           //  transform.LookAt(headset);
 			//transform.position = controller2.transform.position + controller2.LaserPointer.transform.forward * 0.1f;
 			transform.position = controller2.transform.position;
+			transform.localRotation = controller2.transform.localRotation;
         }
 
     }
@@ -156,11 +157,11 @@ public class UiCanvasGroup : Singleton<UiCanvasGroup>{
 
         for (int i=0; i < elements.Count; i++)
         {
-			float y = ((i+1) * positioningHeight);
+			float y = ((i+1) * positioningHeight) + 20;
 
           //  float y = - (((Mathf.Sin((float) (i+1) / (float) elements.Count * Mathf.PI)) * positioningHeight) - height / 2);
 
-            elements[i].GetComponent<RectTransform>().anchoredPosition3D = new Vector3(0, y, 0f);
+			elements[i].GetComponent<RectTransform>().anchoredPosition3D = new Vector3(0f,1f,-0.5f) * y;
         }
     }
 }

@@ -28,10 +28,11 @@ public class Group : MonoBehaviour {
 
 	}
 
-	public void BreakGroup () {
-		HideBoundingBox ();
+	public void BreakGroup (Selection controller) {
+		boundingBox.ClearBoundingBox ();
 
 		for (int i = 0; i < objectList.Count; i++) {  
+			objectList [i].DeSelect (controller);
 			objectList [i].transform.SetParent (ObjectsManager.Instance.transform);
 			objectList [i].group = null;
 		}
@@ -59,13 +60,12 @@ public class Group : MonoBehaviour {
 	}
 
 	public void DrawBoundingBox(){
-		UpdateBoundingBox ();
-
 		for (int i = 0; i < objectList.Count; i++)
 		{
-			objectList [i].ShowBoundingBox (false);
+			objectList [i].CalculateBoundingBox ();
 		}
 
+		UpdateBoundingBox ();
 		boundingBox.DrawBoundingBox ();
 	}
 
@@ -156,13 +156,14 @@ public class Group : MonoBehaviour {
 
 			DrawBoundingBox ();
 
+			/*
 			for (int i = 0; i < objectList.Count; i++) {         
 				if (objectList[i] != initiater)
 				{
 					objectList [i].Highlight ();
 					objectList [i].ShowBoundingBox (false);
 				}
-			}
+			}*/ 
 		}
     }
 
@@ -180,6 +181,16 @@ public class Group : MonoBehaviour {
 			}
 		}
     }
+
+	public void DeFocusElements(Selection controller){
+		
+		for (int i = 0; i < objectList.Count; i++)
+		{
+			//objectList [i].UnHighlight ();
+			objectList [i].HideBoundingBox (false);
+		}
+
+	}
 
     public void RotateGroup(ModelingObject initiater, Vector3 angleAxis, float angle)
     {
@@ -224,6 +235,8 @@ public class Group : MonoBehaviour {
 
     public void Move(Vector3 distance, ModelingObject initiater)
     {
+		boundingBox.ClearBoundingBox ();
+
 		for (int i = 0; i < objectList.Count; i++)
         {
             if (objectList[i] != initiater)
@@ -236,6 +249,8 @@ public class Group : MonoBehaviour {
 
     public void StopMoving(Selection controller, ModelingObject initiater)
     {
+		DrawBoundingBox ();
+
         for (int i = 0; i < objectList.Count; i++)
         {
             if (objectList[i] != initiater)

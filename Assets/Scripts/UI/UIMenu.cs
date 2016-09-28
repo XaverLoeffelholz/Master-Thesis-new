@@ -160,12 +160,14 @@ public class UIMenu : MonoBehaviour {
 				}
                 break;
 			case (buttonType.GroupBreak):
-				parentCanvas.currentModelingObject.group.BreakGroup ();
-				EndGroup ();
-				parentCanvas.currentModelingObject.ShowBoundingBox (false);
+				parentCanvas.currentModelingObject.group.BreakGroup (controller);
+				EndGroup (controller);
+				//parentCanvas.CloseMenu (controller);	
+				parentCanvas.currentModelingObject.Select (controller, controller.uiPositon.position);
+				//parentCanvas.currentModelingObject.ShowBoundingBox (false);
 				break;
             case (buttonType.GroupEnd):
-                EndGroup();
+				EndGroup (controller);
                 break;
             case (buttonType.ResetColor):
                 break;
@@ -177,7 +179,7 @@ public class UIMenu : MonoBehaviour {
                 Extrude();
                 break;
 			case (buttonType.CloseMenu):
-				EndGroup ();
+				EndGroup (controller);
 				parentCanvas.CloseMenu(controller);
 				break;
         }
@@ -221,11 +223,14 @@ public class UIMenu : MonoBehaviour {
 
 
 
-    public void EndGroup()
+	public void EndGroup(Selection controller)
     {
 		if (parentCanvas.currentModelingObject.group != null) {
+
 			if (parentCanvas.currentModelingObject.group.objectList.Count == 1) {
-				parentCanvas.currentModelingObject.group.BreakGroup ();
+				parentCanvas.currentModelingObject.group.BreakGroup (controller);
+			} else {
+				parentCanvas.currentModelingObject.group.DeFocusElements(controller);
 			}
 		}
 

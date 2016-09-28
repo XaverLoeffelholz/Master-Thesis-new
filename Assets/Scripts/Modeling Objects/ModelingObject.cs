@@ -177,23 +177,23 @@ public class ModelingObject : MonoBehaviour
 				if (!snapped) {
 					transform.position = newPositionWorld;
 
-					float lowestPoint = 0f;
+					Vector3 lowestPoint = Vector3.zero;
+
+					transform.localPosition = RasterManager.Instance.Raster (transform.localPosition);
 
 					// here we need to check for the whole group if there is an object touching 0
 					if (group != null) {
 						// get lowest point of group
 						group.UpdateBoundingBox();
-						lowestPoint = group.GetBoundingBoxBottomCenter ().y;
+						lowestPoint = group.GetBoundingBoxBottomCenter ();
 					} else {
-						lowestPoint = GetBoundingBoxBottomCenter ().y;
+						lowestPoint = GetBoundingBoxBottomCenter ();
 					}
 
-					if (lowestPoint <= ObjectsManager.Instance.stageScaler.transform.position.y) {	
-						float belowZero = ObjectsManager.Instance.stageScaler.transform.position.y - lowestPoint;
-						transform.position = new Vector3 (transform.position.x, transform.position.y + belowZero, transform.position.z);
+					if ((transform.localPosition.y + transform.InverseTransformPoint(lowestPoint).y) < 0f) {	
+						float belowZero = Mathf.Abs(transform.localPosition.y + transform.InverseTransformPoint(lowestPoint).y);
+						transform.localPosition = new Vector3 (transform.localPosition.x, transform.localPosition.y + belowZero, transform.localPosition.z);
 					}
-
-					transform.localPosition = RasterManager.Instance.Raster (transform.localPosition);
 
 					// here check for possible snappings
 					if (colliderSphere.possibleSnapping != null && group == null) {
@@ -717,15 +717,14 @@ public class ModelingObject : MonoBehaviour
 			handles.RotateSide2.SetActive (false);
 		}
 
-		handles.RotateSide3.transform.position = 0.5f * boundingBox.coordinates[3] + 0.5f * boundingBox.coordinates[7];
-
+		//handles.RotateSide3.transform.position = 0.5f * boundingBox.coordinates[3] + 0.5f * boundingBox.coordinates[7];
 		if (closesBBcorner == boundingBox.coordinates [3] || closesBBcorner == boundingBox.coordinates [7]) {			
 			handles.RotateSide3.SetActive (showRotationHandles);
 
 			if (closesBBcorner == boundingBox.coordinates [3]){
-				handles.RotateSide1.transform.position = boundingBox.coordinates [7];
+				handles.RotateSide3.transform.position = boundingBox.coordinates [7];
 			} else {
-				handles.RotateSide1.transform.position = boundingBox.coordinates [3];
+				handles.RotateSide3.transform.position = boundingBox.coordinates [3];
 			}
 		} else {
 			handles.RotateSide3.SetActive (false);
@@ -826,22 +825,20 @@ public class ModelingObject : MonoBehaviour
 
     public void Focus(Selection controller)
     {
-        if (!focused)
+		if (!focused || (group != null && !group.focused))
         {
-            Highlight();
-			ShowBoundingBox (false);
-
-			if (group != null && !group.focused)
-            {
-				group.FocusGroup(this, controller);
-            }
+			if (group != null) {
+				group.FocusGroup (this, controller);
+			} else {
+				Highlight();
+				ShowBoundingBox (false);
+			}
 
 			if (controller.currentSettingSelectionMode == Selection.settingSelectionMode.SettingsButton && !transform.parent.CompareTag("Library") && !controller.groupItemSelection && !moving){
 			 	objectSelector.ShowSelectionButton (controller);
 			}
 
             controller.AssignCurrentFocus(transform.gameObject);
-
             focused = true;
 
         }
@@ -849,7 +846,7 @@ public class ModelingObject : MonoBehaviour
 
 	public void UnFocus(Selection controller)
     {
-		if (focused && !selected && !moving)
+		if ((focused && !selected && !moving)  || (group != null && !group.focused))
         {
 			if (group == null) {
 				// ObjectSelector.SetActive(false);
@@ -896,8 +893,6 @@ public class ModelingObject : MonoBehaviour
 				group.SelectGroup(this);
 			} 
 
-			selected = true;
-
 			// move selection button
 			if (controller.currentSettingSelectionMode == Selection.settingSelectionMode.SettingsButton) {
 				objectSelector.active = false;
@@ -912,11 +907,15 @@ public class ModelingObject : MonoBehaviour
 
 			//ShowOutline(true);
 			ShowBoundingBox (true);
-		}      
+		}     
+
+		selected = true;
     }
 		
     public void DeSelect(Selection controller)
     {	
+		handles.DisableHandles();
+
 		if (selected) {			
 			if (group != null)
 			{
@@ -929,10 +928,10 @@ public class ModelingObject : MonoBehaviour
 			objectSelector.DeSelect (controller);
 
 			controller.DeAssignCurrentSelection(transform.gameObject);
-			handles.DisableHandles();
-
-            UnFocus (controller);
 		}
+
+		selected = false;
+		UnFocus (controller);
     }
 	  
 
