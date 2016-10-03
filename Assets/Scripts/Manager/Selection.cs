@@ -525,6 +525,7 @@ public class Selection : MonoBehaviour
 
 							} else {
 								if (currentFocus.GetComponent<ModelingObject> ().group == null){
+                                    // needs to be local position
 									ObjectCreator.Instance.DuplicateObject (currentFocus.GetComponent<ModelingObject> (), null, currentFocus.transform.position);
 								} else {
 									ObjectCreator.Instance.DuplicateGroup(currentFocus.GetComponent<ModelingObject> ().group, currentFocus.GetComponent<ModelingObject> ().group.GetBoundingBoxCenter());

@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using System.Xml;
 using System.Collections;
 
 public class ObjectCreator : Singleton<ObjectCreator> {
@@ -24,9 +25,10 @@ public class ObjectCreator : Singleton<ObjectCreator> {
 
     // Use this for initialization
     void Start () {
-		//createNewObject(triangle, ModelingObject.ObjectType.triangle, null, null, new Vector3(-2, 0.3f, 0f), true, null, standardColor);
-		createNewObject(square, ModelingObject.ObjectType.square, null, null, new Vector3(0f, 0f, 0f), true, null, standardColor);
-		//createNewObject(octagon, ModelingObject.ObjectType.octagon, null, null, new Vector3(2, 0.3f, 0f), true, null, standardColor);
+        //	createNewObject(ModelingObject.ObjectType.triangle, null, null, new Vector3(-2, 1.3f, 4f), true, null, standardColor);
+        //	createNewObject(ModelingObject.ObjectType.square, null, null, new Vector3(0f, 1.3f, 4f), true, null, standardColor);
+        //	createNewObject(ModelingObject.ObjectType.octagon, null, null, new Vector3(2, 1.3f, 4f), true, null, standardColor);
+
         ObjectCreator.Instance.createSetofObjects();
     }
 
@@ -38,11 +40,11 @@ public class ObjectCreator : Singleton<ObjectCreator> {
 
 	public void createObjectInLibrary(ModelingObject.ObjectType objectType){
 		if (objectType == ModelingObject.ObjectType.triangle) {
-			createNewObject(triangle, ModelingObject.ObjectType.triangle, null, null, library.GetComponent<library>().pos1.position, false, null, standardColor);       
+			createNewObject(ModelingObject.ObjectType.triangle, null, null, library.GetComponent<library>().pos1.position, false, null, standardColor);       
 		} else if (objectType == ModelingObject.ObjectType.square) {
-			createNewObject(square, ModelingObject.ObjectType.square, null, null, library.GetComponent<library>().pos2.position, false, null, standardColor);
-		} if (objectType == ModelingObject.ObjectType.octagon) {
-			createNewObject(octagon, ModelingObject.ObjectType.octagon, null, null, library.GetComponent<library>().pos3.position, false, null, standardColor);
+			createNewObject(ModelingObject.ObjectType.square, null, null, library.GetComponent<library>().pos2.position, false, null, standardColor);
+		} else if (objectType == ModelingObject.ObjectType.octagon) {
+			createNewObject(ModelingObject.ObjectType.octagon, null, null, library.GetComponent<library>().pos3.position, false, null, standardColor);
 		}	
 	}
 
@@ -50,17 +52,33 @@ public class ObjectCreator : Singleton<ObjectCreator> {
 
     public void createSetofObjects()
     {
-		createNewObject(triangle, ModelingObject.ObjectType.triangle, null, null, library.GetComponent<library>().pos1.position, false, null, standardColor);       
-		createNewObject(square, ModelingObject.ObjectType.square, null, null, library.GetComponent<library>().pos2.position, false, null, standardColor);
-		createNewObject(octagon, ModelingObject.ObjectType.octagon, null, null, library.GetComponent<library>().pos3.position, false, null, standardColor);
+		createNewObject(ModelingObject.ObjectType.triangle, null, null, library.GetComponent<library>().pos1.position, false, null, standardColor);       
+		createNewObject(ModelingObject.ObjectType.square, null, null, library.GetComponent<library>().pos2.position, false, null, standardColor);
+		createNewObject(ModelingObject.ObjectType.octagon, null, null, library.GetComponent<library>().pos3.position, false, null, standardColor);
 
         //createNewObject(hexagon, ModelingObject.ObjectType.hexagon, null, null, library.GetComponent<library>().pos3.localPosition, false, null);		
     }
 
-	public void createNewObject(Mesh mesh, ModelingObject.ObjectType type, Face groundface, ModelingObject original, Vector3 offSet, bool insideStage, Group group, Color color)
+	public void createNewObject(ModelingObject.ObjectType type, Face groundface, ModelingObject original, Vector3 offSet, bool insideStage, Group group, Color color)
     {
+        Mesh mesh = new Mesh();
+
+        if (type == ModelingObject.ObjectType.triangle)
+        {
+            mesh = triangle;
+        }
+        else if (type == ModelingObject.ObjectType.square)
+        {
+            mesh = square;
+        }
+        else if (type == ModelingObject.ObjectType.octagon)
+        {
+            mesh = octagon;
+        }
+
         GameObject newObject = new GameObject();
         newObject = Instantiate(modelingObject);
+
         if (insideStage)
         {
             newObject.transform.SetParent(objects);
@@ -100,10 +118,10 @@ public class ObjectCreator : Singleton<ObjectCreator> {
                 newObject.transform.localScale = new Vector3(1f, 1f, 1f);
                 newObject.transform.localEulerAngles = new Vector3(0f, 0f, 0f);
                 newObject.transform.localPosition = new Vector3(0f, 0f, 0f);
-				newObject.transform.localPosition = newObject.transform.localPosition + new Vector3(0, 0.3f, 0f);
+				//newObject.transform.localPosition = newObject.transform.localPosition + new Vector3(0, 0.3f, 0f);
             } else
             {
-				newObject.transform.position = offSet;
+				//newObject.transform.position = offSet;
                 newObject.transform.localScale = new Vector3(0.8f, 0.8f, 0.8f);
             }
 
@@ -111,8 +129,22 @@ public class ObjectCreator : Singleton<ObjectCreator> {
 
         if (original != null)
         {
-            newModelingObject.SetVertexBundlePositions(original);
-			newObject.transform.position = offSet;
+            // SetVertexBundlePositions(Vector3[] topFaceCoordinates, Vector3[] bottomFaceCoordinates, Vector3 topFaceCenter, Vector3 bottomFaceCenter)
+
+            Vector3[] topFaceCoordinates = new Vector3[original.topFace.vertexBundles.Length];
+            Vector3[] bottomFaceCoordinates = new Vector3[original.bottomFace.vertexBundles.Length];
+
+            for (int i=0; i < topFaceCoordinates.Length; i++)
+            {
+                topFaceCoordinates[i] = original.topFace.vertexBundles[i].coordinates;
+            }
+
+            for (int i = 0; i < bottomFaceCoordinates.Length; i++)
+            {
+                bottomFaceCoordinates[i] = original.bottomFace.vertexBundles[i].coordinates;
+            }
+
+            newModelingObject.SetVertexBundlePositions(topFaceCoordinates, bottomFaceCoordinates, original.topFace.centerPosition, original.bottomFace.centerPosition);
         }
 
         // newModelingObject.CorrectOffset();
@@ -121,10 +153,12 @@ public class ObjectCreator : Singleton<ObjectCreator> {
 
         if (group != null) {
             ObjectsManager.Instance.AddObjectToGroup(group, newModelingObject);
-			newObject.transform.position = offSet;
+			//newObject.transform.position = offSet;
         }
 
-		newModelingObject.ChangeColor(color, false);
+        newObject.transform.position = offSet;
+
+        newModelingObject.ChangeColor(color, false);
 		latestModelingObject = newModelingObject;
     }
 
@@ -138,37 +172,23 @@ public class ObjectCreator : Singleton<ObjectCreator> {
 		switch (numberOfVertices) 
 		{
 		case 3:
-			createNewObject (triangle, ModelingObject.ObjectType.triangle, groundface, null, offset, true, null, standardColor);
+			createNewObject (ModelingObject.ObjectType.triangle, groundface, null, offset, true, null, standardColor);
                 break;
 		case 4:
-			createNewObject (square, ModelingObject.ObjectType.square, groundface, null, offset, true, null, standardColor);
+			createNewObject (ModelingObject.ObjectType.square, groundface, null, offset, true, null, standardColor);
                 break;
 		case 6:
-			createNewObject (hexagon, ModelingObject.ObjectType.hexagon, groundface, null, offset, true, null, standardColor);
+			createNewObject (ModelingObject.ObjectType.hexagon, groundface, null, offset, true, null, standardColor);
                 break;
 		case 8:
-			createNewObject (octagon, ModelingObject.ObjectType.octagon, groundface, null, offset, true, null, standardColor);
+			createNewObject (ModelingObject.ObjectType.octagon, groundface, null, offset, true, null, standardColor);
                 break;
 		}
 	}
 
 	public void DuplicateObject(ModelingObject original, Group group, Vector3 objectPosition)
     {
-        if (original.typeOfObject == ModelingObject.ObjectType.triangle)
-        {
-			createNewObject(triangle, original.typeOfObject, null, original, objectPosition, true, group, original.currentColor);
-        } else if (original.typeOfObject == ModelingObject.ObjectType.square)
-        {
-			createNewObject(square, original.typeOfObject, null, original, objectPosition, true, group, original.currentColor);
-        }
-        else if (original.typeOfObject == ModelingObject.ObjectType.hexagon)
-        {
-			createNewObject(hexagon, original.typeOfObject, null, original, objectPosition, true, group, original.currentColor);
-        }
-        else if (original.typeOfObject == ModelingObject.ObjectType.octagon)
-        {
-			createNewObject(octagon, original.typeOfObject, null, original, objectPosition, true, group, original.currentColor);
-        }
+        createNewObject(original.typeOfObject, null, original, objectPosition, true, group, original.currentColor);
 
 		duplicateAnimation = Instantiate (duplicateAnimationPrefab);
 		duplicateAnimation.transform.position = objectPosition;
@@ -187,11 +207,62 @@ public class ObjectCreator : Singleton<ObjectCreator> {
 		Group NewGroup = ObjectsManager.Instance.CreateGroup();
 
 		for (int i = 0; i < group.objectList.Count; i++) {
+
+            // we need to change this to local position
 			DuplicateObject (group.objectList [i], NewGroup, (group.objectList [i].transform.position + (objectPosition-group.GetBoundingBoxCenter()))); 
 		}
 
 		NewGroup.UpdateBoundingBox ();
 	}
 
+    public void ImportFromXML(string pathToXMl)
+    {
+        XmlDocument doc = new XmlDocument();
+        doc.Load(pathToXMl);
+        XmlElement baseNode = doc.DocumentElement;
 
+        // we could do something with id and session
+
+        XmlNode creation = baseNode.SelectSingleNode("creation");
+
+        foreach (XmlNode modelingObject in creation.ChildNodes)
+        {
+            ModelingObject.ObjectType typeofObject = (ModelingObject.ObjectType)System.Enum.Parse(typeof(ModelingObject.ObjectType), modelingObject.SelectSingleNode("objectType").InnerText);
+            Vector3 objectPosition = new Vector3(float.Parse(modelingObject.SelectSingleNode("position").SelectSingleNode("x").InnerText),
+                float.Parse(modelingObject.SelectSingleNode("position").SelectSingleNode("y").InnerText),
+                float.Parse(modelingObject.SelectSingleNode("position").SelectSingleNode("z").InnerText));
+
+            Color color = new Vector4(float.Parse(modelingObject.SelectSingleNode("color").SelectSingleNode("r").InnerText),
+                float.Parse(modelingObject.SelectSingleNode("color").SelectSingleNode("g").InnerText),
+                float.Parse(modelingObject.SelectSingleNode("color").SelectSingleNode("b").InnerText),
+                float.Parse(modelingObject.SelectSingleNode("color").SelectSingleNode("a").InnerText));
+
+            createNewObject(typeofObject, null, null, objectPosition, true, null, color);
+
+            // replace vertices based on positions
+            Vector3 topFaceCenter = new Vector3(float.Parse(modelingObject.SelectSingleNode("topfacecenter").SelectSingleNode("x").InnerText),
+                float.Parse(modelingObject.SelectSingleNode("topfacecenter").SelectSingleNode("y").InnerText),
+                float.Parse(modelingObject.SelectSingleNode("topfacecenter").SelectSingleNode("z").InnerText));
+            Vector3 bottomFaceCenter = new Vector3(float.Parse(modelingObject.SelectSingleNode("topfacecenter").SelectSingleNode("x").InnerText),
+                float.Parse(modelingObject.SelectSingleNode("topfacecenter").SelectSingleNode("y").InnerText),
+                float.Parse(modelingObject.SelectSingleNode("topfacecenter").SelectSingleNode("z").InnerText));
+
+            Vector3[] topFaceCoordinates = new Vector3[modelingObject.SelectSingleNode("faces").SelectSingleNode("topface").SelectSingleNode("vertices").ChildNodes.Count];
+            for (int i = 0; i < topFaceCoordinates.Length; i++)
+            {
+                XmlNode vertex = modelingObject.SelectSingleNode("faces").SelectSingleNode("topface").SelectSingleNode("vertices").ChildNodes[i];
+                topFaceCoordinates[i] = new Vector3(float.Parse(vertex.SelectSingleNode("x").InnerText), float.Parse(vertex.SelectSingleNode("y").InnerText), float.Parse(vertex.SelectSingleNode("z").InnerText));
+            }
+
+            Vector3[] bottomFaceCoordinates = new Vector3[modelingObject.SelectSingleNode("faces").SelectSingleNode("bottomface").SelectSingleNode("vertices").ChildNodes.Count];
+
+            for (int i = 0; i < bottomFaceCoordinates.Length; i++)
+            {
+                XmlNode vertex = modelingObject.SelectSingleNode("faces").SelectSingleNode("bottomface").SelectSingleNode("vertices").ChildNodes[i];
+                bottomFaceCoordinates[i] = new Vector3(float.Parse(vertex.SelectSingleNode("x").InnerText), float.Parse(vertex.SelectSingleNode("y").InnerText), float.Parse(vertex.SelectSingleNode("z").InnerText));
+            }
+
+            latestModelingObject.SetVertexBundlePositions(topFaceCoordinates, bottomFaceCoordinates, topFaceCenter, bottomFaceCenter);
+        }
+    }
 }

@@ -1452,23 +1452,23 @@ public class ModelingObject : MonoBehaviour
 		RotateHandles();
     }
 
-    public void SetVertexBundlePositions(ModelingObject otherObject)
+    public void SetVertexBundlePositions(Vector3[] topFaceCoordinates, Vector3[] bottomFaceCoordinates, Vector3 topFaceCenter, Vector3 bottomFaceCenter)
     {
         for (int i = 0; i < topFace.vertexBundles.Length; i++)
         {
-            topFace.vertexBundles[i].coordinates = otherObject.topFace.vertexBundles[i].coordinates;
+            topFace.vertexBundles[i].coordinates = topFaceCoordinates[i];
         }
 
-        topFace.center.coordinates = otherObject.topFace.center.coordinates;
+        topFace.center.coordinates = topFaceCenter;
 
         for (int i = 0; i < bottomFace.vertexBundles.Length; i++)
         {
             // rotate coordinates of every vertexbundle
-            bottomFace.vertexBundles[i].coordinates = otherObject.bottomFace.vertexBundles[i].coordinates;
+            bottomFace.vertexBundles[i].coordinates = bottomFaceCoordinates[i];
 
         }
 
-        bottomFace.center.coordinates = otherObject.bottomFace.center.coordinates;
+        bottomFace.center.coordinates = bottomFaceCenter;
 
         // update centers and recalculate normals of side faces
 
@@ -1482,10 +1482,6 @@ public class ModelingObject : MonoBehaviour
 		CalculateBoundingBox ();
 		PositionHandles (false);
 		RotateHandles();		
-
-		// later we could need this for rotation
-
-		// RotateHandles ();     
     }
 
 

@@ -253,6 +253,8 @@ public class UIMenu : MonoBehaviour {
 		if (parentCanvas.currentModelingObject.group == null) {
 			parentCanvas.currentModelingObject.CalculateBoundingBox ();
 			Vector3 position = parentCanvas.currentModelingObject.GetBoundingBoxTopCenter () + (parentCanvas.currentModelingObject.GetBoundingBoxTopCenter () - parentCanvas.currentModelingObject.GetBoundingBoxCenter ());
+
+            // needs to be local position
 			ObjectCreator.Instance.DuplicateObject (parentCanvas.currentModelingObject, null, position);
 		} else {
 			parentCanvas.currentModelingObject.group.UpdateBoundingBox ();
