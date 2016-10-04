@@ -26,7 +26,7 @@ public class ObjectCreator : Singleton<ObjectCreator> {
     // Use this for initialization
     void Start () {
         //	createNewObject(ModelingObject.ObjectType.triangle, null, null, new Vector3(-2, 1.3f, 4f), true, null, standardColor);
-        //	createNewObject(ModelingObject.ObjectType.square, null, null, new Vector3(0f, 1.3f, 4f), true, null, standardColor);
+        createNewObject(ModelingObject.ObjectType.square, null, null, new Vector3(0f, 0.3f, 0f), true, null, standardColor);
         //	createNewObject(ModelingObject.ObjectType.octagon, null, null, new Vector3(2, 1.3f, 4f), true, null, standardColor);
 
         ObjectCreator.Instance.createSetofObjects();
@@ -40,11 +40,11 @@ public class ObjectCreator : Singleton<ObjectCreator> {
 
 	public void createObjectInLibrary(ModelingObject.ObjectType objectType){
 		if (objectType == ModelingObject.ObjectType.triangle) {
-			createNewObject(ModelingObject.ObjectType.triangle, null, null, library.GetComponent<library>().pos1.position, false, null, standardColor);       
+			createNewObject(ModelingObject.ObjectType.triangle, null, null, library.GetComponent<library>().pos1.localPosition, false, null, standardColor);       
 		} else if (objectType == ModelingObject.ObjectType.square) {
-			createNewObject(ModelingObject.ObjectType.square, null, null, library.GetComponent<library>().pos2.position, false, null, standardColor);
+			createNewObject(ModelingObject.ObjectType.square, null, null, library.GetComponent<library>().pos2.localPosition, false, null, standardColor);
 		} else if (objectType == ModelingObject.ObjectType.octagon) {
-			createNewObject(ModelingObject.ObjectType.octagon, null, null, library.GetComponent<library>().pos3.position, false, null, standardColor);
+			createNewObject(ModelingObject.ObjectType.octagon, null, null, library.GetComponent<library>().pos3.localPosition, false, null, standardColor);
 		}	
 	}
 
@@ -52,9 +52,9 @@ public class ObjectCreator : Singleton<ObjectCreator> {
 
     public void createSetofObjects()
     {
-		createNewObject(ModelingObject.ObjectType.triangle, null, null, library.GetComponent<library>().pos1.position, false, null, standardColor);       
-		createNewObject(ModelingObject.ObjectType.square, null, null, library.GetComponent<library>().pos2.position, false, null, standardColor);
-		createNewObject(ModelingObject.ObjectType.octagon, null, null, library.GetComponent<library>().pos3.position, false, null, standardColor);
+		createNewObject(ModelingObject.ObjectType.triangle, null, null, library.GetComponent<library>().pos1.localPosition, false, null, standardColor);       
+		createNewObject(ModelingObject.ObjectType.square, null, null, library.GetComponent<library>().pos2.localPosition, false, null, standardColor);
+		createNewObject(ModelingObject.ObjectType.octagon, null, null, library.GetComponent<library>().pos3.localPosition, false, null, standardColor);
 
         //createNewObject(hexagon, ModelingObject.ObjectType.hexagon, null, null, library.GetComponent<library>().pos3.localPosition, false, null);		
     }
@@ -118,10 +118,10 @@ public class ObjectCreator : Singleton<ObjectCreator> {
                 newObject.transform.localScale = new Vector3(1f, 1f, 1f);
                 newObject.transform.localEulerAngles = new Vector3(0f, 0f, 0f);
                 newObject.transform.localPosition = new Vector3(0f, 0f, 0f);
-				//newObject.transform.localPosition = newObject.transform.localPosition + new Vector3(0, 0.3f, 0f);
+				newObject.transform.localPosition = offSet;
             } else
             {
-				//newObject.transform.position = offSet;
+				newObject.transform.localPosition = offSet;
                 newObject.transform.localScale = new Vector3(0.8f, 0.8f, 0.8f);
             }
 
@@ -145,6 +145,7 @@ public class ObjectCreator : Singleton<ObjectCreator> {
             }
 
             newModelingObject.SetVertexBundlePositions(topFaceCoordinates, bottomFaceCoordinates, original.topFace.centerPosition, original.bottomFace.centerPosition);
+			newObject.transform.localPosition = newObject.transform.InverseTransformPoint(offSet);
         }
 
         // newModelingObject.CorrectOffset();
@@ -156,10 +157,10 @@ public class ObjectCreator : Singleton<ObjectCreator> {
 			//newObject.transform.position = offSet;
         }
 
-        newObject.transform.position = offSet;
-
         newModelingObject.ChangeColor(color, false);
 		latestModelingObject = newModelingObject;
+
+
     }
 
 
@@ -188,9 +189,15 @@ public class ObjectCreator : Singleton<ObjectCreator> {
 
 	public void DuplicateObject(ModelingObject original, Group group, Vector3 objectPosition)
     {
-        createNewObject(original.typeOfObject, null, original, objectPosition, true, group, original.currentColor);
+		//Debug.Log ("before: " + objectPosition);
+		//Debug.Log ("after inverse transform point: " + original.transform.InverseTransformPoint (objectPosition));
+
+		createNewObject(original.typeOfObject, null, original, objectPosition, true, group, original.currentColor);
 
 		duplicateAnimation = Instantiate (duplicateAnimationPrefab);
+
+		// parent it in a container and empty container 
+
 		duplicateAnimation.transform.position = objectPosition;
 		duplicateAnimation.GetComponent<CircleAnimaton> ().StartAnimation ();
 
@@ -207,7 +214,6 @@ public class ObjectCreator : Singleton<ObjectCreator> {
 		Group NewGroup = ObjectsManager.Instance.CreateGroup();
 
 		for (int i = 0; i < group.objectList.Count; i++) {
-
             // we need to change this to local position
 			DuplicateObject (group.objectList [i], NewGroup, (group.objectList [i].transform.position + (objectPosition-group.GetBoundingBoxCenter()))); 
 		}

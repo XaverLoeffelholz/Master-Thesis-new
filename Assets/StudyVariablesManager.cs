@@ -18,6 +18,8 @@ public class StudyVariablesManager : MonoBehaviour {
 	public StageFreeMovement stage;
 	public Logger logger;
 
+	public SeatedOrStandingManager seatMode;
+
 	// Use this for initialization
 	void Start () {
 	
@@ -52,11 +54,9 @@ public class StudyVariablesManager : MonoBehaviour {
 		contoller2_stage.UpdateRotationScalingTechnique ();
 
 		if (variableSelection3.value == 0) {
-			contoller1_sel.currentSettingSelectionMode = Selection.settingSelectionMode.alwaysOpen;
-			contoller2_sel.currentSettingSelectionMode = Selection.settingSelectionMode.alwaysOpen;
+			seatMode.SetSeatedMode ();
 		} else {
-			contoller1_sel.currentSettingSelectionMode = Selection.settingSelectionMode.SettingsButton;
-			contoller2_sel.currentSettingSelectionMode = Selection.settingSelectionMode.SettingsButton;
+			seatMode.SetStandingMode ();
 		}
 
 		if (session.value == 0) {

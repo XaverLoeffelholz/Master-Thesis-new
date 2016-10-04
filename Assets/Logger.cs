@@ -11,10 +11,10 @@ public class Logger : Singleton<Logger> {
 	public enum typeOfLog { triggerOnObject, triggerNoTarget, touchpadScaleStage, touchpadRotateStage, touchpadMoveObject, touchpadRotateObject, nonUniformScaleHandle, RotationHandle, FrustumHandle, stage, uiElement, gestureNavigation };
     public enum generalType { navigation, triggerInteraction };
 
-    // private string filePathLogger = @"C:\Users\user\Documents\MasterThesis Xaver - new Repo\";
-    private string filePathLogger = @"L:\Master Thesis\New Git\";
-    private string filePathSave = @"L:\Master Thesis\New Git\";
-    private string filePathImport = @"L:\Master Thesis\New Git\CastleSave1_session1_0.xml";
+	private string filePathLogger = @"C:\Users\user\Documents\MasterThesis Xaver - new Repo\Assets\Logging\";
+	// private string filePathLogger = @"L:\Master Thesis\New Git\";
+	private string filePathSave = @"C:\Users\user\Documents\MasterThesis Xaver - new Repo\Assets\Logging\";
+	private string filePathImport = @"C:\Users\user\Documents\MasterThesis Xaver - new Repo\Assets\Logging\CastleSave12_session1_0.xml";
     public string UserID;
     private FileStream fs;
 
@@ -56,7 +56,7 @@ public class Logger : Singleton<Logger> {
 		fs = File.Create(filePathLogger);  
 		fs.Dispose ();
 	 	
-		String header = "UserID, General Type of Interaction, Time, Specific Type of Interaction, Settings Selection Mode, Stage movement, stage rotation and scaling, session number \n";
+		String header = "UserID, General Type of Interaction, Time, Specific Type of Interaction, Seated or Standing Mode, Stage movement, stage rotation and scaling, session number \n";
 		File.AppendAllText(filePathLogger, header);
     }
 
@@ -109,8 +109,10 @@ public class Logger : Singleton<Logger> {
                 // group
                 foreach (Transform groupChild in child)
                 {
-                    ModelingObject currentModelingobject = groupChild.GetComponent<ModelingObject>();
-                    xmlRepresentation += CreateObjectXML(currentModelingobject);
+					if (groupChild.CompareTag ("ModelingObject")) {
+						ModelingObject currentModelingobject = groupChild.GetComponent<ModelingObject> ();
+						xmlRepresentation += CreateObjectXML (currentModelingobject);
+					}
                 }
             }
         }
@@ -124,68 +126,69 @@ public class Logger : Singleton<Logger> {
 
     public String CreateObjectXML(ModelingObject currentModelingobject)
     {
-        String xmlRepresentation = "";
+        String xmlRepresentationTemp = "";
 
         // single object
-        xmlRepresentation += "<object>\n";
+		xmlRepresentationTemp += "<object>\n";
 
-        xmlRepresentation += "<objectId>" + currentModelingobject.ObjectID + "</objectId>\n";
-        xmlRepresentation += "<objectType>" + currentModelingobject.typeOfObject + "</objectType>\n";
-        xmlRepresentation += "<position>";
+		xmlRepresentationTemp += "<objectId>" + currentModelingobject.ObjectID + "</objectId>\n";
+		xmlRepresentationTemp += "<objectType>" + currentModelingobject.typeOfObject + "</objectType>\n";
+		xmlRepresentationTemp += "<position>";
 
         // we need to change it to local position, or safe stage size
-        xmlRepresentation += "<x>" + currentModelingobject.transform.position.x + "</x> \n";
-        xmlRepresentation += "<y>" + currentModelingobject.transform.position.y + "</y> \n";
-        xmlRepresentation += "<z>" + currentModelingobject.transform.position.z + "</z> \n";
-        xmlRepresentation += "</position>\n";
-        xmlRepresentation += "<color>";
-        xmlRepresentation += "<r>" + currentModelingobject.currentColor.r + "</r> \n";
-        xmlRepresentation += "<g>" + currentModelingobject.currentColor.g + "</g> \n";
-        xmlRepresentation += "<b>" + currentModelingobject.currentColor.b + "</b> \n";
-        xmlRepresentation += "<a>" + currentModelingobject.currentColor.a + "</a> \n";
-        xmlRepresentation += "</color>";
+		xmlRepresentationTemp += "<x>" + currentModelingobject.transform.localPosition.x + "</x> \n";
+		xmlRepresentationTemp += "<y>" + currentModelingobject.transform.localPosition.y + "</y> \n";
+		xmlRepresentationTemp += "<z>" + currentModelingobject.transform.localPosition.z + "</z> \n";
+		xmlRepresentationTemp += "</position>\n";
+		xmlRepresentationTemp += "<color>";
+		xmlRepresentationTemp += "<r>" + currentModelingobject.currentColor.r + "</r> \n";
+		xmlRepresentationTemp += "<g>" + currentModelingobject.currentColor.g + "</g> \n";
+		xmlRepresentationTemp += "<b>" + currentModelingobject.currentColor.b + "</b> \n";
+		xmlRepresentationTemp += "<a>" + currentModelingobject.currentColor.a + "</a> \n";
+		xmlRepresentationTemp += "</color>";
 
-        xmlRepresentation += "<topfacecenter>\n";
-        xmlRepresentation += "<x>" + currentModelingobject.transform.position.x + "</x> \n";
-        xmlRepresentation += "<y>" + currentModelingobject.transform.position.y + "</y> \n";
-        xmlRepresentation += "<z>" + currentModelingobject.transform.position.z + "</z> \n";
-        xmlRepresentation += "</topfacecenter>\n";
+		xmlRepresentationTemp += "<topfacecenter>\n";
+		xmlRepresentationTemp += "<x>" + currentModelingobject.topFace.center.coordinates.x + "</x> \n";
+		xmlRepresentationTemp += "<y>" + currentModelingobject.topFace.center.coordinates.y + "</y> \n";
+		xmlRepresentationTemp += "<z>" + currentModelingobject.topFace.center.coordinates.z + "</z> \n";
+		xmlRepresentationTemp += "</topfacecenter>\n";
 
-        xmlRepresentation += "<bottomfacecenter>\n";
-        xmlRepresentation += "<x>" + currentModelingobject.transform.position.x + "</x> \n";
-        xmlRepresentation += "<y>" + currentModelingobject.transform.position.y + "</y> \n";
-        xmlRepresentation += "<z>" + currentModelingobject.transform.position.z + "</z> \n";
-        xmlRepresentation += "</bottomfacecenter>\n";
+		xmlRepresentationTemp += "<bottomfacecenter>\n";
+		xmlRepresentationTemp += "<x>" + currentModelingobject.bottomFace.center.coordinates.x + "</x> \n";
+		xmlRepresentationTemp += "<y>" + currentModelingobject.bottomFace.center.coordinates.y + "</y> \n";
+		xmlRepresentationTemp += "<z>" + currentModelingobject.bottomFace.center.coordinates.z + "</z> \n";
+		xmlRepresentationTemp += "</bottomfacecenter>\n";
 
-        xmlRepresentation += "<faces>\n";
-        xmlRepresentation += "<topface>\n";
-        xmlRepresentation += "<vertices>\n";
+		xmlRepresentationTemp += "<faces>\n";
+		xmlRepresentationTemp += "<topface>\n";
+		xmlRepresentationTemp += "<vertices>\n";
         for (int i = 0; i < currentModelingobject.topFace.vertexBundles.Length; i++)
         {
-            xmlRepresentation += "<vertex> \n";
-            xmlRepresentation += "<x>" + currentModelingobject.topFace.vertexBundles[i].coordinates.x + "</x> \n";
-            xmlRepresentation += "<y>" + currentModelingobject.topFace.vertexBundles[i].coordinates.y + "</y> \n";
-            xmlRepresentation += "<z>" + currentModelingobject.topFace.vertexBundles[i].coordinates.z + "</z> \n";
-            xmlRepresentation += "</vertex> \n";
+			xmlRepresentationTemp += "<vertex> \n";
+			xmlRepresentationTemp += "<x>" + currentModelingobject.topFace.vertexBundles[i].coordinates.x + "</x> \n";
+			xmlRepresentationTemp += "<y>" + currentModelingobject.topFace.vertexBundles[i].coordinates.y + "</y> \n";
+			xmlRepresentationTemp += "<z>" + currentModelingobject.topFace.vertexBundles[i].coordinates.z + "</z> \n";
+			xmlRepresentationTemp += "</vertex> \n";
         }
-        xmlRepresentation += "</vertices>\n";
-        xmlRepresentation += "</topface> \n";
 
-        xmlRepresentation += "<bottomface>\n";
-        xmlRepresentation += "<vertices>\n";
+		xmlRepresentationTemp += "</vertices>\n";
+		xmlRepresentationTemp += "</topface> \n";
+
+		xmlRepresentationTemp += "<bottomface>\n";
+		xmlRepresentationTemp += "<vertices>\n";
         for (int i = 0; i < currentModelingobject.bottomFace.vertexBundles.Length; i++)
         {
-            xmlRepresentation += "<vertex> \n";
-            xmlRepresentation += "<x>" + currentModelingobject.bottomFace.vertexBundles[i].coordinates.x + "</x> \n";
-            xmlRepresentation += "<y>" + currentModelingobject.bottomFace.vertexBundles[i].coordinates.y + "</y> \n";
-            xmlRepresentation += "<z>" + currentModelingobject.bottomFace.vertexBundles[i].coordinates.z + "</z> \n";
-            xmlRepresentation += "</vertex> \n";
+			xmlRepresentationTemp += "<vertex> \n";
+			xmlRepresentationTemp += "<x>" + currentModelingobject.bottomFace.vertexBundles[i].coordinates.x + "</x> \n";
+			xmlRepresentationTemp += "<y>" + currentModelingobject.bottomFace.vertexBundles[i].coordinates.y + "</y> \n";
+			xmlRepresentationTemp += "<z>" + currentModelingobject.bottomFace.vertexBundles[i].coordinates.z + "</z> \n";
+			xmlRepresentationTemp += "</vertex> \n";
         }
-        xmlRepresentation += "</vertices>\n";
-        xmlRepresentation += "</bottomface>\n";
-        xmlRepresentation += "</faces>\n";
-        xmlRepresentation += "</object>\n";
+		xmlRepresentationTemp += "</vertices>\n";
+		xmlRepresentationTemp += "</bottomface>\n";
+		xmlRepresentationTemp += "</faces>\n";
+		xmlRepresentationTemp += "</object>\n";
 
-        return xmlRepresentation;
+		return xmlRepresentationTemp;
     }
 }
