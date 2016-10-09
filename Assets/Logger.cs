@@ -8,13 +8,13 @@ using System.Collections;
 
 public class Logger : Singleton<Logger> {
 
-	public enum typeOfLog { triggerOnObject, triggerNoTarget, touchpadScaleStage, touchpadRotateStage, touchpadMoveObject, touchpadRotateObject, nonUniformScaleHandle, RotationHandle, FrustumHandle, stage, uiElement, gestureNavigation };
+	public enum typeOfLog { triggerOnObject, triggerNoTarget, touchpadScaleStage, touchpadRotateStage, touchpadMoveObject, touchpadRotateObject, nonUniformScaleHandle, RotationHandle, FrustumHandle, stage, uiElement, gestureNavigation, duplicateObject, duplicateObjectUI, grabObjectFromLibrary, deleteObject, deleteObjectUI };
     public enum generalType { navigation, triggerInteraction };
 
 	private string filePathLogger = @"C:\Users\user\Documents\MasterThesis Xaver - new Repo\Assets\Logging\";
 	// private string filePathLogger = @"L:\Master Thesis\New Git\";
 	private string filePathSave = @"C:\Users\user\Documents\MasterThesis Xaver - new Repo\Assets\Logging\";
-	private string filePathImport = @"C:\Users\user\Documents\MasterThesis Xaver - new Repo\Assets\Logging\CastleSave12_session1_0.xml";
+	private string filePathImport = @"C:\Users\user\Documents\MasterThesis Xaver - new Repo\Assets\Logging\CastleSave65654_session1_0.xml";
     public string UserID;
     private FileStream fs;
 
@@ -22,6 +22,7 @@ public class Logger : Singleton<Logger> {
 
     public StageFreeMovement stageMovement;
     public StageController stageController;
+	public SeatedOrStandingManager seatedorStandingmanager;
     public Selection selection;
 	public int sessionNumber;
     public int saveNumber = 0;
@@ -50,7 +51,7 @@ public class Logger : Singleton<Logger> {
 
     public void CreateTextFile()
     {
-        filePathLogger += "LogUser" + UserID + "_session" + sessionNumber + ".csv";
+		filePathLogger += "LogUser" + UserID + "_session" + sessionNumber + "_" + seatedorStandingmanager.currentMode + ".csv";
 
 		RestartTimer ();
 		fs = File.Create(filePathLogger);  
@@ -64,7 +65,7 @@ public class Logger : Singleton<Logger> {
     {
         generalType currentType;
 
-		if (logtype == typeOfLog.touchpadMoveObject || logtype == typeOfLog.touchpadRotateObject || logtype == typeOfLog.touchpadRotateStage || logtype == typeOfLog.touchpadScaleStage  || logtype == typeOfLog.gestureNavigation)
+		if (logtype == typeOfLog.touchpadRotateStage || logtype == typeOfLog.touchpadScaleStage  || logtype == typeOfLog.gestureNavigation)
         {
 			currentType = generalType.navigation; 
         } else
@@ -72,7 +73,7 @@ public class Logger : Singleton<Logger> {
             currentType = generalType.triggerInteraction;
         }
 
-		string text = UserID + "," + currentType + "," + (Time.time - countTimeFrom) + "," + logtype + "," + selection.currentSettingSelectionMode + "," + stageMovement.currentStageMovement + "," + stageController.currentRotationScalingTechnique + "," + sessionNumber + "\n";
+		string text = UserID + "," + currentType + "," + (Time.time - countTimeFrom) + "," + logtype + "," + seatedorStandingmanager.currentMode + "," + stageMovement.currentStageMovement + "," + stageController.currentRotationScalingTechnique + "," + sessionNumber + "\n";
         
 		File.AppendAllText(filePathLogger, text);
     }

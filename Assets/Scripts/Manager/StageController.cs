@@ -23,7 +23,7 @@ public class StageController : MonoBehaviour {
 
     [HideInInspector]
     public bool scaleMode;
-    private Selection selection;
+    public Selection selection;
 
 	public GameObject pullIcon;
 	public GameObject rotateIcon;
@@ -53,11 +53,12 @@ public class StageController : MonoBehaviour {
 	private float lastDistance;
 	private Vector3 lastVector;
 	public RotationScalingVisualization rotScalVis;
+	public NavigationGestureHelp navHelp;
 
     void Awake()
     {
 		trackedObj = GetComponent<SteamVR_TrackedObject>();
-        selection = this.GetComponent<Selection>();
+       // selection = this.GetComponent<Selection>();
 
 		lineInitialScale = line.transform.localScale;
 		touchpadInitialScale = touchpad.transform.localScale;
@@ -86,11 +87,31 @@ public class StageController : MonoBehaviour {
 			line.transform.localScale = new Vector3 (Mathf.Max(lineInitialScale.x * (1f-scale), lineInitialScale.x*0.7f), lineInitialScale.y, lineInitialScale.z);
 		}
 
-		ShowPullVisual (false);
+		if (selection.typeOfController == Selection.controllerType.mainController) {
+			ShowPullVisual (false);
+		} else {
+			ShowRotateObjectVisual (false);
+		}
+			
+
     }
 
 	public void UpdateRotationScalingTechnique(){
-		ShowPullVisual (false);
+		if (selection.typeOfController == Selection.controllerType.mainController) {
+			ShowPullVisual (false);
+		} else {
+			ShowRotateObjectVisual (false);
+		}
+
+		if (currentRotationScalingTechnique == RotationScalingTechnique.gesture) {
+			selection.ShowHelpVisual ();
+			navHelp.Hide (false);
+		} else {
+			navHelp.Hide (true);
+		}
+
+		// hide or show help for navigation
+
 	}
 
 
@@ -111,6 +132,7 @@ public class StageController : MonoBehaviour {
 				iconBG.SetActive (true);
 			} else {
 				normalIcon.SetActive (false);
+				pullIcon.SetActive (true);
 				line.SetActive (false);
 				iconBG.SetActive (false);
 			}
@@ -135,6 +157,7 @@ public class StageController : MonoBehaviour {
 			} else {
 				normalIcon.SetActive (false);
 				line.SetActive (false);
+				rotateIcon.SetActive (true);
 				iconBG.SetActive (false);
 			}
 		}
@@ -218,9 +241,6 @@ public class StageController : MonoBehaviour {
 			lastDistance = Mathf.Abs((transform.position - selection.otherController.transform.position).magnitude);
 			lastVector = posController1 - posController2;
 			// create line between both controllers
-
-
-			rotScalVis.ShowVisualization ();
 
 			Logger.Instance.AddLine (Logger.typeOfLog.gestureNavigation);
 		}
@@ -379,6 +399,8 @@ public class StageController : MonoBehaviour {
 			lastRotation = newRotation;
 
 		//	Debug.Log ("difference bei " + difference);
+
+			rotScalVis.ShowVisualization ();
 
 			RotateStage (difference);
 

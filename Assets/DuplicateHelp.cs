@@ -5,6 +5,7 @@ using System.Collections;
 public class DuplicateHelp : MonoBehaviour {
 	public Selection controller1;
 	public Selection controller2;
+	public StageController stageControl;
 
 	public RectTransform textMain;
 	public RectTransform textSub;
@@ -53,10 +54,17 @@ public class DuplicateHelp : MonoBehaviour {
 	public void Hide(bool value){
 		if (value && active) {
 			LeanTween.alphaCanvas (transform.GetComponent<CanvasGroup>(), 1f, 0.2f);
-			LeanTween.alphaCanvas (NavHelp, 1f, 0.2f);
+
+			if (stageControl.currentRotationScalingTechnique == StageController.RotationScalingTechnique.gesture) {
+				LeanTween.alphaCanvas (NavHelp, 1f, 0.2f);
+			}
+
 		} else {
 			LeanTween.alphaCanvas (transform.GetComponent<CanvasGroup>(), 0f, 0.2f);
-			LeanTween.alphaCanvas (NavHelp, 0f, 0.2f);
+
+			if (stageControl.currentRotationScalingTechnique == StageController.RotationScalingTechnique.gesture) {				
+				LeanTween.alphaCanvas (NavHelp, 0f, 0.2f);
+			}
 		}
 	}
 

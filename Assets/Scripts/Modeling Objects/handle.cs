@@ -75,7 +75,7 @@ public class handle : MonoBehaviour {
 	private GameObject rotationVisual;
 	private Vector3 lastIntersectionPoint;
 	private Vector3 firstIntersectionPoint;
-	private float smoothTimeRotation = 0.3f;
+	private float smoothTimeRotation = 0.12f;
 	private Vector3 velocityRotation = Vector3.zero;
 	private GameObject RotationOnStartLine;
 	private GameObject CurrentRotationLine;
@@ -315,7 +315,8 @@ public class handle : MonoBehaviour {
 		input = Mathf.SmoothDamp(prevScalingAmount, input, ref velocity, smoothTime);
 
 		// check if we can also raster just the touchpoint
-		//centerOfScaling = RasterManager.Instance.Raster(centerOfScaling);
+		centerOfScaling = RasterManager.Instance.Raster(centerOfScaling);
+
 		//touchPointForScaling = RasterManager.Instance.Raster(touchPointForScaling);
 
 		float RasteredDistanceCenters = Mathf.Max(RasterManager.Instance.Raster((centerOfScaling - touchPointForScaling).magnitude * Mathf.Abs(1f + (input - prevScalingAmount))), RasterManager.Instance.rasterLevel * 2);
@@ -326,7 +327,11 @@ public class handle : MonoBehaviour {
 		connectedModelingObject.ScaleNonUniform (adjustedInput, direction.normalized, typeOfHandle, centerOfScaling);
 
 		// correct center if object is off grid
-		connectedModelingObject.transform.localPosition = RasterManager.Instance.Raster(connectedModelingObject.transform.localPosition);
+		// check how far off grid
+		//Vector3 center = connectedModelingObject.transform.InverseTransformPoint(connectedModelingObject.GetBoundingBoxCenter());
+		//Vector3 correctedCenter = RasterManager.Instance.Raster(center);
+
+		//connectedModelingObject.transform.localPosition = connectedModelingObject.transform.localPosition + (correctedCenter-center);
 
 		prevScalingAmount = input;
 	}
@@ -404,6 +409,12 @@ public class handle : MonoBehaviour {
 	private void Rotate(GameObject pointOfCollision, Selection controller)
     {
 		if (newRotation) {
+			// center object on raster
+			Vector3 center = connectedModelingObject.transform.InverseTransformPoint(connectedModelingObject.GetBoundingBoxBottomCenter());
+			Vector3 correctedCenter = RasterManager.Instance.Raster(center);
+
+			connectedModelingObject.transform.localPosition = connectedModelingObject.transform.localPosition + (correctedCenter-center);
+
 			// define rotation axis
 			p1Rotation = connectedModelingObject.GetBoundingBoxCenter();
 			p2Rotation = p1Rotation + (p1.transform.position - p2.transform.position);
@@ -492,18 +503,25 @@ public class handle : MonoBehaviour {
 
 		float count = Mathf.Round(newRotationAmount / 90f);
 
-		if (Mathf.Abs (newRotationAmount - (count * 90f)) <= 15f && velocityRotation.sqrMagnitude < 0.5f) {
-			//smoothTimeRotation = 0.5f;
+		/*
+		if (Mathf.Abs (newRotationAmount - (count * 90f)) <= 15f && (velocityRotation.sqrMagnitude < 0.6f && velocityRotation.sqrMagnitude > 0.05f)) {
 			newRotationAmount = count * 90f;
+		}
+		*/
 
-			// show somehow that we have a 90 degree angle
+		if (Mathf.Abs (newRotationAmount - (count * 90f)) <= 12f) {
+			newRotationAmount = count * 90f;
+		}
+
+
+		// here we need to make sure it does not jump around
+		newRotationAmount = RasterManager.Instance.RasterAngle (newRotationAmount);
+
+		if (newRotationAmount % 90f == 0f) {
 			rotationVisual.GetComponent<RotationVisual> ().ShowRightAngleVisual (true);
 		} else {
 			rotationVisual.GetComponent<RotationVisual> ().ShowRightAngleVisual (false);
 		}
-
-		// here we need to make sure it does not jump around
-		newRotationAmount = RasterManager.Instance.RasterAngle (newRotationAmount);
 
 		if (newRotation) {
 			prevRotationAmount = newRotationAmount;

@@ -27,8 +27,9 @@ public class BiManualOperations : Singleton<BiManualOperations> {
 	// Update is called once per frame
 	void FixedUpdate() {
 		if (controller1.currentFocus != null && controller2.currentFocus != null && controller1.currentFocus == controller2.currentFocus && controller1.currentFocus.CompareTag ("ModelingObject")) {
-
-			controller1.currentFocus.GetComponent<ModelingObject> ().handles.ShowNonUniformScalingHandles ();
+			if (!UiCanvasGroup.Instance.visible) {
+				controller1.currentFocus.GetComponent<ModelingObject> ().handles.ShowNonUniformScalingHandles ();
+			}
 
 			if (controller1.currentFocus.GetComponent<ModelingObject> ().group == null) {
 				if (controller1.triggerPressed && controller2.triggerPressed) {

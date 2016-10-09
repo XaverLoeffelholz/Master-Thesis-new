@@ -1,0 +1,11 @@
+UserID, General Type of Interaction, Time, Specific Type of Interaction, Seated or Standing Mode, Stage movement, stage rotation and scaling, session number 
+235623,triggerInteraction,8.619349,triggerOnObject,seated,free,touchpads,1
+235623,triggerInteraction,8.619349,duplicateObject,seated,free,touchpads,1
+235623,triggerInteraction,11.37446,triggerOnObject,seated,free,touchpads,1
+235623,triggerInteraction,11.88239,touchpadMoveObject,seated,free,touchpads,1
+235623,triggerInteraction,13.89362,uiElement,seated,free,touchpads,1
+235623,triggerInteraction,15.0101,duplicateObjectUI,seated,free,touchpads,1
+235623,triggerInteraction,15.0101,duplicateObjectUI,seated,free,touchpads,1
+235623,triggerInteraction,15.0101,uiElement,seated,free,touchpads,1
+235623,triggerInteraction,16.32043,uiElement,seated,free,touchpads,1
+235623,triggerInteraction,16.80777,triggerOnObject,seated,free,touchpads,1

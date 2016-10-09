@@ -148,9 +148,11 @@ public class UIMenu : MonoBehaviour {
                 break;
             case (buttonType.Delete):
                 Delete();
+				Logger.Instance.AddLine (Logger.typeOfLog.deleteObjectUI);
                 break;
 			case (buttonType.Duplicate):
 				Duplicate ();
+				Logger.Instance.AddLine (Logger.typeOfLog.duplicateObjectUI);
                 break;
 			case (buttonType.GroupStart):
 				if (parentCanvas.currentModelingObject.group == null) {
@@ -163,7 +165,7 @@ public class UIMenu : MonoBehaviour {
 				parentCanvas.currentModelingObject.group.BreakGroup (controller);
 				EndGroup (controller);
 				//parentCanvas.CloseMenu (controller);	
-				parentCanvas.currentModelingObject.Select (controller, controller.uiPositon.position);
+				//parentCanvas.currentModelingObject.Select (controller, controller.uiPositon.position);
 				//parentCanvas.currentModelingObject.ShowBoundingBox (false);
 				break;
             case (buttonType.GroupEnd):
@@ -252,14 +254,14 @@ public class UIMenu : MonoBehaviour {
     {
 		if (parentCanvas.currentModelingObject.group == null) {
 			parentCanvas.currentModelingObject.CalculateBoundingBox ();
-			Vector3 position = parentCanvas.currentModelingObject.GetBoundingBoxTopCenter () + (parentCanvas.currentModelingObject.GetBoundingBoxTopCenter () - parentCanvas.currentModelingObject.GetBoundingBoxCenter ());
+			Vector3 position = parentCanvas.currentModelingObject.transform.localPosition + (2f * parentCanvas.currentModelingObject.transform.InverseTransformVector(parentCanvas.currentModelingObject.GetBoundingBoxTopCenter () - parentCanvas.currentModelingObject.GetBoundingBoxCenter ()));
 
             // needs to be local position
 			ObjectCreator.Instance.DuplicateObject (parentCanvas.currentModelingObject, null, position);
 		} else {
 			parentCanvas.currentModelingObject.group.UpdateBoundingBox ();
-			Vector3 position = parentCanvas.currentModelingObject.group.GetBoundingBoxTopCenter () + (parentCanvas.currentModelingObject.group.GetBoundingBoxTopCenter () - parentCanvas.currentModelingObject.group.GetBoundingBoxCenter ());
-			ObjectCreator.Instance.DuplicateGroup (parentCanvas.currentModelingObject.group, position);
+			Vector3 offset = 2 * parentCanvas.currentModelingObject.group.GetBoundingBoxTopCenter () - parentCanvas.currentModelingObject.group.GetBoundingBoxCenter ();
+			ObjectCreator.Instance.DuplicateGroup (parentCanvas.currentModelingObject.group, parentCanvas.currentModelingObject.transform.InverseTransformVector(offset));
 		}
 
 

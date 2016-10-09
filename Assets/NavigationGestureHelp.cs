@@ -18,4 +18,12 @@ public class NavigationGestureHelp : MonoBehaviour {
 		transform.localRotation = controller1.transform.localRotation;
 		//transform.LookAt (controller1.transform);
 	}
+
+	public void Hide(bool value){
+		if (value) {
+			LeanTween.alphaCanvas (transform.GetComponent<CanvasGroup>(), 0f, 0.2f);
+		} else {
+			LeanTween.alphaCanvas (transform.GetComponent<CanvasGroup>(), 1f, 0.2f);
+		}
+	}
 }

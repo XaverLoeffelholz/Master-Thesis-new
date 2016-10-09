@@ -86,6 +86,8 @@ public class Selection : MonoBehaviour
 	public Transform grip2;
 	public Transform trigger;
 
+	bool showGripButton = false;
+
 	int count = 0;
 
     void Awake()
@@ -185,12 +187,28 @@ public class Selection : MonoBehaviour
         }
     }
 
+	public void ShowHelpVisual (){
+		showGripButton = true;
+	}
+
+
 	// Update is called once per frame
 	void Update () {
 
         var device = SteamVR_Controller.Input((int)trackedObj.index);    
 
-		if (grip == null && typeOfController == controllerType.mainController) {
+		if (trigger == null  && typeOfController == controllerType.SecondaryController) {
+			if (transform.GetChild (0).childCount == 16) {
+				trigger = transform.GetChild (0).GetChild (15);
+
+				trigger.GetComponent<Renderer> ().material.color = Color.green;
+				trigger.GetComponent<Renderer> ().material.EnableKeyword ("_EMISSION");
+				trigger.GetComponent<Renderer> ().material.SetColor ("_EmissionColor", Color.green);
+				//trigger.GetComponent<Renderer> ().material.SetColor ("_EmissionColor", Color.white);
+			}
+		}
+
+		if (grip == null && typeOfController == controllerType.mainController && showGripButton) {
 			if (transform.GetChild (0).childCount == 16) {
 				grip = transform.GetChild(0).GetChild(7);
 				grip2 = transform.GetChild(0).GetChild(6);
@@ -201,17 +219,6 @@ public class Selection : MonoBehaviour
 				grip2.GetComponent<Renderer> ().material.EnableKeyword ("_EMISSION");
 				grip2.GetComponent<Renderer> ().material.color = Color.green;
 				grip2.GetComponent<Renderer> ().material.SetColor ("_EmissionColor", Color.green);
-			}
-		}
-
-		if (trigger == null  && typeOfController == controllerType.SecondaryController) {
-			if (transform.GetChild (0).childCount == 16) {
-				trigger = transform.GetChild (0).GetChild (15);
-
-				trigger.GetComponent<Renderer> ().material.color = Color.green;
-				trigger.GetComponent<Renderer> ().material.EnableKeyword ("_EMISSION");
-				trigger.GetComponent<Renderer> ().material.SetColor ("_EmissionColor", Color.green);
-				//trigger.GetComponent<Renderer> ().material.SetColor ("_EmissionColor", Color.white);
 			}
 		}
 
@@ -261,20 +268,20 @@ public class Selection : MonoBehaviour
 						if (duplicateMode) {
 							grabIcon.GetComponent<Renderer> ().material = duplicateGrabIconMat;
 							Vector3 newScale = initialScaleGrabIcon * hit.distance * 1.3f;
-							grabIcon.transform.localScale = new Vector3 (Mathf.Min (newScale.x, grabIcon.transform.localScale.x * 1.4f), Mathf.Min (newScale.y, grabIcon.transform.localScale.y * 1.4f), Mathf.Min (newScale.z, grabIcon.transform.localScale.z * 1.4f)); 
+							grabIcon.transform.localScale = new Vector3 (Mathf.Min (newScale.x, grabIcon.transform.localScale.x * 1.2f), Mathf.Min (newScale.y, grabIcon.transform.localScale.y * 1.2f), Mathf.Min (newScale.z, grabIcon.transform.localScale.z * 1.2f)); 
 						} else if (scalingMode) {
 							grabIcon.GetComponent<Renderer> ().material = scaleGrabIconMat;
 							Vector3 newScale = initialScaleGrabIcon * hit.distance;
-							grabIcon.transform.localScale = new Vector3 (Mathf.Min (newScale.x, grabIcon.transform.localScale.x * 1.4f), Mathf.Min (newScale.y, grabIcon.transform.localScale.y * 1.4f), Mathf.Min (newScale.z, grabIcon.transform.localScale.z * 1.4f)); 
+							grabIcon.transform.localScale = new Vector3 (Mathf.Min (newScale.x, grabIcon.transform.localScale.x * 1.2f), Mathf.Min (newScale.y, grabIcon.transform.localScale.y * 1.2f), Mathf.Min (newScale.z, grabIcon.transform.localScale.z * 1.2f)); 
 						} else if (groupItemSelection) {
 							grabIcon.GetComponent<Renderer> ().material = addToGroupMat;
 							Vector3 newScale = initialScaleGrabIcon * hit.distance * 1.3f;
-							grabIcon.transform.localScale = new Vector3 (Mathf.Min (newScale.x, grabIcon.transform.localScale.x * 1.4f), Mathf.Min (newScale.y, grabIcon.transform.localScale.y * 1.4f), Mathf.Min (newScale.z, grabIcon.transform.localScale.z * 1.4f)); 
+							grabIcon.transform.localScale = new Vector3 (Mathf.Min (newScale.x, grabIcon.transform.localScale.x * 1.2f), Mathf.Min (newScale.y, grabIcon.transform.localScale.y * 1.2f), Mathf.Min (newScale.z, grabIcon.transform.localScale.z * 1.2f)); 
 						}
 						else {
 							grabIcon.GetComponent<Renderer> ().material = normalGrabIconMat;
 							Vector3 newScale = initialScaleGrabIcon * hit.distance;
-							grabIcon.transform.localScale = new Vector3 (Mathf.Min (newScale.x, grabIcon.transform.localScale.x * 1.4f), Mathf.Min (newScale.y, grabIcon.transform.localScale.y * 1.4f), Mathf.Min (newScale.z, grabIcon.transform.localScale.z * 1.4f)); 
+							grabIcon.transform.localScale = new Vector3 (Mathf.Min (newScale.x, grabIcon.transform.localScale.x * 1.2f), Mathf.Min (newScale.y, grabIcon.transform.localScale.y * 1.2f), Mathf.Min (newScale.z, grabIcon.transform.localScale.z * 1.2f)); 
 						}
 
 					}
@@ -380,7 +387,7 @@ public class Selection : MonoBehaviour
 									grabIcon.transform.localScale = initialScaleGrabIcon * hit.distance; 
 									grabIcon.SetActive (true);
 								}
-							} else if (!UiCanvasGroup.Instance.visible && collisionObject.CompareTag ("InfoPanel")) {
+							} else if (collisionObject.CompareTag ("InfoPanel")) {
 								DeFocusCurrent (collisionObject);
 								currentFocus = collisionObject;
 								currentFocus.GetComponent<Infopanel> ().Focus (this);
@@ -442,7 +449,7 @@ public class Selection : MonoBehaviour
 				} 
 			} 
 
-
+			/*
 			if (device.GetTouchDown (SteamVR_Controller.ButtonMask.ApplicationMenu)) {
 				buttonOnController.transform.localPosition = standardPosButton + new Vector3 (0f, -0.002f, 0f);
 
@@ -460,7 +467,7 @@ public class Selection : MonoBehaviour
 				} else if (UiCanvasGroup.Instance.visible) {					
 					UiCanvasGroup.Instance.CloseMenu (this);
 				}
-			}
+			} */
 
 			if (device.GetTouchUp (SteamVR_Controller.ButtonMask.ApplicationMenu)) {
 				buttonOnController.transform.localPosition = standardPosButton;
@@ -524,11 +531,13 @@ public class Selection : MonoBehaviour
 								}
 
 							} else {
+								Logger.Instance.AddLine(Logger.typeOfLog.duplicateObject);
+
 								if (currentFocus.GetComponent<ModelingObject> ().group == null){
                                     // needs to be local position
-									ObjectCreator.Instance.DuplicateObject (currentFocus.GetComponent<ModelingObject> (), null, currentFocus.transform.position);
+									ObjectCreator.Instance.DuplicateObject (currentFocus.GetComponent<ModelingObject> (), null, currentFocus.transform.localPosition);
 								} else {
-									ObjectCreator.Instance.DuplicateGroup(currentFocus.GetComponent<ModelingObject> ().group, currentFocus.GetComponent<ModelingObject> ().group.GetBoundingBoxCenter());
+									ObjectCreator.Instance.DuplicateGroup(currentFocus.GetComponent<ModelingObject> ().group, Vector3.zero);
 								}
 
 								ModelingObject duplicatedObject = ObjectCreator.Instance.latestModelingObject;
@@ -605,7 +614,7 @@ public class Selection : MonoBehaviour
 						} 
 					}
 
-					//this.GetComponent<StageController> ().ShowPullVisual (true);
+					this.GetComponent<StageController> ().ShowPullVisual (true);
 					currentHandle.ApplyChanges (pointOfCollisionGO, movingHandle, this);
 
 					//currentHandle.connectedObject.GetComponent<ModelingObject> ().HideBoundingBox ();
@@ -762,6 +771,7 @@ public class Selection : MonoBehaviour
 								currentFocus.GetComponent<UiElement> ().goal.ActivateMenu ();
 							}
 
+							Logger.Instance.AddLine (Logger.typeOfLog.uiElement);
 						}
 					} else if (currentFocus.CompareTag ("InfoPanel")) {
 						device.TriggerHapticPulse (1000);

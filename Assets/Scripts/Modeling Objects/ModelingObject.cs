@@ -144,6 +144,8 @@ public class ModelingObject : MonoBehaviour
 
 				LeanTween.scale (this.gameObject, Vector3.one, 0.3f).setEase (LeanTweenType.easeInOutExpo);
 				LeanTween.rotateLocal (this.gameObject, Vector3.zero, 0.3f).setEase (LeanTweenType.easeInOutExpo);
+
+				Logger.Instance.AddLine (Logger.typeOfLog.grabObjectFromLibrary);
 			}
 
 			if (!BiManualOperations.Instance.IsScalingStarted ()) {				
@@ -182,6 +184,7 @@ public class ModelingObject : MonoBehaviour
 					transform.localPosition = RasterManager.Instance.Raster (transform.localPosition);
 
 					// here we need to check for the whole group if there is an object touching 0
+
 					if (group != null) {
 						// get lowest point of group
 						group.UpdateBoundingBox();
@@ -1400,6 +1403,8 @@ public class ModelingObject : MonoBehaviour
 
 
 			transform.gameObject.SetActive(false);
+
+			Logger.Instance.AddLine (Logger.typeOfLog.deleteObject);
 
 			//Trash.Instance.TrashAreaActive(false);
 		}

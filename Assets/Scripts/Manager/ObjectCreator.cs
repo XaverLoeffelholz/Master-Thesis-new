@@ -76,8 +76,7 @@ public class ObjectCreator : Singleton<ObjectCreator> {
             mesh = octagon;
         }
 
-        GameObject newObject = new GameObject();
-        newObject = Instantiate(modelingObject);
+		GameObject newObject = Instantiate(modelingObject);
 
         if (insideStage)
         {
@@ -145,7 +144,7 @@ public class ObjectCreator : Singleton<ObjectCreator> {
             }
 
             newModelingObject.SetVertexBundlePositions(topFaceCoordinates, bottomFaceCoordinates, original.topFace.centerPosition, original.bottomFace.centerPosition);
-			newObject.transform.localPosition = newObject.transform.InverseTransformPoint(offSet);
+			newObject.transform.localPosition = offSet;
         }
 
         // newModelingObject.CorrectOffset();
@@ -159,8 +158,6 @@ public class ObjectCreator : Singleton<ObjectCreator> {
 
         newModelingObject.ChangeColor(color, false);
 		latestModelingObject = newModelingObject;
-
-
     }
 
 
@@ -194,31 +191,39 @@ public class ObjectCreator : Singleton<ObjectCreator> {
 
 		createNewObject(original.typeOfObject, null, original, objectPosition, true, group, original.currentColor);
 
+		if (group == null) {
+			DuplicateAnimaton (original.GetBoundingBoxCenter());
+		}
+    }
+
+	public void DuplicateAnimaton(Vector3 position){
 		duplicateAnimation = Instantiate (duplicateAnimationPrefab);
+		duplicateAnimation.transform.SetParent (DuplicateAnimationContainer.Instance.transform);
 
 		// parent it in a container and empty container 
 
-		duplicateAnimation.transform.position = objectPosition;
+		duplicateAnimation.transform.position = position;
 		duplicateAnimation.GetComponent<CircleAnimaton> ().StartAnimation ();
 
 		Invoke ("DeleteAnimationObject", 0.6f);
-    }
-
-	private void DeleteAnimationObject(){
-		Destroy (duplicateAnimation);
 	}
 
-	public void DuplicateGroup(Group group, Vector3 objectPosition)
+	private void DeleteAnimationObject(){
+		DuplicateAnimationContainer.Instance.ClearContainer ();
+	}
+
+	public void DuplicateGroup(Group group, Vector3 offset)
 	{
 		// create new group
 		Group NewGroup = ObjectsManager.Instance.CreateGroup();
 
 		for (int i = 0; i < group.objectList.Count; i++) {
             // we need to change this to local position
-			DuplicateObject (group.objectList [i], NewGroup, (group.objectList [i].transform.position + (objectPosition-group.GetBoundingBoxCenter()))); 
+			DuplicateObject (group.objectList [i], NewGroup, (group.objectList [i].transform.localPosition + offset)); 
 		}
 
 		NewGroup.UpdateBoundingBox ();
+		DuplicateAnimaton (NewGroup.GetBoundingBoxCenter());
 	}
 
     public void ImportFromXML(string pathToXMl)
