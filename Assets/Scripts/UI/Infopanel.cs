@@ -12,7 +12,7 @@ public class Infopanel : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
-	
+		CloseInfoPanel ();
 	}
 	
 	// Update is called once per frame

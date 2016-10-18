@@ -341,7 +341,7 @@ public class StageController : MonoBehaviour {
 				if (selection.otherController.currentFocus != null && selection.otherController.currentFocus.CompareTag ("ModelingObject")) {
 
 					// turn x value into rotation of stage
-					float amountX = RasterManager.Instance.RasterAngle ((device.GetAxis ().x - lastX) * 60f);
+					float amountX = RasterManager.Instance.RasterAngle ((device.GetAxis ().x - lastX) * 15f);
 					lastX = device.GetAxis ().x;
 
 					//amountOfMovementForHapticFeedback += amountX;

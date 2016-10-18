@@ -14,6 +14,8 @@ public class Group : MonoBehaviour {
 	public handles handles;
 	public bool selected;
 
+	public ModelingObject lowestModObject;
+
     // Use this for initialization
     void Start () {
 	
@@ -353,6 +355,17 @@ public class Group : MonoBehaviour {
 		for (int i = 0; i < objectList.Count; i++)
 		{
 			objectList[i].NormalColorObject();
+		}
+	}
+
+	public void SetLowestObjectOfGroup(){
+		lowestModObject = objectList [0];
+
+		for (int i = 0; i < objectList.Count; i++)
+		{
+			if (objectList [i].transform.position.y < lowestModObject.transform.position.y) {
+				lowestModObject = objectList[i];
+			}
 		}
 	}
 		

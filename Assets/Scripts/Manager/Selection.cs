@@ -516,7 +516,8 @@ public class Selection : MonoBehaviour
 							otherController.transform.GetComponent<StageController> ().ShowRotateObjectVisual (true);
 
 							device.TriggerHapticPulse (1800);
-							otherController.ActivateController (true);
+							// deactived fo push conferences
+							//otherController.ActivateController (true);
 
 						
 							if (currentSelection != null && currentFocus != currentSelection){

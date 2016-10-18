@@ -83,6 +83,8 @@ public class BiManualOperations : Singleton<BiManualOperations> {
 			if (controller1.currentFocus.CompareTag("ModelingObject")){
 				ModelingObject modObject = controller1.currentFocus.GetComponent<ModelingObject>();
 
+				Logger.Instance.AddLine (Logger.typeOfLog.uniformScale);
+
 				controller1.StartScaling ();
 				controller2.StartScaling ();
 

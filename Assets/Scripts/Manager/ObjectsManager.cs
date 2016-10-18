@@ -144,28 +144,61 @@ public class ObjectsManager : Singleton<ObjectsManager>
 	}
 
 	public void StartMovingObject(ModelingObject movedObject){		
-		foreach(Transform model in this.transform)
+		foreach(Transform unit in this.transform)
 		{
-			if (model.CompareTag("ModelingObject"))
+			if (unit.CompareTag("ModelingObject"))
 			{
-				ModelingObject currentModelingObject = model.GetComponent<ModelingObject> ();
+				ModelingObject currentModelingObject = unit.GetComponent<ModelingObject> ();
 
 				if (currentModelingObject != movedObject) {
 					currentModelingObject.UseAsPossibleSnap ();
 				}
 			}
+
+			if (unit.CompareTag ("Group")) {
+				if (unit.transform != movedObject.group) {
+					foreach(Transform groupElement in unit.transform)
+					{
+						if (groupElement.CompareTag("ModelingObject"))
+						{
+							ModelingObject currentModelingObject = groupElement.GetComponent<ModelingObject> ();
+
+							if (currentModelingObject != movedObject) {
+								currentModelingObject.UseAsPossibleSnap ();
+							}
+						}
+					}
+				}
+			}
 		}
 	}
 
-	public void StopMovingObject(ModelingObject movedObject){		
-		foreach(Transform model in this.transform)
+	public void StopMovingObject(ModelingObject movedObject){	
+
+		foreach(Transform unit in this.transform)
 		{
-			if (model.CompareTag("ModelingObject"))
+			if (unit.CompareTag("ModelingObject"))
 			{
-				ModelingObject currentModelingObject = model.GetComponent<ModelingObject> ();
+				ModelingObject currentModelingObject = unit.GetComponent<ModelingObject> ();
 
 				if (currentModelingObject != movedObject) {
 					currentModelingObject.StopUseAsPossibleSnap ();
+				}
+			}
+
+			if (unit.CompareTag ("Group")) {
+				if (unit.transform != movedObject.group) {
+					foreach(Transform groupElement in unit.transform)
+					{
+						if (groupElement.CompareTag("ModelingObject"))
+						{
+							ModelingObject currentModelingObject = groupElement.GetComponent<ModelingObject> ();
+
+							if (currentModelingObject != movedObject) {
+								currentModelingObject.StopUseAsPossibleSnap ();
+							}
+						}
+					}
 				}
 			}
 		}

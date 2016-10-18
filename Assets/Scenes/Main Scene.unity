@@ -1078,7 +1078,7 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 11451356, guid: 1edbe55816997fe498722a31ae4805c0, type: 2}
       propertyPath: m_Text
-      value: "Schlie\xDFen"
+      value: Close
       objectReference: {fileID: 0}
     - target: {fileID: 148384, guid: 1edbe55816997fe498722a31ae4805c0, type: 2}
       propertyPath: m_TagString
@@ -1437,7 +1437,8 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: "Ziehe Objekte neben die B\xFChne um sie zu l\xF6schen."
+  m_Text: "Push objects \n off the stage to delete them\n\n\n\n\nZiehe Objekte neben
+    die B\xFChne um sie zu l\xF6schen."
 --- !u!222 &169722798
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -1815,7 +1816,7 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 11451356, guid: 1edbe55816997fe498722a31ae4805c0, type: 2}
       propertyPath: m_Text
-      value: "Schlie\xDFen"
+      value: Close
       objectReference: {fileID: 0}
     - target: {fileID: 148384, guid: 1edbe55816997fe498722a31ae4805c0, type: 2}
       propertyPath: m_TagString
@@ -3485,7 +3486,7 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 11451356, guid: 1edbe55816997fe498722a31ae4805c0, type: 2}
       propertyPath: m_Text
-      value: Objekt
+      value: Object
       objectReference: {fileID: 0}
     - target: {fileID: 148384, guid: 1edbe55816997fe498722a31ae4805c0, type: 2}
       propertyPath: m_TagString
@@ -3700,134 +3701,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1c3bf7e596963734b8da4c9df24b64cb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!43 &317342908
-Mesh:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_Name: 
-  serializedVersion: 8
-  m_SubMeshes:
-  - serializedVersion: 2
-    firstByte: 0
-    indexCount: 24
-    topology: 0
-    firstVertex: 0
-    vertexCount: 8
-    localAABB:
-      m_Center: {x: 0, y: 0.01, z: 0}
-      m_Extent: {x: 1.4, y: 0, z: 1.4}
-  m_Shapes:
-    vertices: []
-    shapes: []
-    channels: []
-    fullWeights: []
-  m_BindPose: []
-  m_BoneNameHashes: 
-  m_RootBoneNameHash: 0
-  m_MeshCompression: 0
-  m_IsReadable: 1
-  m_KeepVertices: 1
-  m_KeepIndices: 1
-  m_IndexBuffer: 000001000400010005000400010002000500020006000500020003000600030007000600030000000700000004000700
-  m_Skin: []
-  m_VertexData:
-    m_CurrentChannels: 13
-    m_VertexCount: 8
-    m_Channels:
-    - stream: 0
-      offset: 0
-      format: 0
-      dimension: 3
-    - stream: 0
-      offset: 0
-      format: 0
-      dimension: 0
-    - stream: 0
-      offset: 12
-      format: 0
-      dimension: 4
-    - stream: 0
-      offset: 28
-      format: 0
-      dimension: 2
-    - stream: 0
-      offset: 0
-      format: 0
-      dimension: 0
-    - stream: 0
-      offset: 0
-      format: 0
-      dimension: 0
-    - stream: 0
-      offset: 0
-      format: 0
-      dimension: 0
-    - stream: 0
-      offset: 0
-      format: 0
-      dimension: 0
-    m_DataSize: 288
-    _typelessdata: 0000a03f0ad7233c0000a0bf000000000000803f0000803f0000803f00000000000000000000a0bf0ad7233c0000a0bf000000000000803f0000803f0000803f0000803f000000000000a0bf0ad7233c0000a03f000000000000803f0000803f0000803f00000000000000000000a03f0ad7233c0000a03f000000000000803f0000803f0000803f0000803f000000003333b33f0ad7233c3333b3bf000000000000803f0000803f00000000000000000000803f3333b3bf0ad7233c3333b3bf000000000000803f0000803f000000000000803f0000803f3333b3bf0ad7233c3333b33f000000000000803f0000803f00000000000000000000803f3333b33f0ad7233c3333b33f000000000000803f0000803f000000000000803f0000803f
-  m_CompressedMesh:
-    m_Vertices:
-      m_NumItems: 0
-      m_Range: 0
-      m_Start: 0
-      m_Data: 
-      m_BitSize: 0
-    m_UV:
-      m_NumItems: 0
-      m_Range: 0
-      m_Start: 0
-      m_Data: 
-      m_BitSize: 0
-    m_Normals:
-      m_NumItems: 0
-      m_Range: 0
-      m_Start: 0
-      m_Data: 
-      m_BitSize: 0
-    m_Tangents:
-      m_NumItems: 0
-      m_Range: 0
-      m_Start: 0
-      m_Data: 
-      m_BitSize: 0
-    m_Weights:
-      m_NumItems: 0
-      m_Data: 
-      m_BitSize: 0
-    m_NormalSigns:
-      m_NumItems: 0
-      m_Data: 
-      m_BitSize: 0
-    m_TangentSigns:
-      m_NumItems: 0
-      m_Data: 
-      m_BitSize: 0
-    m_FloatColors:
-      m_NumItems: 0
-      m_Range: 0
-      m_Start: 0
-      m_Data: 
-      m_BitSize: 0
-    m_BoneIndices:
-      m_NumItems: 0
-      m_Data: 
-      m_BitSize: 0
-    m_Triangles:
-      m_NumItems: 0
-      m_Data: 
-      m_BitSize: 0
-    m_UVInfo: 0
-  m_LocalAABB:
-    m_Center: {x: 0, y: 0.01, z: 0}
-    m_Extent: {x: 1.4, y: 0, z: 1.4}
-  m_MeshUsageFlags: 0
-  m_BakedConvexCollisionMesh: 
-  m_BakedTriangleCollisionMesh: 
-  m_MeshOptimized: 0
 --- !u!1 &319314279
 GameObject:
   m_ObjectHideFlags: 0
@@ -4262,7 +4135,7 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 11451356, guid: 1edbe55816997fe498722a31ae4805c0, type: 2}
       propertyPath: m_Text
-      value: "Schlie\xDFen"
+      value: Close
       objectReference: {fileID: 0}
     - target: {fileID: 148384, guid: 1edbe55816997fe498722a31ae4805c0, type: 2}
       propertyPath: m_TagString
@@ -7339,7 +7212,7 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 11451356, guid: 1edbe55816997fe498722a31ae4805c0, type: 2}
       propertyPath: m_Text
-      value: Form
+      value: Shape
       objectReference: {fileID: 0}
     - target: {fileID: 148384, guid: 1edbe55816997fe498722a31ae4805c0, type: 2}
       propertyPath: m_TagString
@@ -9584,7 +9457,7 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 11451356, guid: 1edbe55816997fe498722a31ae4805c0, type: 2}
       propertyPath: m_Text
-      value: "Zur\xFCck"
+      value: Back
       objectReference: {fileID: 0}
     - target: {fileID: 148384, guid: 1edbe55816997fe498722a31ae4805c0, type: 2}
       propertyPath: m_Name
@@ -10618,6 +10491,134 @@ MeshFilter:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 843422256}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!43 &853725414
+Mesh:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_Name: 
+  serializedVersion: 8
+  m_SubMeshes:
+  - serializedVersion: 2
+    firstByte: 0
+    indexCount: 24
+    topology: 0
+    firstVertex: 0
+    vertexCount: 8
+    localAABB:
+      m_Center: {x: 0, y: 0.01, z: 0}
+      m_Extent: {x: 1.2, y: 0, z: 1.0000001}
+  m_Shapes:
+    vertices: []
+    shapes: []
+    channels: []
+    fullWeights: []
+  m_BindPose: []
+  m_BoneNameHashes: 
+  m_RootBoneNameHash: 0
+  m_MeshCompression: 0
+  m_IsReadable: 1
+  m_KeepVertices: 1
+  m_KeepIndices: 1
+  m_IndexBuffer: 000001000400010005000400010002000500020006000500020003000600030007000600030000000700000004000700
+  m_Skin: []
+  m_VertexData:
+    m_CurrentChannels: 13
+    m_VertexCount: 8
+    m_Channels:
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 3
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    - stream: 0
+      offset: 12
+      format: 0
+      dimension: 4
+    - stream: 0
+      offset: 28
+      format: 0
+      dimension: 2
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    m_DataSize: 288
+    _typelessdata: 6766863f0ad7233c9b9959bf000000000000803f0000803f0000803f0000000000000000676686bf0ad7233c9b9959bf000000000000803f0000803f0000803f0000803f00000000676686bf0ad7233c9b99593f000000000000803f0000803f0000803f00000000000000006766863f0ad7233c9b99593f000000000000803f0000803f0000803f0000803f000000009a99993f0ad7233c010080bf000000000000803f0000803f00000000000000000000803f9a9999bf0ad7233c010080bf000000000000803f0000803f000000000000803f0000803f9a9999bf0ad7233c0100803f000000000000803f0000803f00000000000000000000803f9a99993f0ad7233c0100803f000000000000803f0000803f000000000000803f0000803f
+  m_CompressedMesh:
+    m_Vertices:
+      m_NumItems: 0
+      m_Range: 0
+      m_Start: 0
+      m_Data: 
+      m_BitSize: 0
+    m_UV:
+      m_NumItems: 0
+      m_Range: 0
+      m_Start: 0
+      m_Data: 
+      m_BitSize: 0
+    m_Normals:
+      m_NumItems: 0
+      m_Range: 0
+      m_Start: 0
+      m_Data: 
+      m_BitSize: 0
+    m_Tangents:
+      m_NumItems: 0
+      m_Range: 0
+      m_Start: 0
+      m_Data: 
+      m_BitSize: 0
+    m_Weights:
+      m_NumItems: 0
+      m_Data: 
+      m_BitSize: 0
+    m_NormalSigns:
+      m_NumItems: 0
+      m_Data: 
+      m_BitSize: 0
+    m_TangentSigns:
+      m_NumItems: 0
+      m_Data: 
+      m_BitSize: 0
+    m_FloatColors:
+      m_NumItems: 0
+      m_Range: 0
+      m_Start: 0
+      m_Data: 
+      m_BitSize: 0
+    m_BoneIndices:
+      m_NumItems: 0
+      m_Data: 
+      m_BitSize: 0
+    m_Triangles:
+      m_NumItems: 0
+      m_Data: 
+      m_BitSize: 0
+    m_UVInfo: 0
+  m_LocalAABB:
+    m_Center: {x: 0, y: 0.01, z: 0}
+    m_Extent: {x: 1.2, y: 0, z: 1.0000001}
+  m_MeshUsageFlags: 0
+  m_BakedConvexCollisionMesh: 
+  m_BakedTriangleCollisionMesh: 
+  m_MeshOptimized: 0
 --- !u!1 &855974445
 GameObject:
   m_ObjectHideFlags: 0
@@ -12140,7 +12141,7 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 11451356, guid: 1edbe55816997fe498722a31ae4805c0, type: 2}
       propertyPath: m_Text
-      value: "Zur\xFCck"
+      value: Back
       objectReference: {fileID: 0}
     - target: {fileID: 148384, guid: 1edbe55816997fe498722a31ae4805c0, type: 2}
       propertyPath: m_Name
@@ -14436,7 +14437,7 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 11451356, guid: 1edbe55816997fe498722a31ae4805c0, type: 2}
       propertyPath: m_Text
-      value: "Schlie\xDFen"
+      value: Close
       objectReference: {fileID: 0}
     - target: {fileID: 148384, guid: 1edbe55816997fe498722a31ae4805c0, type: 2}
       propertyPath: m_TagString
@@ -14659,7 +14660,7 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 11451356, guid: 1edbe55816997fe498722a31ae4805c0, type: 2}
       propertyPath: m_Text
-      value: Duplizieren
+      value: Duplicate
       objectReference: {fileID: 0}
     - target: {fileID: 148384, guid: 1edbe55816997fe498722a31ae4805c0, type: 2}
       propertyPath: m_Name
@@ -15018,7 +15019,7 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 11451356, guid: 1edbe55816997fe498722a31ae4805c0, type: 2}
       propertyPath: m_Text
-      value: "Gruppe\nAufl\xF6sen\n"
+      value: Ungroup
       objectReference: {fileID: 0}
     - target: {fileID: 22442248, guid: 1edbe55816997fe498722a31ae4805c0, type: 2}
       propertyPath: m_LocalScale.x
@@ -15051,7 +15052,7 @@ Prefab:
     - target: {fileID: 11411382, guid: 1edbe55816997fe498722a31ae4805c0, type: 2}
       propertyPath: goal
       value: 
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 939512039}
     - target: {fileID: 11484606, guid: 1edbe55816997fe498722a31ae4805c0, type: 2}
       propertyPath: m_Sprite
       value: 
@@ -16007,7 +16008,7 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 11451356, guid: 1edbe55816997fe498722a31ae4805c0, type: 2}
       propertyPath: m_Text
-      value: "Zur\xFCck"
+      value: Back
       objectReference: {fileID: 0}
     - target: {fileID: 148384, guid: 1edbe55816997fe498722a31ae4805c0, type: 2}
       propertyPath: m_Name
@@ -17483,7 +17484,7 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 11451356, guid: 1edbe55816997fe498722a31ae4805c0, type: 2}
       propertyPath: m_Text
-      value: Farbe
+      value: Color
       objectReference: {fileID: 0}
     - target: {fileID: 148384, guid: 1edbe55816997fe498722a31ae4805c0, type: 2}
       propertyPath: m_TagString
@@ -18173,7 +18174,7 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 11451356, guid: 1edbe55816997fe498722a31ae4805c0, type: 2}
       propertyPath: m_Text
-      value: Gruppieren
+      value: Group
       objectReference: {fileID: 0}
     - target: {fileID: 148384, guid: 1edbe55816997fe498722a31ae4805c0, type: 2}
       propertyPath: m_TagString
@@ -18677,7 +18678,7 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 11451356, guid: 1edbe55816997fe498722a31ae4805c0, type: 2}
       propertyPath: m_Text
-      value: "L\xF6schen"
+      value: Delete
       objectReference: {fileID: 0}
     - target: {fileID: 22442248, guid: 1edbe55816997fe498722a31ae4805c0, type: 2}
       propertyPath: m_LocalScale.x
@@ -19383,7 +19384,7 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 11451356, guid: 1edbe55816997fe498722a31ae4805c0, type: 2}
       propertyPath: m_Text
-      value: Fertig
+      value: Finish grouping
       objectReference: {fileID: 0}
     - target: {fileID: 22442248, guid: 1edbe55816997fe498722a31ae4805c0, type: 2}
       propertyPath: m_LocalScale.x
@@ -19951,7 +19952,7 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 11451356, guid: 1edbe55816997fe498722a31ae4805c0, type: 2}
       propertyPath: m_Text
-      value: "Schlie\xDFen"
+      value: Close
       objectReference: {fileID: 0}
     - target: {fileID: 148384, guid: 1edbe55816997fe498722a31ae4805c0, type: 2}
       propertyPath: m_TagString
@@ -24872,14 +24873,14 @@ MonoBehaviour:
   size: 0
   color: {r: 0, g: 1, b: 1, a: 1}
   vertices:
-  - {x: 1.25, y: 0.01, z: -1.25}
-  - {x: -1.25, y: 0.01, z: -1.25}
-  - {x: -1.25, y: 0.01, z: 1.25}
-  - {x: 1.25, y: 0.01, z: 1.25}
-  - {x: 1.4, y: 0.01, z: -1.4}
-  - {x: -1.4, y: 0.01, z: -1.4}
-  - {x: -1.4, y: 0.01, z: 1.4}
-  - {x: 1.4, y: 0.01, z: 1.4}
+  - {x: 1.0500001, y: 0.01, z: -0.8500001}
+  - {x: -1.0500001, y: 0.01, z: -0.8500001}
+  - {x: -1.0500001, y: 0.01, z: 0.8500001}
+  - {x: 1.0500001, y: 0.01, z: 0.8500001}
+  - {x: 1.2, y: 0.01, z: -1.0000001}
+  - {x: -1.2, y: 0.01, z: -1.0000001}
+  - {x: -1.2, y: 0.01, z: 1.0000001}
+  - {x: 1.2, y: 0.01, z: 1.0000001}
 --- !u!33 &1870342149
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -24887,7 +24888,7 @@ MeshFilter:
     type: 2}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1870342145}
-  m_Mesh: {fileID: 317342908}
+  m_Mesh: {fileID: 853725414}
 --- !u!23 &1870342150
 MeshRenderer:
   m_ObjectHideFlags: 0

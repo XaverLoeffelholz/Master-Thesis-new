@@ -8,13 +8,14 @@ using System.Collections;
 
 public class Logger : Singleton<Logger> {
 
-	public enum typeOfLog { triggerOnObject, triggerNoTarget, touchpadScaleStage, touchpadRotateStage, touchpadMoveObject, touchpadRotateObject, nonUniformScaleHandle, RotationHandle, FrustumHandle, stage, uiElement, gestureNavigation, duplicateObject, duplicateObjectUI, grabObjectFromLibrary, deleteObject, deleteObjectUI };
-    public enum generalType { navigation, triggerInteraction };
+	public enum typeOfLog { triggerOnObject, triggerNoTarget, touchpadScaleStage, touchpadRotateStage, touchpadMoveObject, touchpadRotateObject, nonUniformScaleHandle, RotationHandle, FrustumHandle, stage, 
+		uiElement, gestureNavigation, duplicateObject, duplicateObjectUI, grabObjectFromLibrary, deleteObject, deleteObjectUI, uniformScale, closeMenuUI, groupEndUI, groupBreakUI, groupStartUI, colorUI, menuNavigationUI };
+    public enum generalType { navigation, triggerInteraction, ui };
 
-	private string filePathLogger = @"C:\Users\user\Documents\MasterThesis Xaver - new Repo\Assets\Logging\";
+	private string filePathLogger = @"C:\Users\user\Documents\Playable Master thesis\Study Version\Log files\";
 	// private string filePathLogger = @"L:\Master Thesis\New Git\";
-	private string filePathSave = @"C:\Users\user\Documents\MasterThesis Xaver - new Repo\Assets\Logging\";
-	private string filePathImport = @"C:\Users\user\Documents\MasterThesis Xaver - new Repo\Assets\Logging\CastleSave65654_session1_0.xml";
+	private string filePathSave = @"C:\Users\user\Documents\Playable Master thesis\Study Version\Safe files\";
+	private string filePathImport = @"C:\Users\user\Documents\Playable Master thesis\Study Version\Safe files\CastleSave2_session1_0.xml";
     public string UserID;
     private FileStream fs;
 
@@ -68,7 +69,10 @@ public class Logger : Singleton<Logger> {
 		if (logtype == typeOfLog.touchpadRotateStage || logtype == typeOfLog.touchpadScaleStage  || logtype == typeOfLog.gestureNavigation)
         {
 			currentType = generalType.navigation; 
-        } else
+		} else if (logtype == typeOfLog.closeMenuUI || logtype == typeOfLog.groupEndUI || logtype == typeOfLog.groupBreakUI || logtype == typeOfLog.groupStartUI || logtype == typeOfLog.duplicateObjectUI ||
+			logtype == typeOfLog.deleteObjectUI || logtype == typeOfLog.colorUI || logtype == typeOfLog.menuNavigationUI){
+			currentType = generalType.ui;
+		} else
         {
             currentType = generalType.triggerInteraction;
         }

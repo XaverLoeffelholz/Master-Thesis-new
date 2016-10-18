@@ -179,27 +179,28 @@ public class ModelingObject : MonoBehaviour
 				if (!snapped) {
 					transform.position = newPositionWorld;
 
-					Vector3 lowestPoint = Vector3.zero;
+					if (group != null && group.lowestModObject != null &&  group.lowestModObject != this) {
+						// get lowest point of group
+						Vector3 lowestPoint = group.lowestModObject.GetBoundingBoxBottomCenter () + (transform.position - prevPosition);
+
+						if ((transform.localPosition.y + transform.InverseTransformPoint(lowestPoint).y) < 0f) {	
+							float belowZero = Mathf.Abs(transform.localPosition.y + transform.InverseTransformPoint(lowestPoint).y);
+							transform.localPosition = new Vector3 (transform.localPosition.x, transform.localPosition.y + belowZero, transform.localPosition.z);
+						}
+
+					} else {
+						Vector3 lowestPoint = GetBoundingBoxBottomCenter ();
+
+						if ((transform.localPosition.y + transform.InverseTransformPoint(lowestPoint).y) < 0f) {	
+							float belowZero = Mathf.Abs(transform.localPosition.y + transform.InverseTransformPoint(lowestPoint).y);
+							transform.localPosition = new Vector3 (transform.localPosition.x, transform.localPosition.y + belowZero, transform.localPosition.z);
+						}
+					}
 
 					transform.localPosition = RasterManager.Instance.Raster (transform.localPosition);
 
-					// here we need to check for the whole group if there is an object touching 0
-
-					if (group != null) {
-						// get lowest point of group
-						group.UpdateBoundingBox();
-						lowestPoint = group.GetBoundingBoxBottomCenter ();
-					} else {
-						lowestPoint = GetBoundingBoxBottomCenter ();
-					}
-
-					if ((transform.localPosition.y + transform.InverseTransformPoint(lowestPoint).y) < 0f) {	
-						float belowZero = Mathf.Abs(transform.localPosition.y + transform.InverseTransformPoint(lowestPoint).y);
-						transform.localPosition = new Vector3 (transform.localPosition.x, transform.localPosition.y + belowZero, transform.localPosition.z);
-					}
-
 					// here check for possible snappings
-					if (colliderSphere.possibleSnapping != null && group == null) {
+					if (colliderSphere.possibleSnapping != null) {
 						if (!snapped) {
 							controllerForMovement.TriggerIfPressed (2500);
 							snapped = true;
@@ -221,6 +222,7 @@ public class ModelingObject : MonoBehaviour
 				if (group != null) {
 					Vector3 distance = transform.position - prevPosition;
 					//group.DrawBoundingBox ();
+
 					group.Move (distance, this);
 					//group.DrawBoundingBox ();
 				}
@@ -1059,6 +1061,7 @@ public class ModelingObject : MonoBehaviour
 			//handles.DisableHandles ();
 
 			if (group != null) {
+				group.SetLowestObjectOfGroup ();
 				//group.HideBoundingBox ();
 			}
 

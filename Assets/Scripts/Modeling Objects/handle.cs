@@ -509,7 +509,13 @@ public class handle : MonoBehaviour {
 		}
 		*/
 
+		/* before push
 		if (Mathf.Abs (newRotationAmount - (count * 90f)) <= 12f) {
+			newRotationAmount = count * 90f;
+		}
+		*/
+
+		if (Mathf.Abs (newRotationAmount - (count * 90f)) <= 8f) {
 			newRotationAmount = count * 90f;
 		}
 

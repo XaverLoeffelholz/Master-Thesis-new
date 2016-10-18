@@ -142,19 +142,22 @@ public class UIMenu : MonoBehaviour {
         switch (button.typeOfButton)
         {
             case (buttonType.Menu):
+				Logger.Instance.AddLine (Logger.typeOfLog.menuNavigationUI);
                 break;
             case (buttonType.Color):
+				Logger.Instance.AddLine (Logger.typeOfLog.colorUI);
                 ChangeColor(button);
                 break;
             case (buttonType.Delete):
-                Delete();
 				Logger.Instance.AddLine (Logger.typeOfLog.deleteObjectUI);
+                Delete();				
                 break;
-			case (buttonType.Duplicate):
-				Duplicate ();
+			case (buttonType.Duplicate):				
 				Logger.Instance.AddLine (Logger.typeOfLog.duplicateObjectUI);
+				Duplicate ();
                 break;
 			case (buttonType.GroupStart):
+				Logger.Instance.AddLine (Logger.typeOfLog.groupStartUI);
 				if (parentCanvas.currentModelingObject.group == null) {
 					StartGroup ();
 				} else {
@@ -162,6 +165,7 @@ public class UIMenu : MonoBehaviour {
 				}
                 break;
 			case (buttonType.GroupBreak):
+				Logger.Instance.AddLine (Logger.typeOfLog.groupBreakUI);
 				parentCanvas.currentModelingObject.group.BreakGroup (controller);
 				EndGroup (controller);
 				//parentCanvas.CloseMenu (controller);	
@@ -169,18 +173,13 @@ public class UIMenu : MonoBehaviour {
 				//parentCanvas.currentModelingObject.ShowBoundingBox (false);
 				break;
             case (buttonType.GroupEnd):
+				Logger.Instance.AddLine (Logger.typeOfLog.groupEndUI);
 				EndGroup (controller);
                 break;
             case (buttonType.ResetColor):
                 break;
-            case (buttonType.ResetFrustum):
-                break;
-            case (buttonType.ResetRotation):
-                break;
-            case (buttonType.Extrude):
-                Extrude();
-                break;
 			case (buttonType.CloseMenu):
+				Logger.Instance.AddLine (Logger.typeOfLog.closeMenuUI);
 				EndGroup (controller);
 				parentCanvas.CloseMenu(controller);
 				break;
