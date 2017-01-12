@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using UnityEngine.EventSystems;
 
 public class handles : MonoBehaviour {
 
@@ -12,21 +13,10 @@ public class handles : MonoBehaviour {
 
     public Transform RotationHandles;
 
-    public GameObject RotateUp0;
-    public GameObject RotateUp1;
-    public GameObject RotateUp2;
-    public GameObject RotateUp3;
-
-    public GameObject RotateDown0;
-    public GameObject RotateDown1;
-    public GameObject RotateDown2;
-    public GameObject RotateDown3;
-
-    public GameObject RotateSide0;
-    public GameObject RotateSide1;
-    public GameObject RotateSide2;
-    public GameObject RotateSide3;
-
+    public GameObject RotateX;
+    public GameObject RotateY;
+    public GameObject RotateZ;
+   
     public GameObject TopHandles;
     public GameObject BottomHandles;
 
@@ -38,6 +28,15 @@ public class handles : MonoBehaviour {
 	public GameObject NonUniformScaleLeft;
 	public GameObject NonUniformScaleRight;
 
+	public GameObject MovementHandleGroup;
+	public GameObject YMovement;
+	public GameObject UniformScale;
+
+	public GameObject ToggleRotateOnOff;
+	public GameObject ToggleRotateOnOffGroup;
+
+	public GameObject RotateAndTranslate;
+
 	private ModelingObject connectedModelingObject;
 
     public bool objectFocused;
@@ -46,6 +45,12 @@ public class handles : MonoBehaviour {
 
 	public GameObject linesGO;
 	public GameObject rotationSliceGO;
+
+	public GameObject connectingLines;
+
+	public bool rotationHandlesvisible = false;
+
+	public GameObject groundPlane;
 
     // Use this for initialization
     void Start () {
@@ -68,14 +73,58 @@ public class handles : MonoBehaviour {
         {
             handle.gameObject.SetActive(false);
         }
+
+		RotateAndTranslate.gameObject.SetActive (false);
+
+		groundPlane.SetActive (false);
+
+		WorldLocalToggle.Instance.Hide ();
+
+		if (!EventSystem.current.IsPointerOverGameObject ()) {
+			TouchElements.Instance.Hide ();
+		}	
     }
+
+	public void ToggleOnOffRotationHandles (){
+		if (rotationHandlesvisible) {
+			rotationHandlesvisible = false;
+			HideRotationHandlesExcept (null);
+			ShowNonUniformScalingHandles ();
+			TouchElements.Instance.SetRotationToggleInActive ();
+		} else {
+			rotationHandlesvisible = true;
+			HideScalingHandlesExcept (null);
+			YMovement.SetActive (true);
+			UniformScale.SetActive (true);
+			ToggleRotateOnOff.SetActive (true);
+			ShowRotationHandles ();
+			groundPlane.SetActive (true);
+			TouchElements.Instance.SetRotationToggleActive ();
+			//GameObject.Find("CameraMain").GetComponent<maxCamera>().MoveCameraCenterToObject ();
+		}
+	}
 
     public void ShowRotationHandles()
     {
         //DisableHandles();
 		connectedModelingObject.PositionHandles(true);
 		connectedModelingObject.RotateHandles();
-		connectedModelingObject.ShowBoundingBox (false);
+		connectedModelingObject.HideBoundingBox(false);
+		connectingLines.SetActive (true);
+
+		RotateAndTranslate.gameObject.SetActive (true);
+
+		if (!ProModeMananager.Instance.beginnersMode) {
+			WorldLocalToggle.Instance.Show (YMovement.transform.GetChild (0));
+		}
+
+		TouchElements.Instance.PositionRotationButtons (connectedModelingObject);
+
+		if (!TouchElements.Instance.rotationToggleUIElement.rotationActive) {
+			TouchElements.Instance.SetRotationToggleActive ();
+		}
+
+		TouchElements.Instance.ShowRotationButtons (true);
     }
 
 	public void HideRotationHandlesExcept(handle certainHandle){
@@ -83,20 +132,61 @@ public class handles : MonoBehaviour {
 		{
 			if (certainHandle == null || handle != certainHandle.transform) {
 				handle.gameObject.SetActive(false);
+
+				if (handle.gameObject == RotateX) {
+					TouchElements.Instance.RotateX.gameObject.SetActive (false);
+				} else if (handle.gameObject == RotateY) {
+					TouchElements.Instance.RotateY.gameObject.SetActive (false);
+				}  else if (handle.gameObject == RotateZ) {
+					TouchElements.Instance.RotateZ.gameObject.SetActive (false);
+				} 
 			}
 		}
+
+		if (certainHandle == null || RotateAndTranslate != certainHandle.gameObject) {
+			RotateAndTranslate.gameObject.SetActive(false);
+		}
+
+		WorldLocalToggle.Instance.Hide ();
 	}
 
 	public void HideScalingHandlesExcept(handle certainHandle){
+		connectedModelingObject.connectingLinesHandles.ClearLines ();
+
+		TouchElements.Instance.HideButtonsExcept (certainHandle);
+
 		foreach (Transform handle in NonUniformScalingHandles.transform)
 		{
 			if (certainHandle == null || handle != certainHandle.transform) {
 				handle.gameObject.SetActive(false);
 			}
 		}
+
+		if (certainHandle == null || YMovement.transform != certainHandle.transform) {
+			YMovement.SetActive (false);
+		}
+
+		if (certainHandle == null || ToggleRotateOnOff.transform != certainHandle.transform) {
+			ToggleRotateOnOff.SetActive (false);
+		}
+
+		if (certainHandle == null || UniformScale.transform != certainHandle.transform) {
+			UniformScale.SetActive (false);
+		}
+
+		if (certainHandle == null || RotateAndTranslate.transform != certainHandle.transform) {
+			RotateAndTranslate.SetActive (false);
+		}
+
+		groundPlane.SetActive (false);
+
+		//WorldLocalToggle.Instance.Hide ();
 	}
 
 	public void ShowNonUniformScalingHandles() {
+		groundPlane.SetActive (true);
+
+		TouchElements.Instance.Show (connectedModelingObject.handles.UniformScale.transform, connectedModelingObject);
 
 		TopHandles.SetActive(false);
 		BottomHandles.SetActive(false);
@@ -108,22 +198,51 @@ public class handles : MonoBehaviour {
 		HeightBottom.SetActive(false);
 
 		if (connectedModelingObject.group == null) {
-			ShowRotationHandles ();
+
+			//ShowRotationHandles ();
 			Handlegroup.gameObject.SetActive (true);
-			NonUniformScalingHandles.SetActive (true);
-			NonUniformScaleFront.SetActive(true);
-			NonUniformScaleBack.SetActive(true);
-			NonUniformScaleTop.SetActive(true);
-			NonUniformScaleBottom.SetActive(true);
-			NonUniformScaleLeft.SetActive(true);
-			NonUniformScaleRight.SetActive(true);
+
+			YMovement.SetActive (true);
+			ToggleRotateOnOff.SetActive (true);
+			ToggleRotateOnOffGroup.SetActive (true);
+			MovementHandleGroup.SetActive (true);
+			UniformScale.SetActive (true);
 
 			connectedModelingObject.ShowBoundingBox (false);
+			connectedModelingObject.DrawConnectingLines ();
+			connectingLines.SetActive (true);
+
+			//RotateAndTranslate.SetActive (true);
+
+			if (!ProModeMananager.Instance.beginnersMode){
+
+				if (connectedModelingObject.typeOfObject == ModelingObject.ObjectType.triangle && !rotationHandlesvisible){
+					NonUniformScalingHandles.SetActive (true);
+					NonUniformScaleFront.SetActive (true);
+					NonUniformScaleBack.SetActive (true);
+					NonUniformScaleTop.SetActive (true);
+					NonUniformScaleBottom.SetActive (true);
+					NonUniformScaleLeft.SetActive (true);
+					NonUniformScaleRight.SetActive (true);
+				}
+
+
+			} else {
+				NonUniformScalingHandles.SetActive (false);
+				NonUniformScaleFront.SetActive (false);
+				NonUniformScaleBack.SetActive (false);
+				NonUniformScaleTop.SetActive (false);
+				NonUniformScaleBottom.SetActive (false);
+				NonUniformScaleLeft.SetActive (false);
+				NonUniformScaleRight.SetActive (false);
+			}
 		}
+
+
 	}
 
     public void ShowFrustumHandles() {
-		
+
         DisableHandles();
 		connectedModelingObject.RepositionScalers ();
 		connectedModelingObject.PositionHandles (false);

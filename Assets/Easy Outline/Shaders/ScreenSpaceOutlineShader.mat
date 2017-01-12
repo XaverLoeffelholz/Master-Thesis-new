@@ -15,31 +15,26 @@ Material:
   m_SavedProperties:
     serializedVersion: 2
     m_TexEnvs:
-      data:
-        first:
-          name: _MainTex
-        second:
-          m_Texture: {fileID: 0}
-          m_Scale: {x: 1, y: 1}
-          m_Offset: {x: 0, y: 0}
-      data:
-        first:
-          name: _BlurTex
-        second:
-          m_Texture: {fileID: 0}
-          m_Scale: {x: 1, y: 1}
-          m_Offset: {x: 0, y: 0}
+    - first:
+        name: _BlurTex
+      second:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - first:
+        name: _MainTex
+      second:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     m_Floats:
-      data:
-        first:
-          name: _Solid
-        second: 1
-      data:
-        first:
-          name: _GradientStrengthModifier
-        second: 2.44
+    - first:
+        name: _GradientStrengthModifier
+      second: 0.3
+    - first:
+        name: _Solid
+      second: 0
     m_Colors:
-      data:
-        first:
-          name: _OutlineCol
-        second: {r: 1, g: 1, b: 1, a: 1}
+    - first:
+        name: _OutlineCol
+      second: {r: 1, g: 1, b: 1, a: 1}

@@ -29,6 +29,7 @@ TagManager:
   - DistanceControl
   - ColliderSphere
   - Stage
+  - RotationHandle
   layers:
   - Default
   - TransparentFX
@@ -43,8 +44,8 @@ TagManager:
   - Camera2
   - Laserpointer
   - IconLaserPointer
-  - 
-  - 
+  - Outline
+  - CenterObject
   - 
   - 
   - 

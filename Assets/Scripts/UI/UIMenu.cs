@@ -95,8 +95,8 @@ public class UIMenu : MonoBehaviour {
         transform.parent.GetComponent<UiCanvasGroup>().ArrangeUIObjects(buttons);
         transform.parent.GetComponent<UiCanvasGroup>().Show();
 
-        controller1.enableFaceSelection(false);
-        controller2.enableFaceSelection(false);
+       // controller1.enableFaceSelection(false);
+      //  controller2.enableFaceSelection(false);
 
 		UiCanvasGroup.Instance.currentMenu = this;
 
@@ -105,6 +105,9 @@ public class UIMenu : MonoBehaviour {
 
 
 	public void ActivateCurrentHandles(){
+
+		//Debug.Log ("activate current handles");
+
 		// Show the right handles
 		switch (TypeOfMenu)
 		{
@@ -130,6 +133,11 @@ public class UIMenu : MonoBehaviour {
 		case (menuType.MainMenu):
 			if (UiCanvasGroup.Instance.currentModelingObject.group == null) {
 				parentCanvas.currentModelingObject.handles.ShowNonUniformScalingHandles();
+
+				if (parentCanvas.currentModelingObject.handles.rotationHandlesvisible) {
+					parentCanvas.currentModelingObject.handles.ShowRotationHandles();
+				}
+
 			} else {
 				parentCanvas.currentModelingObject.handles.DisableHandles();
 			}					

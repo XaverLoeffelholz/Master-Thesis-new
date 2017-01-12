@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using UnityEngine.EventSystems;
 
 public class handle : MonoBehaviour {
 
@@ -14,7 +15,11 @@ public class handle : MonoBehaviour {
 		ScaleZ,
 		ScaleMinusX,
 		ScaleMinusY,
-		ScaleMinusZ
+		ScaleMinusZ,
+		MoveY, 
+		UniformScale,
+		RotateTranslate, 
+		RotationHandleToggle
     };
 
     public GameObject connectedObject;
@@ -32,6 +37,7 @@ public class handle : MonoBehaviour {
     private Vector3 initialLocalPositionFace;
     private Vector3 initialLocalPositionHandle;
     private Vector3 initialPositionHandle;
+	private Vector3 initialOffsetToHandle;
     private Vector3 initialDistancceCenterScaler;
     private bool resetLastPosition = true;
 
@@ -55,6 +61,7 @@ public class handle : MonoBehaviour {
 	private float firstRotationAmount;
 
 	private bool newScaling = false;
+	private bool newMovement = false;
 	private float prevScalingAmount;
 
 	public Color normalColor;
@@ -80,6 +87,10 @@ public class handle : MonoBehaviour {
 	private GameObject RotationOnStartLine;
 	private GameObject CurrentRotationLine;
 
+	public GameObject arrowPart1;
+	public GameObject arrowPart2;
+	public GameObject arrowPart3;
+
 	// rotationParameters
 	private Vector3 p1Rotation;
 	private Vector3 p2Rotation;
@@ -89,12 +100,29 @@ public class handle : MonoBehaviour {
 	private Vector3 centerOfRotation = Vector3.zero;
 	private Vector3 rotationRelativeTo;
 
+	public GameObject bottomPartSphere;
+	public GameObject topPartSphere;
+
+	private Vector3 standardPosBottom;
+	private Vector3 OpenPosBottom;
+	private Vector3 FocusedPosBottom;
+
+	bool reCheckRotationDirection;
+	float rotationDirection = 1f;
+
+	private float initialInput;
+
+
     // Use this for initialization
     void Start () {
 		if (arrow != null) {
-			arrow.GetComponent<Renderer>().material.color = normalColor;
-		}
+			// Hover effect: Scale bigger & change color
+			LeanTween.color(arrow, normalColor, 0.06f);
 
+			if (rotationArrow != null) {
+				LeanTween.color (rotationArrow, normalColor, 0.06f);
+			}
+		}
 
         ResetLastPosition();
         connectedModelingObject = connectedObject.GetComponent<ModelingObject>();
@@ -103,13 +131,22 @@ public class handle : MonoBehaviour {
 			initialSizeArrow = arrow.transform.localScale;
 		}
 
+		if (typeOfHandle == handleType.RotationHandleToggle) {
+			standardPosBottom = bottomPartSphere.transform.localPosition;
+		}
 		//initialScale = transform.lossyScale.x;
     }
 	
 	// Update is called once per frame
 	void FixedUpdate () {
-		Vector3 currentScale = transform.localScale;
-		transform.localScale = (1f / transform.lossyScale.x) * currentScale;
+		// adapt scaling like in other prototype
+
+		if (typeOfHandle != handleType.Rotation) {
+			float distanceToCamera = (Camera.main.transform.position - transform.position).magnitude;
+			Vector3 size = Vector3.one * distanceToCamera * 0.35f;
+
+			transform.localScale = size;
+		}
     }
 
 	private float CalculateInputFromPoint(Vector3 pointOfCollision, Vector3 pos1, Vector3 pos2)
@@ -126,7 +163,9 @@ public class handle : MonoBehaviour {
             }
 
             initialLocalPositionHandle = transform.localPosition;
-            initialPositionHandle = transform.position;
+            
+			//initialOffsetToHandle = TouchElements.Instance.YMoveHandle.transform.position - transform.position;
+			initialPositionHandle = transform.position;
         }
 
 		Vector3 pq = pointOfCollision - pos1;
@@ -179,10 +218,10 @@ public class handle : MonoBehaviour {
         return DistanceVector;
     }
 
-	public void ApplyChanges(GameObject pointOfCollision, bool alreadyMoving, Selection controller)
+	public bool ApplyChanges(GameObject pointOfCollision, bool alreadyMoving, Selection controller)
     {
 		if (!alreadyMoving) {
-			connectedModelingObject.HideBoundingBox (false);
+			//connectedModelingObject.HideBoundingBox (false);
 		}
 
         switch (typeOfHandle)
@@ -196,23 +235,31 @@ public class handle : MonoBehaviour {
             case handleType.Height:
                 ChangeHeight(pointOfCollision);
                 break;
-            case handleType.Rotation:
-                if (!alreadyMoving)
-                {
-					handles.HideRotationHandlesExcept (this);
+			case handleType.Rotation:
+				if (!alreadyMoving) {
+					handles.HideRotationHandlesExcept (null);
+					connectedModelingObject.CalculateBoundingBox();
+					connectedModelingObject.CalculateBoundingBoxWorld();
 					handles.HideScalingHandlesExcept (null);
-                    newRotation = true;
-                }                
-				Rotate(pointOfCollision, controller);
+					TouchElements.Instance.Hide ();
+					newRotation = true;
+				}   
+
+				Rotate (pointOfCollision, controller, true);
+				
+				connectedModelingObject.PositionHandles (true);
+				connectedModelingObject.RotateHandles ();
+			    handles.HideRotationHandlesExcept (null);
+			    handles.HideScalingHandlesExcept (this);
+
                 break;
 			case handleType.ScaleX:
-				if (!alreadyMoving)
-				{
+				if (!alreadyMoving) {
 					handles.HideRotationHandlesExcept (null);
 					handles.HideScalingHandlesExcept (this);
 					newScaling = true;
 				}         
-				ScaleNonUniform (pointOfCollision, new Vector3 (1f, 0f, 0f));
+				ScaleNonUniform (pointOfCollision, new Vector3(1f,0f,0f));
 				break;
 			case handleType.ScaleY:
 				if (!alreadyMoving)
@@ -221,7 +268,7 @@ public class handle : MonoBehaviour {
 					handles.HideScalingHandlesExcept (this);
 					newScaling = true;
 				}  
-				ScaleNonUniform (pointOfCollision, new Vector3 (0f, 1f, 0f));
+				ScaleNonUniform (pointOfCollision, new Vector3(0f,1f,0f));
 				break;
 			case handleType.ScaleZ:
 				if (!alreadyMoving)
@@ -230,7 +277,7 @@ public class handle : MonoBehaviour {
 					handles.HideScalingHandlesExcept (this);
 					newScaling = true;
 				}  
-				ScaleNonUniform (pointOfCollision, new Vector3 (0f, 0f, 1f));
+				ScaleNonUniform (pointOfCollision, new Vector3(0f,0f,1f));
 				break;
 			case handleType.ScaleMinusX:
 				if (!alreadyMoving)
@@ -239,7 +286,7 @@ public class handle : MonoBehaviour {
 					handles.HideScalingHandlesExcept (this);
 					newScaling = true;
 				}  
-				ScaleNonUniform (pointOfCollision, new Vector3 (1f, 0f, 0f));
+				ScaleNonUniform (pointOfCollision, new Vector3(1f,0f,0f));
 				break;
 			case handleType.ScaleMinusY:
 				if (!alreadyMoving)
@@ -248,7 +295,7 @@ public class handle : MonoBehaviour {
 					handles.HideScalingHandlesExcept (this);
 					newScaling = true;
 				}  
-				ScaleNonUniform (pointOfCollision, new Vector3 (0f, 1f, 0f));
+				ScaleNonUniform (pointOfCollision, new Vector3(0f,1f,0f));
 				break;
 			case handleType.ScaleMinusZ:
 				if (!alreadyMoving)
@@ -257,25 +304,98 @@ public class handle : MonoBehaviour {
 					handles.HideScalingHandlesExcept (this);
 					newScaling = true;
 				}  
-				ScaleNonUniform (pointOfCollision, new Vector3 (0f, 0f, 1f));
+				ScaleNonUniform (pointOfCollision, new Vector3(0f,0f,1f));
+				break;
+			case handleType.MoveY:
+				if (!alreadyMoving) {
+					handles.HideRotationHandlesExcept (null);
+					handles.HideScalingHandlesExcept (this);
+					newMovement = true;	
+				}
+				MoveYPosition (pointOfCollision);
+				handles.HideRotationHandlesExcept (null);
+				handles.HideScalingHandlesExcept (this);
+				break;
+			case handleType.UniformScale:
+				Debug.Log ("already moving " + alreadyMoving);
+				if (!alreadyMoving)
+				{
+					handles.HideRotationHandlesExcept (null);
+					handles.HideScalingHandlesExcept (this);
+					newScaling = true;
+				}  
+				ScaleUniform (pointOfCollision);
+				handles.HideRotationHandlesExcept (null);
+				handles.HideScalingHandlesExcept (this);
+				break;	
+
+		case handleType.RotationHandleToggle:
+				//handles.ToggleOnOffRotationHandles ();
 				break;
         }
 
 		connectedModelingObject.RecalculateSideCenters();
 		connectedModelingObject.RecalculateNormals();
 
-		handles.HideRotationHandlesExcept (this);
-		handles.HideScalingHandlesExcept (this);
+		//handles.HideRotationHandlesExcept (null);
+		//handles.HideScalingHandlesExcept (this);
+
 
 		//connectedModelingObject.ShowBoundingBox ();
 		//connectedModelingObject.ShowBoundingBox ();
+
+		return true;
     }
+
+	public void moveAndRotate(GameObject pointOfCollision, Selection controller){
+		connectedModelingObject.StartMoving (controller, connectedModelingObject);
+		//Rotate (pointOfCollision, controller, false);
+	}
+
+	public void ScaleUniform(GameObject pointOfCollision){
+		connectedModelingObject.CalculateBoundingBox ();
+		connectedModelingObject.boundingBox.DrawBoundingBox ();
+
+		//float input = CalculateInputFromPoint(pointOfCollision.transform.position, p1.transform.position, p2.transform.position);
+		float input = CalculateInputFromPoint(pointOfCollision.transform.position, transform.position, transform.position + transform.forward);
+
+		centerOfScaling = connectedModelingObject.transform.InverseTransformPoint (connectedModelingObject.GetBoundingBoxBottomCenterWorld());
+		touchPointForScaling = connectedModelingObject.transform.InverseTransformPoint (connectedModelingObject.GetBoundingBoxTopCenter ());
+
+		if (newScaling)
+		{
+			Debug.Log ("new scaling");
+			prevScalingAmount = input;
+			newScaling = false;
+		}
+
+		Debug.Log ("new amount: " + prevScalingAmount + " and input at " + input);
+
+		// check if we can also raster just the touchpoint
+		centerOfScaling = RasterManager.Instance.Raster(centerOfScaling);
+
+		float RasteredDistanceCenters = Mathf.Max(RasterManager.Instance.Raster((centerOfScaling - touchPointForScaling).magnitude * Mathf.Abs(1f + (input - prevScalingAmount))), RasterManager.Instance.rasterLevel * 2);
+		input = (RasteredDistanceCenters / ((centerOfScaling - touchPointForScaling).magnitude)) - 1f + prevScalingAmount;
+
+		float adjustedInput = Mathf.Abs (1f + (input - prevScalingAmount));
+
+		//Debug.Log ("new scale is " + adjustedInput);
+
+		connectedModelingObject.ScaleNonUniform (adjustedInput, new Vector3(1f,1f,1f), typeOfHandle, centerOfScaling);
+
+		//connectedModelingObject.ScaleBy (adjustedInput, true);
+
+		prevScalingAmount = input;
+	}
 
 	public void ScaleNonUniform(GameObject pointOfCollision, Vector3 direction){
 		
+		connectedModelingObject.CalculateBoundingBox ();
+		connectedModelingObject.boundingBox.DrawBoundingBox ();
+
 	//	Vector3 normalizedDirection = direction.normalized;
 
-		float input = CalculateInputFromPoint(pointOfCollision.transform.position, p1.transform.position, p2.transform.position);
+		float input = CalculateInputFromPoint(pointOfCollision.transform.position, transform.position, transform.position + transform.forward);
 
 		// get current distance 
 		switch (typeOfHandle)
@@ -312,7 +432,7 @@ public class handle : MonoBehaviour {
 			newScaling = false;
 		}
 
-		input = Mathf.SmoothDamp(prevScalingAmount, input, ref velocity, smoothTime);
+		//input = Mathf.SmoothDamp(prevScalingAmount, input, ref velocity, smoothTime);
 
 		// check if we can also raster just the touchpoint
 		centerOfScaling = RasterManager.Instance.Raster(centerOfScaling);
@@ -322,7 +442,7 @@ public class handle : MonoBehaviour {
 		float RasteredDistanceCenters = Mathf.Max(RasterManager.Instance.Raster((centerOfScaling - touchPointForScaling).magnitude * Mathf.Abs(1f + (input - prevScalingAmount))), RasterManager.Instance.rasterLevel * 2);
 		input = (RasteredDistanceCenters / ((centerOfScaling - touchPointForScaling).magnitude)) - 1f + prevScalingAmount;
 
-		float adjustedInput = Mathf.Abs (1f + ((input - prevScalingAmount) * 0.6f));
+		float adjustedInput = Mathf.Abs (1f + (input - prevScalingAmount));
 
 		connectedModelingObject.ScaleNonUniform (adjustedInput, direction.normalized, typeOfHandle, centerOfScaling);
 
@@ -334,12 +454,38 @@ public class handle : MonoBehaviour {
 		//connectedModelingObject.transform.localPosition = connectedModelingObject.transform.localPosition + (correctedCenter-center);
 
 		prevScalingAmount = input;
+
+
 	}
 
-	public void FinishUsingHandle(){
+	public void FinishUsingHandle(Selection controller){
 		if (typeOfHandle != handleType.Height && typeOfHandle != handleType.ScaleFace) {
-			// handles.ShowRotationHandles();
+			if (handles.rotationHandlesvisible) {
+				handles.ShowRotationHandles();
+			}
 			handles.ShowNonUniformScalingHandles();
+		}
+
+		if (typeOfHandle == handleType.RotateTranslate){
+			connectedModelingObject.StopMoving (controller, connectedModelingObject);
+
+			// destroz previous distance vis
+			foreach (Transform visualObject in connectedModelingObject.DistanceVisualisation)
+			{
+				Destroy(visualObject.gameObject);
+			}
+		}
+
+		if (typeOfHandle == handleType.MoveY) {
+			// destroz previous distance vis
+			foreach (Transform visualObject in connectedModelingObject.DistanceVisualisation)
+			{
+				Destroy(visualObject.gameObject);
+			}
+		}
+
+		if (typeOfHandle == handleType.RotationHandleToggle) {
+			handles.ToggleOnOffRotationHandles ();
 		}
 
 		if (rotationVisual != null) {
@@ -348,12 +494,32 @@ public class handle : MonoBehaviour {
 			Destroy (RotationOnStartLine);
 		}
 
+		VisualizeAngle.Instance.Hide ();
+
 		connectedModelingObject.ShowBoundingBox (false);
+
+		Vector3 newScale = Vector3.one;
+		float highestDistanceToCenter = connectedModelingObject.boundingBoxWorld.getMaxDistanceinBB(connectedModelingObject.GetBoundingBoxCenterWorld());
+
+		/*
+		if ((connectedModelingObject.GetBoundingBoxCenter () - connectedModelingObject.GetBoundingBoxFrontCenter()).magnitude > (connectedModelingObject.GetBoundingBoxCenter () - connectedModelingObject.GetBoundingBoxLeftCenter ()).magnitude) {
+			newScale = Vector3.one * (connectedModelingObject.GetBoundingBoxCenter () - connectedModelingObject.GetBoundingBoxFrontCenter()).magnitude * 3f;
+		} else {
+			newScale = Vector3.one * (connectedModelingObject.GetBoundingBoxCenter () - connectedModelingObject.GetBoundingBoxLeftCenter()).magnitude * 3f;
+		}*/
+
+		handles.RotateX.transform.localScale = newScale * highestDistanceToCenter * 2f;
+		handles.RotateY.transform.localScale = newScale * highestDistanceToCenter * 2f;
+		handles.RotateZ.transform.localScale = newScale * highestDistanceToCenter * 2f;
+
+		handles.groundPlane.transform.localScale = newScale * highestDistanceToCenter * 0.5f;
+
+		TouchElements.Instance.UnfocusAll ();
 	}
 
     private void ScaleFace(GameObject pointOfCollision)
     {
-		float input = CalculateInputFromPoint(pointOfCollision.transform.position, p1.transform.position, p2.transform.position) * 1.5f;
+		float input = CalculateInputFromPoint(pointOfCollision.transform.position, transform.position, transform.position + transform.forward) * 1.5f;
 
        // Raster
 		float RasteredDistanceCenterScaler = RasterManager.Instance.Raster((1f - input) * (initialDistancceCenterScaler).magnitude);
@@ -388,7 +554,7 @@ public class handle : MonoBehaviour {
 
     private void ChangeHeight(GameObject pointOfCollision)
     {
-		float input = CalculateInputFromPoint(pointOfCollision.transform.position, p1.transform.position, p2.transform.position);
+		float input = CalculateInputFromPoint(pointOfCollision.transform.position, transform.position, transform.position + transform.forward);
 
 		float RasteredLength = RasterManager.Instance.Raster(((input) * (face.normal).magnitude));
 		input = RasteredLength / (face.normal).magnitude;
@@ -406,14 +572,79 @@ public class handle : MonoBehaviour {
         }
     }
 
-	private void Rotate(GameObject pointOfCollision, Selection controller)
+	private void MoveYPosition (GameObject pointOfCollision){
+
+		if (newMovement) {
+			newMovement = false;
+			connectedModelingObject.CalculateBoundingBox ();
+
+			connectedModelingObject.initialCoordinatesBoundingBox = new Vector3[4];
+
+			for (int j = 0; j < 4; j++)
+			{
+				connectedModelingObject.initialCoordinatesBoundingBox[j] = connectedModelingObject.boundingBox.coordinates[j+4];
+			}
+
+			connectedModelingObject.PositionOnMovementStart = 0.25f * connectedModelingObject.boundingBox.coordinates[4] + 0.25f * connectedModelingObject.boundingBox.coordinates[5] + 0.25f * connectedModelingObject.boundingBox.coordinates[6] + 0.25f * connectedModelingObject.boundingBox.coordinates[7];
+		
+			initialOffsetToHandle = transform.position - pointOfCollision.transform.position;
+
+			//Debug.Log ("initial offset" + initialOffsetToHandle + "transform.position at " + transform.position + " point of collision " + pointOfCollision.transform.position);
+
+			//Debug.Log ("new handle griff");
+
+			//initialInput = CalculateInputFromPoint(pointOfCollision.transform.position, transform.position, transform.position + transform.forward);
+			//Debug.Log("Set initial input at" + initialInput);
+
+			//float RasteredLengthInitial = RasterManager.Instance.Raster(((initialInput) * (Vector3.up).magnitude));
+			//initialInput = RasteredLengthInitial / (Vector3.up).magnitude;
+		}
+
+		// destroy previous distance vis
+		foreach (Transform visualObject in connectedModelingObject.DistanceVisualisation){
+			Destroy (visualObject.gameObject);
+		}
+
+		float input = CalculateInputFromPoint((pointOfCollision.transform.position + initialOffsetToHandle), transform.position, transform.position + transform.forward);
+
+		float RasteredLength = RasterManager.Instance.Raster(((input) * (Vector3.up).magnitude));
+		input = RasteredLength / (Vector3.up).magnitude;
+
+		Vector3 position = initialPositionHandle + ((input) * Vector3.up);
+
+	//	Debug.Log ("input is " + input + " minus initial input: " + (input - initialInput) + "with initial input: " + initialInput);
+
+		Vector3 distance = position - transform.position;
+
+		Vector3 prevPos = connectedModelingObject.transform.position;
+
+		connectedModelingObject.transform.position = connectedModelingObject.transform.position + distance;
+
+		// keep above 0
+		connectedModelingObject.KeepAboveZero(prevPos);
+
+		//connectedModelingObject.VisualizeMovement ();
+	}
+
+	private void Rotate(GameObject pointOfCollision, Selection controller, bool visual)
     {
+		// fix centers etc
+
+		//Debug.Log ("rotate");
+
 		if (newRotation) {
+			VisualizeAngle.Instance.Show();
+
+			connectedModelingObject.HideBoundingBox (false);
+
 			// center object on raster
+
+			/*
 			Vector3 center = connectedModelingObject.transform.InverseTransformPoint(connectedModelingObject.GetBoundingBoxBottomCenter());
 			Vector3 correctedCenter = RasterManager.Instance.Raster(center);
 
 			connectedModelingObject.transform.localPosition = connectedModelingObject.transform.localPosition + (correctedCenter-center);
+			*/ 
 
 			// define rotation axis
 			p1Rotation = connectedModelingObject.GetBoundingBoxCenter();
@@ -436,10 +667,10 @@ public class handle : MonoBehaviour {
 				centerOfRotation = rayCenterToPlaneOtherDir.GetPoint (rayDistanceToCenter);
 			}	
 
-			rotationRelativeTo = transform.position;
+			centerOfRotation = transform.position;
 		}
 
-		Ray ray = new Ray (controller.LaserPointer.transform.position, controller.LaserPointer.transform.forward);
+		Ray ray = Camera.main.ScreenPointToRay (Input.mousePosition);
 
 		float rayDistance;
 		float newRotationAmount = 0f;
@@ -449,9 +680,14 @@ public class handle : MonoBehaviour {
 			if (rayDistance < 25f) {
 				if (newRotation) {
 					lastIntersectionPoint = ray.GetPoint (rayDistance);
+
+					// fix point
+					rotationRelativeTo = lastIntersectionPoint;
 				}
 
-				Vector3 intersectionPoint = Vector3.SmoothDamp (lastIntersectionPoint, ray.GetPoint (rayDistance), ref velocityRotation, smoothTimeRotation);
+				//Vector3 intersectionPoint = Vector3.SmoothDamp (lastIntersectionPoint, ray.GetPoint (rayDistance), ref velocityRotation, smoothTimeRotation);
+				Vector3 intersectionPoint = ray.GetPoint (rayDistance);
+
 				Vector3 adjustedIntersectPoint = p1Rotation + (intersectionPoint - p1Rotation).normalized * 1.5f;
 
 				float direction = Mathf.Sign (Vector3.Dot (Vector3.Cross (rotationRelativeTo - p1Rotation, adjustedIntersectPoint - p1Rotation), currentPlane.normal));
@@ -481,79 +717,120 @@ public class handle : MonoBehaviour {
 			}
 		}
 
-	//	Debug.Log ("rotate to " + newRotationAmount + ", in " + Time.time);
-
 		if (newRotationAmount < 0) {
 			newRotationAmount = 360f + newRotationAmount;
 		}
 
+		if (visual) {
+			if (rotationVisual == null) {
+				rotationVisual = Instantiate (rotationVisualPrefab);
+				rotationVisual.transform.localScale = Vector3.one * (rotationRelativeTo - centerOfRotation).magnitude * 1.85f;	
+				rotationVisual.GetComponent<RotationVisual> ().ColorCircle (normalColor);
 
-		if (rotationVisual == null) {
-			rotationVisual = Instantiate (rotationVisualPrefab);
-			rotationVisual.transform.localScale = Vector3.one * (transform.position - connectedModelingObject.GetBoundingBoxCenter ()).magnitude * 1.5f;	
+				RotationOnStartLine = Instantiate (handles.linesGO);
+				CurrentRotationLine = Instantiate (handles.linesGO);
+				firstIntersectionPoint = lastIntersectionPoint;
+			}
 
-			RotationOnStartLine = Instantiate (handles.linesGO);
-			CurrentRotationLine = Instantiate (handles.linesGO);
-			firstIntersectionPoint = lastIntersectionPoint;
+			rotationVisual.transform.position = centerOfRotation;
+			rotationVisual.transform.rotation = Quaternion.LookRotation (p2Rotation - p1Rotation);
 		}
-
-		rotationVisual.transform.position = centerOfRotation;
-		rotationVisual.transform.rotation = Quaternion.LookRotation (p2Rotation - p1Rotation);
-
 
 		float count = Mathf.Round(newRotationAmount / 90f);
 
-		/*
-		if (Mathf.Abs (newRotationAmount - (count * 90f)) <= 15f && (velocityRotation.sqrMagnitude < 0.6f && velocityRotation.sqrMagnitude > 0.05f)) {
-			newRotationAmount = count * 90f;
-		}
-		*/
+		float distanceToCenter = (lastIntersectionPoint - centerOfRotation).magnitude / (rotationRelativeTo - centerOfRotation).magnitude;
 
-		/* before push
-		if (Mathf.Abs (newRotationAmount - (count * 90f)) <= 12f) {
-			newRotationAmount = count * 90f;
-		}
-		*/
+		float disToCenter = (lastIntersectionPoint - centerOfRotation).magnitude;
+		float maxDistance = connectedModelingObject.boundingBox.getMaxDistanceinBB (centerOfRotation);
 
-		if (Mathf.Abs (newRotationAmount - (count * 90f)) <= 8f) {
-			newRotationAmount = count * 90f;
-		}
+		//float circleSize = (transform.position - connectedModelingObject.GetBoundingBoxCenter ()).magnitude * 2f;	
 
+		//Debug.Log ("distance at " + maxDistance / disToCenter);
 
-		// here we need to make sure it does not jump around
-		newRotationAmount = RasterManager.Instance.RasterAngle (newRotationAmount);
-
-		if (newRotationAmount % 90f == 0f) {
-			rotationVisual.GetComponent<RotationVisual> ().ShowRightAngleVisual (true);
+		//if (maxDistance/disToCenter > 0.75f) {
+			
+		if (!(Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))) {
+			newRotationAmount = RasterManager.Instance.RasterAngle (newRotationAmount);
+			//newRotationAmount = RasterManager.Instance.RasterAngleSmooth (newRotationAmount);
 		} else {
-			rotationVisual.GetComponent<RotationVisual> ().ShowRightAngleVisual (false);
+			newRotationAmount = RasterManager.Instance.RasterAngleSmooth (newRotationAmount);
 		}
-
+			
 		if (newRotation) {
 			prevRotationAmount = newRotationAmount;
 			firstRotationAmount = newRotationAmount;
 			newRotation = false;
+			reCheckRotationDirection = true;
 		}
 
 		float shortestRotationAmount = newRotationAmount - prevRotationAmount;
 
 		if (shortestRotationAmount > 180) {
 			shortestRotationAmount = shortestRotationAmount - 360f;
-		}
+		} 		 
 
 		connectedModelingObject.RotateAround(rotationAxis.normalized, shortestRotationAmount, connectedModelingObject.transform.InverseTransformPoint (p1Rotation));
 
+		/*
 		CurrentRotationLine.GetComponent<Lines> ().DrawLinesWorldCoordinate (new Vector3[] {
 			centerOfRotation,
 			lastIntersectionPoint
 		}, 0);
+*/
 
-       rotationVisual.GetComponent<RotationVisual>().RotationVisualisation(firstIntersectionPoint, lastIntersectionPoint);
 
-       prevRotationAmount = newRotationAmount;     
+		float showingValue = newRotationAmount - firstRotationAmount;
 
-		// adjust length of laserpointer
-		controller.AdjustLengthPointer (rayDistance);
+
+		if (showingValue == 360f) {
+			showingValue = 0f;
+		}
+
+		if (showingValue <= 5f && showingValue >= -5f) {
+			reCheckRotationDirection = true;
+		}
+
+		if (reCheckRotationDirection) {
+			if (showingValue > 180f) {
+				showingValue = showingValue - 360f;
+				reCheckRotationDirection = false;
+			} else if (showingValue < -180f) {
+				showingValue = showingValue + 360f;
+				reCheckRotationDirection = false;
+			} 
+
+			if (showingValue < 0f) {
+				rotationDirection = -1f;
+			} else {
+				rotationDirection = 1f;
+			}
+		}			
+
+		if (rotationDirection == -1f && showingValue > 0f) {
+			showingValue = showingValue - 360f;
+		} else if (rotationDirection == 1f && showingValue < 0f) {
+			showingValue = showingValue + 360f;
+		}
+
+
+
+		VisualizeAngle.Instance.SetNumber (showingValue);
+
+		//Debug.Log ("Distace bei " + (maxDistance / disToCenter));
+
+		if (visual) {
+			//if (maxDistance/disToCenter > 0.75f) {
+			
+			if (!(Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))) {
+				//rotationVisual.GetComponent<RotationVisual> ().RotationVisualisation (firstIntersectionPoint, lastIntersectionPoint, true);
+				rotationVisual.GetComponent<RotationVisual> ().RotationVisualisation (firstIntersectionPoint, lastIntersectionPoint, false, showingValue);
+			} else {
+				rotationVisual.GetComponent<RotationVisual> ().RotationVisualisation (firstIntersectionPoint, lastIntersectionPoint, true, showingValue);
+			}
+		}
+
+       	prevRotationAmount = newRotationAmount;    
+
     }
 
     private void SetRotateStepTrue()
@@ -570,18 +847,35 @@ public class handle : MonoBehaviour {
 
     public void Focus(Selection controller)
     {
+		//Debug.Log ("Focus handle");
+
 		if (!focused) {
 
 			if (!clicked && !handles.objectFocused)	{
-				
+
 				if (arrow != null) {
 					// Hover effect: Scale bigger & change color
-					LeanTween.scale (arrow, new Vector3 (initialSizeArrow.x * 1.1f, initialSizeArrow.y * 1.1f, initialSizeArrow.z * 1.1f), 0.06f);
-					LeanTween.color (arrow, hoverColor, 0.06f);
+
+					if (typeOfHandle != handleType.Rotation) {
+						LeanTween.scale (arrow, new Vector3 (initialSizeArrow.x * 1.1f, initialSizeArrow.y * 1.1f, initialSizeArrow.z * 1.1f), 0.06f);
+					}
+					//LeanTween.color (arrow, hoverColor, 0.06f);
 				}
 
 				if (rotationArrow != null) {
-					LeanTween.color (rotationArrow, hoverColor, 0.06f);
+					//LeanTween.color (rotationArrow, hoverColor, 0.06f);
+				}
+
+				if (typeOfHandle == handleType.Rotation) {
+					//LeanTween.color (arrowPart1, hoverColor, 0.06f);
+					//LeanTween.color (arrowPart2, hoverColor, 0.06f);
+					//LeanTween.color (arrowPart3, hoverColor, 0.06f);
+					//handles.HideRotationHandlesExcept(this);
+				}
+
+				if (typeOfHandle == handleType.RotationHandleToggle) {
+					//LeanTween.move(topPartSphere, topPartSphere.transform.position + new Vector3(0f,0.02f,0f), 0.2f).setEase(LeanTweenType.easeOutQuad);
+					LeanTween.moveLocal(bottomPartSphere, bottomPartSphere.transform.localPosition + new Vector3(0f,-0.02f,0f), 0.2f).setEase(LeanTweenType.easeOutQuad);
 				}
 
                 controller.AssignCurrentFocus(transform.gameObject);
@@ -606,6 +900,24 @@ public class handle : MonoBehaviour {
 					if (rotationArrow != null) {
 						LeanTween.color (rotationArrow, normalColor, 0.06f);
 					}
+						
+				}
+
+				if (typeOfHandle == handleType.Rotation) {
+					LeanTween.color (arrowPart1, normalColor, 0.06f);
+					LeanTween.color (arrowPart2, normalColor, 0.06f);
+					LeanTween.color (arrowPart3, normalColor, 0.06f);
+					handles.ShowRotationHandles ();
+				}
+
+				if (typeOfHandle == handleType.RotationHandleToggle) {
+					LeanTween.moveLocal(bottomPartSphere, standardPosBottom, 0.2f).setEase(LeanTweenType.easeOutQuad);
+				}
+
+				if (rotationVisual != null) {
+					Destroy (rotationVisual);
+					Destroy (CurrentRotationLine);
+					Destroy (RotationOnStartLine);
 				}
 
                 controller.DeAssignCurrentFocus(transform.gameObject);

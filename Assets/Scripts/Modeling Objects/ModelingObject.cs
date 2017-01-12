@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System;
+using UnityEngine.EventSystems;
 
 public class ModelingObject : MonoBehaviour
 {
@@ -45,17 +46,17 @@ public class ModelingObject : MonoBehaviour
     public bool moving = false;
     bool focused = false;
 
-    private Vector3 PositionOnMovementStart;
+    public Vector3 PositionOnMovementStart;
 
     public GameObject linesPrefab;
     public GameObject DistanceVisualPrefab;
     public GameObject CenterVisualPrefab;
     public GameObject GroundVisualPrefab;
-    private GameObject GroundVisualOnStartMoving;
-	private GameObject GroundVisualOnStartMovingTop;
-	private GameObject GroundVisualOnStartMovingBottom;
-    private Transform DistanceVisualisation;
-	private Vector3[] initialCoordinatesBoundingBox;
+    public GameObject GroundVisualOnStartMoving;
+	public GameObject GroundVisualOnStartMovingTop;
+	public GameObject GroundVisualOnStartMovingBottom;
+    public Transform DistanceVisualisation;
+	public Vector3[] initialCoordinatesBoundingBox;
 
     private Vector3 lastPositionX;
     private Vector3 lastPositionY;
@@ -91,6 +92,8 @@ public class ModelingObject : MonoBehaviour
 	private Vector3 initialDistanceCollisionGOModelingObject;
 
     public BoundingBox boundingBox;
+	public BoundingBox boundingBoxWorld;
+	public bool useBoundingBoxWorld = false;
 
 	private bool trashed = false;
 	public Transform rotationObject;
@@ -101,23 +104,86 @@ public class ModelingObject : MonoBehaviour
 	public float timeOnMovementStart;
 	bool outOfLibrary = false;
 
+	GameObject xAxis;
+	GameObject yAxis;
+	GameObject zAxis;
+
+	public Lines connectingLinesHandles;
+
+	private Selection selection;
+
+	// vector used for bb calculation
+	private Vector3 current;
+
+	bool cameraMoving;
+
+	public int idOfClosestVertToCamera;
+
+	public GameObject complexObject;
+
     // Use this for initialization
     void Start()
     {
         handles.gameObject.transform.GetChild(0).gameObject.SetActive(false);
         DistanceVisualisation = ObjectsManager.Instance.DistanceVisualisation;
 		player = Camera.main.transform;
-    }
+		selection = GameObject.Find ("SelectionManager").GetComponent<Selection> ();
+	}
 
-    // Update is called once per frame
+
+	public void ToggleLocalGlobalBB(){
+
+		useBoundingBoxWorld = !useBoundingBoxWorld;
+
+		if (useBoundingBoxWorld) {
+			SwitchToGlobalBoundingBox ();
+		} else {
+			SwitchToLocalBoundingBox ();
+		}
+
+		handles.ShowNonUniformScalingHandles ();
+	}
+
+	   // Update is called once per frame
     void FixedUpdate()
     {
+		if (selected && Input.GetKeyDown(KeyCode.P)){
+			//Debug.Log("switch world local");
+			ToggleLocalGlobalBB();
+		}
+
+		if (Input.GetMouseButtonDown (1)  || (selection.currentFocus == null && Input.GetMouseButton(0))) {
+			cameraMoving = true;
+
+			handles.HideRotationHandlesExcept (null);
+			handles.HideScalingHandlesExcept (null);
+			TouchElements.Instance.Hide ();
+			//connectingLinesHandles.ClearLines ();
+		}
+
+		if ((Input.GetMouseButtonUp (1) && selected) ||  (Input.GetMouseButtonUp (0) && selected)) {
+			cameraMoving = false;
+			idOfClosestVertToCamera = GetIdOfClosestVertex(Camera.main.transform.position, boundingBox.coordinates);
+
+			PositionHandles (true);
+			RotateHandles ();
+			handles.ShowNonUniformScalingHandles ();
+
+			if (handles.rotationHandlesvisible) {
+				handles.ShowRotationHandles ();
+			}	
+		}
+
         if (!moving && transform.parent.CompareTag("Library"))
         {
             transform.Rotate(0, 10f * Time.deltaTime, 0);
         }
 
-		if (moving && (controllerForMovement.currentSettingSelectionMode == Selection.settingSelectionMode.SettingsButton || ((Time.time - timeOnMovementStart) > 0.15f))) {
+		if (selected && !moving && !cameraMoving) {
+			DrawConnectingLines ();
+		}
+
+		if (moving) {
 			onRaster = false;
 
 			if (inTrashArea) {
@@ -148,25 +214,52 @@ public class ModelingObject : MonoBehaviour
 				Logger.Instance.AddLine (Logger.typeOfLog.grabObjectFromLibrary);
 			}
 
-			if (!BiManualOperations.Instance.IsScalingStarted ()) {				
-				Vector3 newPositionCollider = controllerForMovement.pointOfCollisionGO.transform.position;
-				Vector3 SmoothedNewPositionCollider; 
+			Vector3 newPositionCollider = controllerForMovement.pointOfCollisionGO.transform.position;
+			Vector3 SmoothedNewPositionCollider; 
 
-				float distanceNewMovement = (newPositionCollider - lastPositionController).sqrMagnitude;
+			float distanceNewMovement = (newPositionCollider - lastPositionController).sqrMagnitude;
 
-				float smoothing = Mathf.Min((1f / distanceNewMovement * 0.03f), 0.12f);
-				if (distanceNewMovement > transform.lossyScale.x * 2f) {
-					smoothing = 0;
+			float smoothing = Mathf.Min((1f / distanceNewMovement * 0.03f), 0.12f);
+
+			if (distanceNewMovement > transform.lossyScale.x * 2f) {
+				smoothing = 0;
+			}
+
+			// smooth for fine movement
+			SmoothedNewPositionCollider = Vector3.SmoothDamp (lastPositionController, newPositionCollider, ref velocity, smoothing);
+
+			Vector3 newPositionWorld = newPositionCollider - initialDistanceCollisionGOModelingObject;
+
+			lastPositionController = newPositionCollider;
+
+			if ((newPositionWorld-transform.position).magnitude > 0.4f * transform.lossyScale.x ){
+				snapped = false;
+
+				if (colliderSphere.possibleSnapping != null) {				
+					colliderSphere.possibleSnapping.colliderSphere.SnappedToThis = null;
+					colliderSphere.SnappedToThis = null;
+					colliderSphere.possibleSnapping = null;
 				}
+			}
 
-				// smooth for fine movement
-				SmoothedNewPositionCollider = Vector3.SmoothDamp (lastPositionController, newPositionCollider, ref velocity, smoothing);
-					
-				Vector3 newPositionWorld = SmoothedNewPositionCollider - initialDistanceCollisionGOModelingObject;
+			if (!snapped) {
+				transform.position = newPositionWorld;
 
-				lastPositionController = SmoothedNewPositionCollider;
+				KeepAboveZero (prevPosition);
 
-				if ((newPositionWorld-transform.position).magnitude > 0.4f * transform.lossyScale.x ){
+				//transform.localPosition = transform.localPosition + RasterManager.Instance.Raster (transform.InverseTransformVector(newPositionWorld - prevPosition));
+				//KeepAboveZero (prevPosition);
+
+				transform.localPosition = RasterManager.Instance.Raster (transform.localPosition);
+
+				// here check for possible snappings
+				if (colliderSphere.possibleSnapping != null) {
+					if (!snapped) {
+						snapped = true;
+						Vector3 distanceCurrentBottomSnap = colliderSphere.possibleSnapping.GetBoundingBoxTopCenter () - GetBoundingBoxBottomCenter ();
+						this.transform.position = this.transform.position + distanceCurrentBottomSnap;
+					} 
+				} else {
 					snapped = false;
 
 					if (colliderSphere.possibleSnapping != null) {				
@@ -175,201 +268,193 @@ public class ModelingObject : MonoBehaviour
 						colliderSphere.possibleSnapping = null;
 					}
 				}
-
-				if (!snapped) {
-					transform.position = newPositionWorld;
-
-					if (group != null && group.lowestModObject != null &&  group.lowestModObject != this) {
-						// get lowest point of group
-						Vector3 lowestPoint = group.lowestModObject.GetBoundingBoxBottomCenter () + (transform.position - prevPosition);
-
-						if ((transform.localPosition.y + transform.InverseTransformPoint(lowestPoint).y) < 0f) {	
-							float belowZero = Mathf.Abs(transform.localPosition.y + transform.InverseTransformPoint(lowestPoint).y);
-							transform.localPosition = new Vector3 (transform.localPosition.x, transform.localPosition.y + belowZero, transform.localPosition.z);
-						}
-
-					} else {
-						Vector3 lowestPoint = GetBoundingBoxBottomCenter ();
-
-						if ((transform.localPosition.y + transform.InverseTransformPoint(lowestPoint).y) < 0f) {	
-							float belowZero = Mathf.Abs(transform.localPosition.y + transform.InverseTransformPoint(lowestPoint).y);
-							transform.localPosition = new Vector3 (transform.localPosition.x, transform.localPosition.y + belowZero, transform.localPosition.z);
-						}
-					}
-
-					transform.localPosition = RasterManager.Instance.Raster (transform.localPosition);
-
-					// here check for possible snappings
-					if (colliderSphere.possibleSnapping != null) {
-						if (!snapped) {
-							controllerForMovement.TriggerIfPressed (2500);
-							snapped = true;
-							Vector3 distanceCurrentBottomSnap = colliderSphere.possibleSnapping.GetBoundingBoxTopCenter () - GetBoundingBoxBottomCenter ();
-							this.transform.position = this.transform.position + distanceCurrentBottomSnap;
-						} 
-					} else {
-						snapped = false;
-
-						if (colliderSphere.possibleSnapping != null) {				
-							colliderSphere.possibleSnapping.colliderSphere.SnappedToThis = null;
-							colliderSphere.SnappedToThis = null;
-							colliderSphere.possibleSnapping = null;
-						}
-					}
-				}
-
-
-				if (group != null) {
-					Vector3 distance = transform.position - prevPosition;
-					//group.DrawBoundingBox ();
-
-					group.Move (distance, this);
-					//group.DrawBoundingBox ();
-				}
-
-				lastPositionX = PositionOnMovementStart;
-				lastPositionY = PositionOnMovementStart;
-				lastPositionZ = PositionOnMovementStart;
-
-				if ((transform.position - prevPosition).magnitude != null){
-					//CalculateBoundingBox ();
-				}
 			}
 
-			if (new Vector2 (transform.localPosition.x, transform.localPosition.z).magnitude > 3.6f) {
-				if (!inTrashArea) {
-					EnterTrashArea ();
-				}
-			} else {
-				if (inTrashArea) {
-					ExitTrashArea ();
-				}
+
+			if (group != null) {
+				Vector3 distance = transform.position - prevPosition;
+				//group.DrawBoundingBox ();
+
+				group.Move (distance, this);
+				//group.DrawBoundingBox ();
 			}
-			 
+
+			lastPositionX = PositionOnMovementStart;
+			lastPositionY = PositionOnMovementStart;
+			lastPositionZ = PositionOnMovementStart;
+
+			if ((transform.position - prevPosition).magnitude != null){
+				//CalculateBoundingBox ();
+			}
+
 
 			if (!outOfLibrary && !inTrashArea) {
-				
-				// maybe check local positon
-				int countX = RasterManager.Instance.getNumberOfGridUnits(transform.InverseTransformPoint(GetBoundingBoxBottomCenter()).x, transform.InverseTransformPoint(PositionOnMovementStart).x);
-
-				for (int i = 0; i <= Mathf.Abs(countX); i++)
-				{
-					if (i == 0)
-					{
-						// Display center of object before moving
-						GameObject CenterVisual = Instantiate(CenterVisualPrefab);
-						CenterVisual.transform.SetParent(DistanceVisualisation);
-						CenterVisual.transform.localEulerAngles = new Vector3(0f, 0f, 0f);
-
-						// change size depending on scale of stage
-						CenterVisual.transform.localScale = new Vector3(1f, 1f, 1f);
-						CenterVisual.transform.position = PositionOnMovementStart;
-
-						// Display center of object after moving
-						GameObject CenterVisual2 = Instantiate(CenterVisualPrefab);
-						CenterVisual2.transform.SetParent(DistanceVisualisation);
-						CenterVisual2.transform.localEulerAngles = new Vector3(0f, 0f, 0f);
-						CenterVisual2.transform.localScale = new Vector3(1f, 1f, 1f);
-
-						// not very efficient
-						CenterVisual2.transform.position = 0.25f * boundingBox.coordinates[4] + 0.25f * boundingBox.coordinates[5] + 0.25f * boundingBox.coordinates[6] + 0.25f * boundingBox.coordinates[7];
-
-						// prev position
-						GameObject lines = Instantiate(linesPrefab);
-						lines.transform.SetParent(DistanceVisualisation);
-						lines.GetComponent<Lines>().DrawLinesWorldCoordinate(new Vector3[] { boundingBox.coordinates[4], boundingBox.coordinates[5], boundingBox.coordinates[6], boundingBox.coordinates[7]}, 0);
-
-						// new position
-						GameObject lines2 = Instantiate(linesPrefab);
-						lines2.transform.SetParent(DistanceVisualisation);
-						lines2.GetComponent<Lines>().DrawLinesWorldCoordinate(initialCoordinatesBoundingBox, 0);
-
-					}
-
-					GameObject DistanceVisualX = Instantiate(DistanceVisualPrefab);
-					DistanceVisualX.transform.SetParent(DistanceVisualisation);
-					DistanceVisualX.transform.localEulerAngles = new Vector3(0f, 0f, 0f);
-					DistanceVisualX.transform.localScale = new Vector3(1f, 1f, 1f);
-					DistanceVisualX.transform.position = PositionOnMovementStart;
-
-					if (bottomFace.center.coordinates.x > transform.InverseTransformPoint(PositionOnMovementStart).x)
-					{
-						DistanceVisualX.transform.localPosition += new Vector3(i * RasterManager.Instance.rasterLevel, 0f, 0f);
-					}
-					else
-					{
-						DistanceVisualX.transform.localPosition += new Vector3(i * RasterManager.Instance.rasterLevel * (-1.0f), 0f, 0f);
-					}
-
-					lastPositionX = DistanceVisualX.transform.position;
-					lastPositionZ = DistanceVisualX.transform.position;
-				}
-
-				// show amount of movement on z
-				if (bottomFace.center.coordinates.z != transform.InverseTransformPoint(PositionOnMovementStart).z)
-				{
-					// use raster manager
-					int countZ = RasterManager.Instance.getNumberOfGridUnits(transform.InverseTransformPoint(GetBoundingBoxBottomCenter()).z, transform.InverseTransformPoint(PositionOnMovementStart).z);
-
-					for (int i = 0; i <= Mathf.Abs(countZ); i++)
-					{
-						GameObject DistanceVisualZ = Instantiate(DistanceVisualPrefab);
-						DistanceVisualZ.transform.SetParent(DistanceVisualisation);
-						DistanceVisualZ.transform.localEulerAngles = new Vector3(0f, 0f, 0f);
-						DistanceVisualZ.transform.localScale = new Vector3(1f, 1f, 1f);
-						DistanceVisualZ.transform.GetChild(0).localEulerAngles = new Vector3(0f, 90f, 0f);
-						DistanceVisualZ.transform.position = lastPositionX;
-
-						if (bottomFace.center.coordinates.z > transform.InverseTransformPoint(PositionOnMovementStart).z)
-						{
-							DistanceVisualZ.transform.localPosition += new Vector3(0f, 0f, i * RasterManager.Instance.rasterLevel);
-						}
-						else
-						{
-							DistanceVisualZ.transform.localPosition += new Vector3(0f, 0f, i * RasterManager.Instance.rasterLevel * (-1.0f));
-						}
-
-						lastPositionZ = DistanceVisualZ.transform.position;
-					}
-
-				}
-
-				// show amount of movement on y
-				if (bottomFace.center.coordinates.y != transform.InverseTransformPoint(PositionOnMovementStart).y)
-				{
-					// use raster manager
-					int countY = RasterManager.Instance.getNumberOfGridUnits(transform.InverseTransformPoint(GetBoundingBoxBottomCenter()).y, transform.InverseTransformPoint(PositionOnMovementStart).y);
-
-					for (int i = 0; i <= Mathf.Abs(countY); i++)
-					{
-						GameObject DistanceVisualY = Instantiate(DistanceVisualPrefab);
-						DistanceVisualY.transform.SetParent(DistanceVisualisation);
-						DistanceVisualY.transform.localEulerAngles = new Vector3(0f, 0f, 0f);
-						DistanceVisualY.transform.localScale = new Vector3(1f, 1f, 1f);
-						DistanceVisualY.transform.position = lastPositionZ;
-
-						if (bottomFace.center.coordinates.y > transform.InverseTransformPoint(PositionOnMovementStart).y)
-						{
-							DistanceVisualY.transform.localPosition += new Vector3(0f, i * RasterManager.Instance.rasterLevel, 0f);
-						}
-						else
-						{
-							DistanceVisualY.transform.localPosition += new Vector3(0f, i * RasterManager.Instance.rasterLevel * (-1.0f), 0f);
-						}
-
-						lastPositionY = DistanceVisualY.transform.position;
-					}
-
-				}
-
-
+				VisualizeMovement ();
 			}
-
-
 		}		
 
     }
 
+
+	public void VisualizeMovement(){
+
+		if (RasterManager.Instance.rasterLevel >= 0.05f && !ProModeMananager.Instance.beginnersMode) {
+			// maybe check local positon
+			int countX = RasterManager.Instance.getNumberOfGridUnits(transform.InverseTransformPoint(GetBoundingBoxBottomCenterWorld()).x, transform.InverseTransformPoint(PositionOnMovementStart).x);
+
+			for (int i = 0; i <= Mathf.Abs(countX); i++)
+			{
+				if (i == 0)
+				{
+					// Display center of object before moving
+					GameObject CenterVisual = Instantiate(CenterVisualPrefab);
+					CenterVisual.transform.SetParent(DistanceVisualisation);
+					CenterVisual.transform.localEulerAngles = new Vector3(0f, 0f, 0f);
+
+					// change size depending on scale of stage
+					CenterVisual.transform.localScale = new Vector3(1f, 1f, 1f);
+					CenterVisual.transform.position = PositionOnMovementStart;
+
+					// Display center of object after moving
+					GameObject CenterVisual2 = Instantiate(CenterVisualPrefab);
+					CenterVisual2.transform.SetParent(DistanceVisualisation);
+					CenterVisual2.transform.localEulerAngles = new Vector3(0f, 0f, 0f);
+					CenterVisual2.transform.localScale = new Vector3(1f, 1f, 1f);
+
+					// not very efficient
+					CenterVisual2.transform.position = 0.25f * boundingBoxWorld.coordinates[4] + 0.25f * boundingBoxWorld.coordinates[5] + 0.25f * boundingBoxWorld.coordinates[6] + 0.25f * boundingBoxWorld.coordinates[7];
+
+					// prev position
+					GameObject lines = Instantiate(linesPrefab);
+					lines.transform.SetParent(DistanceVisualisation);
+					lines.GetComponent<Lines>().DrawLinesWorldCoordinate(new Vector3[] { boundingBoxWorld.coordinates[4], boundingBoxWorld.coordinates[5], boundingBoxWorld.coordinates[6], boundingBoxWorld.coordinates[7]}, 0);
+
+					// new position
+					GameObject lines2 = Instantiate(linesPrefab);
+					lines2.transform.SetParent(DistanceVisualisation);
+					lines2.GetComponent<Lines>().DrawLinesWorldCoordinate(initialCoordinatesBoundingBox, 0);
+
+				}
+
+				/*
+				GameObject DistanceVisualX = Instantiate(DistanceVisualPrefab);
+				DistanceVisualX.transform.SetParent(DistanceVisualisation);
+				DistanceVisualX.transform.localEulerAngles = new Vector3(0f, 0f, 0f);
+				DistanceVisualX.transform.localScale = new Vector3(1f, 1f, 1f);
+				DistanceVisualX.transform.position = PositionOnMovementStart;
+
+				if (bottomFace.center.coordinates.x > transform.InverseTransformPoint(PositionOnMovementStart).x)
+				{
+					DistanceVisualX.transform.localPosition += new Vector3(i * RasterManager.Instance.rasterLevel, 0f, 0f);
+				}
+				else
+				{
+					DistanceVisualX.transform.localPosition += new Vector3(i * RasterManager.Instance.rasterLevel * (-1.0f), 0f, 0f);
+				}
+
+				lastPositionX = DistanceVisualX.transform.position;
+				lastPositionZ = DistanceVisualX.transform.position;
+				*/
+			}
+
+			if (countX == 0) {
+				// draw green line
+				GameObject connectionLine = Instantiate(linesPrefab);
+				connectionLine.transform.SetParent(DistanceVisualisation);
+				connectionLine.GetComponent<Lines> ().ChangeColors (Color.green);
+				connectionLine.GetComponent<Lines>().DrawLinesWorldCoordinate(new Vector3[] { GetBoundingBoxBottomCenterWorld (), PositionOnMovementStart }, 0);
+			}
+
+			// show amount of movement on z
+			if (transform.InverseTransformPoint (GetBoundingBoxBottomCenterWorld ()).z != transform.InverseTransformPoint (PositionOnMovementStart).z) {
+				// use raster manager
+				int countZ = RasterManager.Instance.getNumberOfGridUnits (transform.InverseTransformPoint (GetBoundingBoxBottomCenterWorld ()).z, transform.InverseTransformPoint (PositionOnMovementStart).z);
+
+				/*
+
+				for (int i = 0; i <= Mathf.Abs (countZ); i++) {
+					GameObject DistanceVisualZ = Instantiate (DistanceVisualPrefab);
+					DistanceVisualZ.transform.SetParent (DistanceVisualisation);
+					DistanceVisualZ.transform.localEulerAngles = new Vector3 (0f, 0f, 0f);
+					DistanceVisualZ.transform.localScale = new Vector3 (1f, 1f, 1f);
+					DistanceVisualZ.transform.GetChild (0).localEulerAngles = new Vector3 (0f, 90f, 0f);
+					DistanceVisualZ.transform.position = lastPositionX;
+
+					if (bottomFace.center.coordinates.z > transform.InverseTransformPoint (PositionOnMovementStart).z) {
+						DistanceVisualZ.transform.localPosition += new Vector3 (0f, 0f, i * RasterManager.Instance.rasterLevel);
+					} else {
+						DistanceVisualZ.transform.localPosition += new Vector3 (0f, 0f, i * RasterManager.Instance.rasterLevel * (-1.0f));
+					}
+
+					lastPositionZ = DistanceVisualZ.transform.position;
+				} */
+
+			} else {
+				// draw green line
+				GameObject connectionLine = Instantiate(linesPrefab);
+				connectionLine.transform.SetParent(DistanceVisualisation);
+				connectionLine.GetComponent<Lines> ().ChangeColors (Color.green);
+				connectionLine.GetComponent<Lines>().DrawLinesWorldCoordinate(new Vector3[] { GetBoundingBoxBottomCenterWorld (), PositionOnMovementStart }, 0);
+			}
+
+			// show amount of movement on y
+			if (transform.InverseTransformPoint(GetBoundingBoxBottomCenterWorld()).y != transform.InverseTransformPoint(PositionOnMovementStart).y)
+			{
+				// use raster manager
+				int countY = RasterManager.Instance.getNumberOfGridUnits(transform.InverseTransformPoint(GetBoundingBoxBottomCenterWorld()).y, transform.InverseTransformPoint(PositionOnMovementStart).y);
+
+				for (int i = 0; i <= Mathf.Abs(countY); i++)
+				{
+					GameObject DistanceVisualY = Instantiate(DistanceVisualPrefab);
+					DistanceVisualY.transform.SetParent(DistanceVisualisation);
+					DistanceVisualY.transform.localEulerAngles = new Vector3(0f, 0f, 0f);
+					DistanceVisualY.transform.localScale = new Vector3(1f, 1f, 1f);
+					DistanceVisualY.transform.position = lastPositionZ;
+
+					if (bottomFace.center.coordinates.y > transform.InverseTransformPoint(PositionOnMovementStart).y)
+					{
+						DistanceVisualY.transform.localPosition += new Vector3(0f, i * RasterManager.Instance.rasterLevel, 0f);
+					}
+					else
+					{
+						DistanceVisualY.transform.localPosition += new Vector3(0f, i * RasterManager.Instance.rasterLevel * (-1.0f), 0f);
+					}
+
+					lastPositionY = DistanceVisualY.transform.position;
+				}
+
+			} else {
+				// draw green line
+				//GameObject connectionLine = Instantiate(linesPrefab);
+				//connectionLine.transform.SetParent(DistanceVisualisation);
+				//connectionLine.GetComponent<Lines> ().ChangeColors (Color.green);
+				//connectionLine.GetComponent<Lines>().DrawLinesWorldCoordinate(new Vector3[] { GetBoundingBoxBottomCenterWorld (), PositionOnMovementStart }, 0);
+			}
+		}
+
+
+	}
+
+	public void KeepAboveZero(Vector3 prevPosition){
+		
+		if (group != null && group.lowestModObject != null &&  group.lowestModObject != this) {
+			// get lowest point of group
+			Vector3 lowestPoint = group.lowestModObject.GetBoundingBoxBottomCenterWorld () + (transform.position - prevPosition);
+
+			if ((transform.localPosition.y + transform.InverseTransformPoint(lowestPoint).y) < 0f) {	
+				float belowZero = Mathf.Abs(transform.localPosition.y + transform.InverseTransformPoint(lowestPoint).y);
+				transform.localPosition = new Vector3 (transform.localPosition.x, transform.localPosition.y + belowZero, transform.localPosition.z);
+			}
+
+		} else {
+			Vector3 lowestPoint = GetBoundingBoxBottomCenterWorld ();
+
+			if ((transform.localPosition.y + transform.InverseTransformPoint(lowestPoint).y) < 0f) {	
+				float belowZero = Mathf.Abs(transform.localPosition.y + transform.InverseTransformPoint(lowestPoint).y);
+				transform.localPosition = new Vector3 (transform.localPosition.x, transform.localPosition.y + belowZero, transform.localPosition.z);
+			}
+		}
+	}
 
     public void MoveModelingObject(Vector3 distance)
     {
@@ -553,10 +638,40 @@ public class ModelingObject : MonoBehaviour
         meshCollider.sharedMesh = mesh;
     }
 
+	public void UpdateVisibleHandles(){
+		handles.HideRotationHandlesExcept (null);
+		handles.HideScalingHandlesExcept (null);
+
+
+		PositionHandles (true);
+		RotateHandles ();
+
+		handles.ShowNonUniformScalingHandles ();
+		if (handles.rotationHandlesvisible) {
+			handles.ShowRotationHandles ();
+		}
+
+		DrawConnectingLines ();
+	}
+
+	public void SwitchToGlobalBoundingBox(){
+		useBoundingBoxWorld = true;
+		boundingBox.local = false;
+		UpdateVisibleHandles ();
+	}
+
+	public void SwitchToLocalBoundingBox(){
+		useBoundingBoxWorld = false;
+		boundingBox.local = true;
+		UpdateVisibleHandles ();
+	}
+
 	public void PositionHandles(bool showRotationHandles)
     {
 		CalculateBoundingBox ();
 		//Vector3 sizeHandles =  transform.InverseTransformVector (Vector3.one);
+
+		idOfClosestVertToCamera = GetIdOfClosestVertex (Camera.main.transform.position, boundingBox.coordinates);
 
 		handles.faceTopScale.transform.position = transform.TransformPoint(topFace.scaler.coordinates);
 		handles.faceBottomScale.transform.position = transform.TransformPoint(bottomFace.scaler.coordinates);
@@ -565,238 +680,242 @@ public class ModelingObject : MonoBehaviour
         handles.HeightTop.transform.localPosition = topFace.centerPosition;
         handles.HeightBottom.transform.localPosition = bottomFace.centerPosition;
 
+		handles.groundPlane.transform.position = new Vector3(GetBoundingBoxCenterWorld().x, 0f, GetBoundingBoxCenterWorld().z);
+
 		// get Closest bounding box coordinate 
-		Vector3 closesBBcorner = GetPosOfClosestVertex(Camera.main.transform.position, boundingBox.coordinates);
+		//Vector3 closesBBcorner = GetPosOfClosestVertex(Camera.main.transform.position, boundingBox.coordinates);
 
-		// evtl neu schreiben, nur 3 Handles, die immer positionieren
+		if (handles.rotationHandlesvisible) {
 
-		//handles.RotateUp0.transform.position = 0.5f * boundingBox.coordinates [0] + 0.5f * boundingBox.coordinates [1];
-		if (closesBBcorner == boundingBox.coordinates [0] || closesBBcorner == boundingBox.coordinates [1]) {	
-			handles.RotateUp0.SetActive (showRotationHandles);
+		//	int idOfClosestVertToCamera = GetIdOfClosestVertex(Camera.main.transform.position, boundingBox.coordinates);
 
-			if (closesBBcorner == boundingBox.coordinates [0]){
-				handles.RotateUp0.transform.position = boundingBox.coordinates [1];
-			} else {
-				handles.RotateUp0.transform.position = boundingBox.coordinates [0];
+			/*
+			int nextId = idOfClosestVertToCamera + 1;
+
+			if (nextId > 3) {
+				nextId = 0;
 			}
 
-		} else {
-			handles.RotateUp0.SetActive (false);
-		}
+			int preId = idOfClosestVertToCamera - 1;
 
-		//handles.RotateUp1.transform.position = 0.5f * boundingBox.coordinates [1] + 0.5f * boundingBox.coordinates [2];
-		if (closesBBcorner == boundingBox.coordinates [1] || closesBBcorner == boundingBox.coordinates [2]) {			
-			handles.RotateUp1.SetActive (showRotationHandles);
-
-			if (closesBBcorner == boundingBox.coordinates [1]){
-				handles.RotateUp1.transform.position = boundingBox.coordinates [2];
-			} else {
-				handles.RotateUp1.transform.position = boundingBox.coordinates [1];
+			if (preId < 0) {
+				preId = 3;
 			}
 
-		} else {
-			handles.RotateUp1.SetActive (false);
-		}
+			int idOfCornerOnGround = idOfClosestVertToCamera + 4;
+		
+			handles.RotateY.transform.position = boundingBox.coordinates [idOfCornerOnGround];
 
-		//handles.RotateUp2.transform.position = 0.5f * boundingBox.coordinates [2] + 0.5f * boundingBox.coordinates [3];
-		if (closesBBcorner == boundingBox.coordinates [2] || closesBBcorner == boundingBox.coordinates [3]) {			
-			handles.RotateUp2.SetActive (showRotationHandles);
+			Vector3 direction = boundingBox.coordinates [preId] - boundingBox.coordinates [idOfClosestVertToCamera];
 
-			if (closesBBcorner == boundingBox.coordinates [2]){
-				handles.RotateUp2.transform.position = boundingBox.coordinates [3];
+			if (Mathf.Abs(Vector3.Dot (direction.normalized, Vector3.forward)) == 1f) {
+				handles.RotateZ.transform.position = boundingBox.coordinates [preId];
+				handles.RotateX.transform.position = boundingBox.coordinates [nextId];
 			} else {
-				handles.RotateUp2.transform.position = boundingBox.coordinates [2];
-			}
-		} else {
-			handles.RotateUp2.SetActive (false);
-		}
-
-		//handles.RotateUp3.transform.position = 0.5f * boundingBox.coordinates [3] + 0.5f * boundingBox.coordinates [0];
-		if (closesBBcorner == boundingBox.coordinates [3] || closesBBcorner == boundingBox.coordinates [0]) {
-			handles.RotateUp3.SetActive (showRotationHandles);
-
-			if (closesBBcorner == boundingBox.coordinates [3]){
-				handles.RotateUp3.transform.position = boundingBox.coordinates [0];
-			} else {
-				handles.RotateUp3.transform.position = boundingBox.coordinates [3];
+				handles.RotateX.transform.position = boundingBox.coordinates [preId];
+				handles.RotateZ.transform.position = boundingBox.coordinates [nextId];
 			}
 
-		} else {
-			handles.RotateUp3.SetActive (false);
-		}
+			*/
 
-		//handles.RotateDown0.transform.position = 0.5f * boundingBox.coordinates [4] + 0.5f * boundingBox.coordinates [5];
-		if (closesBBcorner == boundingBox.coordinates [4] || closesBBcorner == boundingBox.coordinates [5]) {			
-			handles.RotateDown0.SetActive (showRotationHandles);
+			Vector3 bbCenter = GetBoundingBoxCenter();
 
-			if (closesBBcorner == boundingBox.coordinates [4]){
-				handles.RotateDown0.transform.position = boundingBox.coordinates [5];
+			int[] xyz = GetThreeAdjacentCorners (idOfClosestVertToCamera,boundingBox.local);
+
+			/*
+			handles.RotateX.transform.position = boundingBox.coordinates [xyz[0]];
+			handles.RotateY.transform.position = boundingBox.coordinates [xyz[1]];
+			handles.RotateZ.transform.position = boundingBox.coordinates [xyz[2]];
+			*/
+
+			handles.RotateX.transform.position = bbCenter;
+			handles.RotateY.transform.position = bbCenter;
+			handles.RotateZ.transform.position = bbCenter;
+
+			// RotateHandles 
+			if (!boundingBox.local)
+			{
+				handles.RotateX.transform.rotation = Quaternion.LookRotation (new Vector3(1f,0f,0f), boundingBox.coordinates [xyz[0]] - bbCenter);
+				handles.RotateY.transform.rotation = Quaternion.LookRotation (new Vector3(0f,1f,0f), boundingBox.coordinates [xyz[1]] - bbCenter);
+				handles.RotateZ.transform.rotation = Quaternion.LookRotation (new Vector3(0f,0f,1f), boundingBox.coordinates [xyz[2]] - bbCenter);
 			} else {
-				handles.RotateDown0.transform.position = boundingBox.coordinates [4];
+				handles.RotateX.transform.rotation = Quaternion.LookRotation (coordinateSystem.transform.right, boundingBox.coordinates [xyz[0]] - bbCenter);
+				handles.RotateY.transform.rotation = Quaternion.LookRotation (coordinateSystem.transform.up, boundingBox.coordinates [xyz[1]] - bbCenter);
+				handles.RotateZ.transform.rotation = Quaternion.LookRotation (coordinateSystem.transform.forward, boundingBox.coordinates [xyz[2]] - bbCenter);
 			}
 
-		} else {
-			handles.RotateDown0.SetActive (false);
-		}
-
-		//handles.RotateDown1.transform.position = 0.5f * boundingBox.coordinates[5] + 0.5f * boundingBox.coordinates[6];
-		if (closesBBcorner == boundingBox.coordinates [5] || closesBBcorner == boundingBox.coordinates [6]) {			
-			handles.RotateDown1.SetActive (showRotationHandles);
-
-			if (closesBBcorner == boundingBox.coordinates [5]){
-				handles.RotateDown1.transform.position = boundingBox.coordinates [6];
-			} else {
-				handles.RotateDown1.transform.position = boundingBox.coordinates [5];
+			if (!ProModeMananager.Instance.beginnersMode) {
+				handles.RotateX.SetActive (true);
+				handles.RotateZ.SetActive (true);
 			}
-
-		} else {
-			handles.RotateDown1.SetActive (false);
+			handles.RotateY.SetActive (true);
 		}
+	
+		handles.NonUniformScaleTop.transform.position = GetBoundingBoxTopCenter () + 0.00f * (GetBoundingBoxTopCenter () - GetBoundingBoxBottomCenter ()).normalized;
+		handles.NonUniformScaleBottom.transform.position = GetBoundingBoxBottomCenter () + 0.00f * (GetBoundingBoxBottomCenter () - GetBoundingBoxTopCenter ()).normalized;
 
-		//handles.RotateDown2.transform.position = 0.5f * boundingBox.coordinates[6] + 0.5f * boundingBox.coordinates[7];
-		if (closesBBcorner == boundingBox.coordinates [6] || closesBBcorner == boundingBox.coordinates [7]) {			
-			handles.RotateDown2.SetActive (showRotationHandles);
+		handles.NonUniformScaleFront.transform.position = GetBoundingBoxFrontCenter () + 0.00f * (GetBoundingBoxFrontCenter () - GetBoundingBoxBackCenter ()).normalized;
+		handles.NonUniformScaleBack.transform.position = GetBoundingBoxBackCenter () + 0.00f * (GetBoundingBoxBackCenter () - GetBoundingBoxFrontCenter ()).normalized;
 
-			if (closesBBcorner == boundingBox.coordinates [6]){
-				handles.RotateDown2.transform.position = boundingBox.coordinates [7];
-			} else {
-				handles.RotateDown2.transform.position = boundingBox.coordinates [6];
-			}
+		handles.NonUniformScaleLeft.transform.position = GetBoundingBoxLeftCenter () + 0.00f * (GetBoundingBoxLeftCenter () - GetBoundingBoxRightCenter ()).normalized;
+		handles.NonUniformScaleRight.transform.position = GetBoundingBoxRightCenter () + 0.00f * (GetBoundingBoxRightCenter () - GetBoundingBoxLeftCenter ()).normalized;
 
-		} else {
-			handles.RotateDown2.SetActive (false);
-		}
+		//we always also need wolrd coordinates
 
-		//handles.RotateDown3.transform.position = 0.5f * boundingBox.coordinates[7] + 0.5f * boundingBox.coordinates[4];
-		if (closesBBcorner == boundingBox.coordinates [7] || closesBBcorner == boundingBox.coordinates [4]) {			
-			handles.RotateDown3.SetActive (showRotationHandles);
+		// verschiebung muss relativ sein
 
-			if (closesBBcorner == boundingBox.coordinates [7]){
-				handles.RotateDown3.transform.position = boundingBox.coordinates [4];
-			} else {
-				handles.RotateDown3.transform.position = boundingBox.coordinates [7];
-			}
+		// give circle fixe pos
+		//handles.ToggleRotateOnOff.transform.position = GetBoundingBoxTopCenterWorld () + 0.09f * (GetBoundingBoxTopCenterWorld () - GetBoundingBoxBottomCenterWorld ()).normalized;
+		//handles.YMovement.transform.position = GetBoundingBoxTopCenterWorld () + 0.09f * (GetBoundingBoxTopCenterWorld () - GetBoundingBoxBottomCenterWorld ()).normalized;
+		//handles.UniformScale.transform.position = GetBoundingBoxTopCenterWorld () + 0.09f * (GetBoundingBoxTopCenterWorld () - GetBoundingBoxBottomCenterWorld ()).normalized;
 
-		} else {
-			handles.RotateDown3.SetActive (false);
-		}
+		float highestDistanceToCenter = boundingBoxWorld.getMaxDistanceinBB(GetBoundingBoxCenterWorld());
 
-		//handles.RotateSide0.transform.position = 0.5f * boundingBox.coordinates[0] + 0.5f * boundingBox.coordinates[4];
-		if (closesBBcorner == boundingBox.coordinates [0] || closesBBcorner == boundingBox.coordinates [4]) {			
-			handles.RotateSide0.SetActive (showRotationHandles);
+		// position on top of circles
+		handles.ToggleRotateOnOff.transform.position = GetBoundingBoxCenterWorld() + Vector3.up * highestDistanceToCenter;
+		handles.YMovement.transform.position = GetBoundingBoxCenterWorld() + Vector3.up * highestDistanceToCenter;
+		handles.UniformScale.transform.position = GetBoundingBoxCenterWorld() + Vector3.up * highestDistanceToCenter;
 
-			if (closesBBcorner == boundingBox.coordinates [0]){
-				handles.RotateSide0.transform.position = boundingBox.coordinates [4];
-			} else {
-				handles.RotateSide0.transform.position = boundingBox.coordinates [0];
-			}
+		Vector3 bbFront = GetBoundingBoxFrontCenter ();
 
-		} else {
-			handles.RotateSide0.SetActive (false);
-		}
+		//handles.RotateAndTranslate.transform.position = new Vector3 (bbFront.x, GetBoundingBoxBottomCenter().y, bbFront.z) + 0.3f * (bbFront - GetBoundingBoxCenter ()).normalized;
+		handles.RotateAndTranslate.transform.position = new Vector3 (bbFront.x, GetBoundingBoxBottomCenter().y, bbFront.z) + 0.15f * (bbFront - GetBoundingBoxCenter ()).normalized;
 
-		//handles.RotateSide1.transform.position = 0.5f * boundingBox.coordinates[1] + 0.5f * boundingBox.coordinates[5];
-		if (closesBBcorner == boundingBox.coordinates [1] || closesBBcorner == boundingBox.coordinates [5]) {			
-			handles.RotateSide1.SetActive (showRotationHandles);
+		//handles.RotateAndTranslate.transform.position = GetBoundingBoxBottomCenterWorld();
 
-			if (closesBBcorner == boundingBox.coordinates [1]){
-				handles.RotateSide1.transform.position = boundingBox.coordinates [5];
-			} else {
-				handles.RotateSide1.transform.position = boundingBox.coordinates [1];
-			}
-
-		} else {
-			handles.RotateSide1.SetActive (false);
-		}
-
-		//handles.RotateSide2.transform.position = 0.5f * boundingBox.coordinates[2] + 0.5f * boundingBox.coordinates[6];
-		if (closesBBcorner == boundingBox.coordinates [2] || closesBBcorner == boundingBox.coordinates [6]) {			
-			handles.RotateSide2.SetActive (showRotationHandles);
-
-			if (closesBBcorner == boundingBox.coordinates [2]){
-				handles.RotateSide2.transform.position = boundingBox.coordinates [6];
-			} else {
-				handles.RotateSide2.transform.position = boundingBox.coordinates [2];
-			}
-		} else {
-			handles.RotateSide2.SetActive (false);
-		}
-
-		//handles.RotateSide3.transform.position = 0.5f * boundingBox.coordinates[3] + 0.5f * boundingBox.coordinates[7];
-		if (closesBBcorner == boundingBox.coordinates [3] || closesBBcorner == boundingBox.coordinates [7]) {			
-			handles.RotateSide3.SetActive (showRotationHandles);
-
-			if (closesBBcorner == boundingBox.coordinates [3]){
-				handles.RotateSide3.transform.position = boundingBox.coordinates [7];
-			} else {
-				handles.RotateSide3.transform.position = boundingBox.coordinates [3];
-			}
-		} else {
-			handles.RotateSide3.SetActive (false);
-		}
-
-		handles.NonUniformScaleTop.transform.position = GetBoundingBoxTopCenter ();
-		handles.NonUniformScaleBottom.transform.position = GetBoundingBoxBottomCenter ();
-
-		handles.NonUniformScaleFront.transform.position = GetBoundingBoxFrontCenter ();
-		handles.NonUniformScaleBack.transform.position = GetBoundingBoxBackCenter ();
-
-		handles.NonUniformScaleLeft.transform.position = GetBoundingBoxLeftCenter ();
-		handles.NonUniformScaleRight.transform.position = GetBoundingBoxRightCenter ();
-
+		DrawConnectingLines ();
     }
+
+	public void DrawConnectingLines(){
+
+
+		/*
+		 * 
+		 * Vector3 bbCenter = GetBoundingBoxCenter ();
+
+		if (!ProModeMananager.Instance.beginnersMode) {		
+			//connectingLinesHandles.ClearLines ();
+				
+			// draw new lines
+			connectingLinesHandles.EnhancedDrawLinesWorldCoordinate (new Vector3[] {
+				handles.NonUniformScaleFront.transform.position,
+				handles.NonUniformScaleBack.transform.position
+			}, 0, handles.NonUniformScaleFront.GetComponent<handle> ().normalColor);
+
+			connectingLinesHandles.EnhancedDrawLinesWorldCoordinate (new Vector3[] {
+				handles.NonUniformScaleLeft.transform.position,
+				handles.NonUniformScaleRight.transform.position
+			}, 2, handles.NonUniformScaleLeft.GetComponent<handle> ().normalColor);
+
+			connectingLinesHandles.EnhancedDrawLinesWorldCoordinate (new Vector3[] {
+				handles.NonUniformScaleTop.transform.position,
+				handles.NonUniformScaleBottom.transform.position
+			}, 4, handles.YMovement.GetComponent<handle> ().normalColor);
+
+			connectingLinesHandles.EnhancedDrawLinesWorldCoordinate (new Vector3[] {
+				handles.YMovement.transform.GetChild (0).position,
+				bbCenter
+			}, 6, Color.white);
+		} else {
+				connectingLinesHandles.EnhancedDrawLinesWorldCoordinate (new Vector3[] {
+				handles.YMovement.transform.GetChild (0).position,
+				bbCenter
+			}, 0, Color.white);
+		}
+
+		*/
+
+
+		/*
+
+		Vector3 topElement = handles.YMovement.transform.GetChild(0).transform.position;
+
+		if (!handles.rotationHandlesvisible) {
+			connectingLinesHandles.EnhancedDrawLinesWorldCoordinate (new Vector3[] {
+				topElement,
+				GetBoundingBoxTopCenterWorld()
+			}, 0, new Color(1f,1f,1f,0.2f));
+		} else {
+			connectingLinesHandles.EnhancedDrawLinesWorldCoordinate (new Vector3[] {
+				topElement,
+				handles.ToggleRotateOnOff.transform.position
+			}, 0, new Color(1f,1f,1f,0.2f));
+		}
+
+		*/
+
+	}
 
     public void RotateHandles()
     {
 		Vector3 currentBBCenter = GetBoundingBoxCenter ();
 
+		// frustum
 		handles.faceTopScale.transform.rotation = Quaternion.LookRotation (handles.faceTopScale.transform.position - transform.TransformPoint (topFace.center.coordinates));
 		handles.HeightTop.transform.rotation = Quaternion.LookRotation (transform.TransformDirection(topFace.normal));
 
 		handles.faceBottomScale.transform.rotation = Quaternion.LookRotation (handles.faceBottomScale.transform.position -  transform.TransformPoint (bottomFace.center.coordinates));
 		handles.HeightBottom.transform.rotation = Quaternion.LookRotation(transform.TransformDirection(bottomFace.normal));
 
-        // use Bounding Box to rotate rotation Handles
-        handles.RotateUp0.transform.rotation = Quaternion.LookRotation(boundingBox.coordinates[0] - boundingBox.coordinates[1]);
-        handles.RotateUp1.transform.rotation = Quaternion.LookRotation(boundingBox.coordinates[1] - boundingBox.coordinates[2]);
-        handles.RotateUp2.transform.rotation = Quaternion.LookRotation(boundingBox.coordinates[2] - boundingBox.coordinates[3]);
-        handles.RotateUp3.transform.rotation = Quaternion.LookRotation(boundingBox.coordinates[3] - boundingBox.coordinates[0]);
 
-        handles.RotateDown0.transform.rotation = Quaternion.LookRotation(boundingBox.coordinates[4] - boundingBox.coordinates[5]);
-        handles.RotateDown1.transform.rotation = Quaternion.LookRotation(boundingBox.coordinates[5] - boundingBox.coordinates[6]);
-        handles.RotateDown2.transform.rotation = Quaternion.LookRotation(boundingBox.coordinates[6] - boundingBox.coordinates[7]);
-        handles.RotateDown3.transform.rotation = Quaternion.LookRotation(boundingBox.coordinates[7] - boundingBox.coordinates[4]);
-
-        handles.RotateSide0.transform.rotation = Quaternion.LookRotation(boundingBox.coordinates[0] - boundingBox.coordinates[4]);
-        handles.RotateSide1.transform.rotation = Quaternion.LookRotation(boundingBox.coordinates[1] - boundingBox.coordinates[5]);
-        handles.RotateSide2.transform.rotation = Quaternion.LookRotation(boundingBox.coordinates[2] - boundingBox.coordinates[6]);
-        handles.RotateSide3.transform.rotation = Quaternion.LookRotation(boundingBox.coordinates[3] - boundingBox.coordinates[7]);
-			
-		// rotate handles  to have arrows around object
-		handles.RotateUp0.transform.RotateAround(boundingBox.coordinates[0] - boundingBox.coordinates[1], Vector3.AngleBetween(handles.RotateUp0.transform.up, handles.RotateUp0.transform.position - currentBBCenter));
-		handles.RotateUp1.transform.RotateAround(boundingBox.coordinates[1] - boundingBox.coordinates[2], Vector3.AngleBetween(handles.RotateUp1.transform.up, handles.RotateUp1.transform.position - currentBBCenter));
-		handles.RotateUp2.transform.RotateAround(boundingBox.coordinates[2] - boundingBox.coordinates[3], Vector3.AngleBetween(handles.RotateUp2.transform.up, handles.RotateUp2.transform.position - currentBBCenter));
-		handles.RotateUp3.transform.RotateAround(boundingBox.coordinates[3] - boundingBox.coordinates[0], Vector3.AngleBetween(handles.RotateUp3.transform.up, handles.RotateUp3.transform.position - currentBBCenter));
-
-		handles.RotateDown0.transform.RotateAround(boundingBox.coordinates[4] - boundingBox.coordinates[5], (-1f) * Vector3.AngleBetween(handles.RotateDown0.transform.right, handles.RotateDown0.transform.position - currentBBCenter));
-		handles.RotateDown1.transform.RotateAround(boundingBox.coordinates[5] - boundingBox.coordinates[6], (-1f) * Vector3.AngleBetween(handles.RotateDown1.transform.right, handles.RotateDown1.transform.position - currentBBCenter));
-		handles.RotateDown2.transform.RotateAround(boundingBox.coordinates[6] - boundingBox.coordinates[7], (-1f) * Vector3.AngleBetween(handles.RotateDown2.transform.right, handles.RotateDown2.transform.position - currentBBCenter));
-		handles.RotateDown3.transform.RotateAround(boundingBox.coordinates[7] - boundingBox.coordinates[4], (-1f) * Vector3.AngleBetween(handles.RotateDown3.transform.right, handles.RotateDown3.transform.position - currentBBCenter));
-
-		handles.RotateSide0.transform.RotateAround(boundingBox.coordinates[0] - boundingBox.coordinates[4], Vector3.AngleBetween(handles.RotateSide0.transform.right, handles.RotateSide0.transform.position - currentBBCenter));
-		handles.RotateSide1.transform.RotateAround(boundingBox.coordinates[1] - boundingBox.coordinates[5], Vector3.AngleBetween(handles.RotateSide1.transform.right, handles.RotateSide1.transform.position - currentBBCenter));
-		handles.RotateSide2.transform.RotateAround(boundingBox.coordinates[2] - boundingBox.coordinates[6], Vector3.AngleBetween(handles.RotateSide2.transform.right, handles.RotateSide2.transform.position - currentBBCenter));
-		handles.RotateSide3.transform.RotateAround(boundingBox.coordinates[3] - boundingBox.coordinates[7], Vector3.AngleBetween(handles.RotateSide3.transform.right, handles.RotateSide3.transform.position - currentBBCenter));
-   
 		// rotate non-uniform scaling handles
-		handles.NonUniformScaleTop.transform.rotation = Quaternion.LookRotation(transform.TransformDirection(Vector3.up));
-		handles.NonUniformScaleBottom.transform.rotation = Quaternion.LookRotation(transform.TransformDirection(Vector3.down));
 
-		handles.NonUniformScaleFront.transform.rotation = Quaternion.LookRotation(transform.TransformDirection(Vector3.back));
-		handles.NonUniformScaleBack.transform.rotation = Quaternion.LookRotation(transform.TransformDirection(Vector3.forward));
+		// global
 
-		handles.NonUniformScaleLeft.transform.rotation = Quaternion.LookRotation(transform.TransformDirection(Vector3.left));
-		handles.NonUniformScaleRight.transform.rotation = Quaternion.LookRotation(transform.TransformDirection(Vector3.right));
+		if (boundingBox.local == false) {
+			handles.NonUniformScaleTop.transform.rotation = Quaternion.LookRotation(transform.TransformDirection(Vector3.up));
+			handles.NonUniformScaleBottom.transform.rotation = Quaternion.LookRotation(transform.TransformDirection(Vector3.down));
+
+			handles.NonUniformScaleFront.transform.rotation = Quaternion.LookRotation(transform.TransformDirection(Vector3.back));
+			handles.NonUniformScaleBack.transform.rotation = Quaternion.LookRotation(transform.TransformDirection(Vector3.forward));
+
+			handles.NonUniformScaleLeft.transform.rotation = Quaternion.LookRotation(transform.TransformDirection(Vector3.left));
+			handles.NonUniformScaleRight.transform.rotation = Quaternion.LookRotation(transform.TransformDirection(Vector3.right));
+		}
+
+		// local
+		if (boundingBox.local == true) {
+			handles.NonUniformScaleTop.transform.rotation = Quaternion.LookRotation(transform.TransformDirection(coordinateSystem.transform.up));
+			handles.NonUniformScaleBottom.transform.rotation = Quaternion.LookRotation(transform.TransformDirection(coordinateSystem.transform.up * (-1f)));
+
+			handles.NonUniformScaleFront.transform.rotation = Quaternion.LookRotation(transform.TransformDirection(coordinateSystem.transform.forward  * (-1f)));
+			handles.NonUniformScaleBack.transform.rotation = Quaternion.LookRotation(transform.TransformDirection(coordinateSystem.transform.forward));
+
+			handles.NonUniformScaleLeft.transform.rotation = Quaternion.LookRotation(transform.TransformDirection(coordinateSystem.transform.right  * (-1f)));
+			handles.NonUniformScaleRight.transform.rotation = Quaternion.LookRotation(transform.TransformDirection(coordinateSystem.transform.right));
+		}
+
+
+		handles.YMovement.transform.rotation = Quaternion.LookRotation(transform.TransformDirection(Vector3.up));
+		handles.ToggleRotateOnOff.transform.rotation = Quaternion.LookRotation(transform.TransformDirection(Vector3.up));
+		handles.UniformScale.transform.rotation = Quaternion.LookRotation(transform.TransformDirection(Vector3.up));
+
+		handles.RotateAndTranslate.transform.rotation = Quaternion.LookRotation(transform.TransformDirection(coordinateSystem.transform.forward));
+
+		/*
+		Destroy (xAxis);
+		Destroy (yAxis);
+		Destroy (zAxis);
+
+		xAxis = Instantiate (handles.linesGO);
+		yAxis = Instantiate (handles.linesGO);
+		zAxis = Instantiate (handles.linesGO);
+
+		xAxis.GetComponent<Lines> ().DrawLinesWorldCoordinate (new Vector3[] {
+			handles.NonUniformScaleLeft.transform.position,
+			handles.NonUniformScaleRight.transform.position 
+		}, 0);
+
+		yAxis.GetComponent<Lines> ().DrawLinesWorldCoordinate (new Vector3[] {
+			handles.YMovement.transform.position,
+			handles.NonUniformScaleBottom.transform.position 
+		}, 0);
+
+		zAxis.GetComponent<Lines> ().DrawLinesWorldCoordinate (new Vector3[] {
+			handles.NonUniformScaleFront.transform.position,
+			handles.NonUniformScaleBottom.transform.position
+		}, 0);
+		*/
 	}
 
     public void InitiateHandles()
@@ -893,6 +1012,8 @@ public class ModelingObject : MonoBehaviour
     public void Select(Selection controller, Vector3 uiPosition)
     {		
 		if (!selected) {
+			//TouchElements.Instance.Show (handles.UniformScale.transform);
+
 			if (group != null)
 			{
 				group.SelectGroup(this);
@@ -904,14 +1025,22 @@ public class ModelingObject : MonoBehaviour
 				objectSelector.MoveAndFace (uiPosition);
 			}
 
+			idOfClosestVertToCamera = GetIdOfClosestVertex(Camera.main.transform.position, boundingBox.coordinates);
+
 			controller.AssignCurrentSelection(transform.gameObject);
 			handles.gameObject.transform.GetChild(0).gameObject.SetActive(true);
 
 			UiCanvasGroup.Instance.transform.position = uiPosition;
 			UiCanvasGroup.Instance.OpenMainMenu(this, controller);
 
+			if (WorldLocalToggle.Instance.local == useBoundingBoxWorld) {
+				ToggleLocalGlobalBB ();
+			}
+
 			//ShowOutline(true);
 			ShowBoundingBox (true);
+
+		//	Camera.main.gameObject.GetComponent<maxCamera> ().target = transform;
 		}     
 
 		selected = true;
@@ -920,6 +1049,7 @@ public class ModelingObject : MonoBehaviour
     public void DeSelect(Selection controller)
     {	
 		handles.DisableHandles();
+		TouchElements.Instance.SetRotationToggleInActive ();
 
 		if (selected) {			
 			if (group != null)
@@ -930,9 +1060,15 @@ public class ModelingObject : MonoBehaviour
 			selected = false;
 			//ShowOutline(false);
 
-			objectSelector.DeSelect (controller);
+			//objectSelector.DeSelect (controller);
 
 			controller.DeAssignCurrentSelection(transform.gameObject);
+
+		//	Camera.main.gameObject.GetComponent<maxCamera> ().target = GameObject.Find("StageScaler").transform;
+
+			if (!EventSystem.current.IsPointerOverGameObject ()) {
+				TouchElements.Instance.Hide ();
+			}
 		}
 
 		selected = false;
@@ -945,25 +1081,67 @@ public class ModelingObject : MonoBehaviour
 		boundingBox.coordinates = new Vector3[8];
 
         // get highest and lowest values for x,y,z
-		Vector3 minima = GetBoundingBoxMinima();
-		Vector3 maxima = GetBoundingBoxMaxima();
+		Vector3 minima = GetBoundingBoxMinima(boundingBox.local);
+		Vector3 maxima = GetBoundingBoxMaxima(boundingBox.local);
 
         // set all points
-		boundingBox.coordinates[0] = transform.TransformPoint (new Vector3(maxima.x, maxima.y, maxima.z));
-		boundingBox.coordinates[1] = transform.TransformPoint (new Vector3(maxima.x, maxima.y, minima.z));
-		boundingBox.coordinates[2] = transform.TransformPoint (new Vector3(minima.x, maxima.y, minima.z));
-		boundingBox.coordinates[3] = transform.TransformPoint (new Vector3(minima.x, maxima.y, maxima.z));
+		if (!boundingBox.local) {
+			minima = new Vector3 (minima.x, Mathf.Max (-0.3f, minima.y), minima.z);
+			maxima = new Vector3 (maxima.x, Mathf.Max (-0.3f, maxima.y), maxima.z);
 
-		boundingBox.coordinates[4] = transform.TransformPoint (new Vector3(maxima.x, minima.y, maxima.z));
-		boundingBox.coordinates[5] = transform.TransformPoint (new Vector3(maxima.x, minima.y, minima.z));
-		boundingBox.coordinates[6] = transform.TransformPoint (new Vector3(minima.x, minima.y, minima.z));
-		boundingBox.coordinates[7] = transform.TransformPoint (new Vector3(minima.x, minima.y, maxima.z));
+			boundingBox.coordinates [0] = transform.TransformPoint (new Vector3 (maxima.x, maxima.y, maxima.z));
+			boundingBox.coordinates [1] = transform.TransformPoint (new Vector3 (maxima.x, maxima.y, minima.z));
+			boundingBox.coordinates [2] = transform.TransformPoint (new Vector3 (minima.x, maxima.y, minima.z));
+			boundingBox.coordinates [3] = transform.TransformPoint (new Vector3 (minima.x, maxima.y, maxima.z));
+
+			boundingBox.coordinates [4] = transform.TransformPoint (new Vector3 (maxima.x, minima.y, maxima.z));
+			boundingBox.coordinates [5] = transform.TransformPoint (new Vector3 (maxima.x, minima.y, minima.z));
+			boundingBox.coordinates [6] = transform.TransformPoint (new Vector3 (minima.x, minima.y, minima.z));
+			boundingBox.coordinates [7] = transform.TransformPoint (new Vector3 (minima.x, minima.y, maxima.z));
+		} else {
+			boundingBox.coordinates [0] = coordinateSystem.transform.TransformPoint (new Vector3 (maxima.x, maxima.y, maxima.z));
+			boundingBox.coordinates [1] = coordinateSystem.transform.TransformPoint (new Vector3 (maxima.x, maxima.y, minima.z));
+			boundingBox.coordinates [2] = coordinateSystem.transform.TransformPoint (new Vector3 (minima.x, maxima.y, minima.z));
+			boundingBox.coordinates [3] = coordinateSystem.transform.TransformPoint (new Vector3 (minima.x, maxima.y, maxima.z));
+
+			boundingBox.coordinates [4] = coordinateSystem.transform.TransformPoint (new Vector3 (maxima.x, minima.y, maxima.z));
+			boundingBox.coordinates [5] = coordinateSystem.transform.TransformPoint (new Vector3 (maxima.x, minima.y, minima.z));
+			boundingBox.coordinates [6] = coordinateSystem.transform.TransformPoint (new Vector3 (minima.x, minima.y, minima.z));
+			boundingBox.coordinates [7] = coordinateSystem.transform.TransformPoint (new Vector3 (minima.x, minima.y, maxima.z));
+		}
     }
+
+	public void CalculateBoundingBoxWorld()
+	{
+		boundingBoxWorld.coordinates = new Vector3[8];
+
+		// get highest and lowest values for x,y,z
+		Vector3 minima = GetBoundingBoxMinima(boundingBoxWorld.local);
+		Vector3 maxima = GetBoundingBoxMaxima(boundingBoxWorld.local);
+
+		minima = new Vector3 (minima.x, Mathf.Max (-0.3f, minima.y), minima.z);
+		maxima = new Vector3 (maxima.x, Mathf.Max (-0.3f, maxima.y), maxima.z);
+
+		boundingBoxWorld.coordinates [0] = transform.TransformPoint (new Vector3 (maxima.x, maxima.y, maxima.z));
+		boundingBoxWorld.coordinates [1] = transform.TransformPoint (new Vector3 (maxima.x, maxima.y, minima.z));
+		boundingBoxWorld.coordinates [2] = transform.TransformPoint (new Vector3 (minima.x, maxima.y, minima.z));
+		boundingBoxWorld.coordinates [3] = transform.TransformPoint (new Vector3 (minima.x, maxima.y, maxima.z));
+
+		boundingBoxWorld.coordinates [4] = transform.TransformPoint (new Vector3 (maxima.x, minima.y, maxima.z));
+		boundingBoxWorld.coordinates [5] = transform.TransformPoint (new Vector3 (maxima.x, minima.y, minima.z));
+		boundingBoxWorld.coordinates [6] = transform.TransformPoint (new Vector3 (minima.x, minima.y, minima.z));
+		boundingBoxWorld.coordinates [7] = transform.TransformPoint (new Vector3 (minima.x, minima.y, maxima.z));
+	}
+
+
 
 	public void ShowBoundingBox(bool checkForGroup)
     {
 		CalculateBoundingBox ();
-		boundingBox.DrawBoundingBox ();
+
+		if (!handles.rotationHandlesvisible) {
+			boundingBox.DrawBoundingBox ();
+		}
 
 		if (group != null && checkForGroup) {
 			group.DrawBoundingBox ();
@@ -1031,17 +1209,17 @@ public class ModelingObject : MonoBehaviour
 			lastPositionController = controllerForMovement.pointOfCollisionGO.transform.position;
 			initialPositionController = controller.pointOfCollisionGO.transform.position;
 			initialDistanceCollisionGOModelingObject = initialPositionController - transform.position;
-			PositionOnMovementStart = 0.25f * boundingBox.coordinates[4] + 0.25f * boundingBox.coordinates[5] + 0.25f * boundingBox.coordinates[6] + 0.25f * boundingBox.coordinates[7];
+			PositionOnMovementStart = 0.25f * boundingBoxWorld.coordinates[4] + 0.25f * boundingBoxWorld.coordinates[5] + 0.25f * boundingBoxWorld.coordinates[6] + 0.25f * boundingBoxWorld.coordinates[7];
 
 			bottomFace.center.possibleSnappingVertexBundle = null;
-			objectSelector.HideSelectionButton ();
+			//objectSelector.HideSelectionButton ();
 			//DisplayOutlineOfGroundFace ();
 
 			initialCoordinatesBoundingBox = new Vector3[4];
 
 			for (int j = 0; j < 4; j++)
 			{
-				initialCoordinatesBoundingBox[j] = boundingBox.coordinates[j+4];
+				initialCoordinatesBoundingBox[j] = boundingBoxWorld.coordinates[j+4];
 			}
 
 			// disable collider of object when moving
@@ -1097,11 +1275,6 @@ public class ModelingObject : MonoBehaviour
 		meshCollider.enabled = true;
 		outOfLibrary = false;
 
-		if (controller.currentSettingSelectionMode == Selection.settingSelectionMode.SettingsButton) {
-			if (!selected) {
-				handles.DisableHandles();
-			}
-		}
 	}
 
 	public void DisplayOutlineOfGroundFace(){
@@ -1299,18 +1472,36 @@ public class ModelingObject : MonoBehaviour
 	public void ScaleNonUniform(float newScale, Vector3 direction, handle.handleType typeOfHandle, Vector3 centerOfScaling){		
 		
 		// here we need to adjust scaling so that the outcome is in grid
+
+		// this is the hack why it does not work the other way
 		Vector3 scaling = (direction * (newScale)) + Vector3.one - direction;
+
 		Matrix4x4 scalingMatrix = Matrix4x4.TRS (Vector3.zero, Quaternion.Euler(0f,0f,0f), scaling);
 
-		// go through all points
-		for (int i = 0; i < topFace.vertexBundles.Length; i++) {
-			Vector3 newPoint = scalingMatrix.MultiplyPoint3x4 (topFace.vertexBundles [i].coordinates - centerOfScaling);
-			topFace.vertexBundles [i].coordinates = newPoint + centerOfScaling;
-		}
+		if (boundingBox.local) {
+			
+			// go through all points
+			for (int i = 0; i < topFace.vertexBundles.Length; i++) {
+				Vector3 newPoint = scalingMatrix.MultiplyPoint3x4 (coordinateSystem.transform.InverseTransformPoint (transform.TransformPoint (topFace.vertexBundles [i].coordinates - centerOfScaling)));
+				topFace.vertexBundles [i].coordinates = transform.InverseTransformPoint (coordinateSystem.transform.TransformPoint (newPoint)) + centerOfScaling;
+			}
 
-		for (int i = 0; i < bottomFace.vertexBundles.Length; i++) {
-			Vector3 newPoint = scalingMatrix.MultiplyPoint3x4 (bottomFace.vertexBundles [i].coordinates - centerOfScaling);
-			bottomFace.vertexBundles [i].coordinates = newPoint + centerOfScaling;
+			for (int i = 0; i < bottomFace.vertexBundles.Length; i++) {
+				Vector3 newPoint = scalingMatrix.MultiplyPoint3x4 (coordinateSystem.transform.InverseTransformPoint (transform.TransformPoint (bottomFace.vertexBundles [i].coordinates - centerOfScaling)));
+				bottomFace.vertexBundles [i].coordinates = transform.InverseTransformPoint (coordinateSystem.transform.TransformPoint (newPoint)) + centerOfScaling;
+			}
+
+		} else {
+			
+			for (int i = 0; i < topFace.vertexBundles.Length; i++) {
+				Vector3 newPoint = scalingMatrix.MultiplyPoint3x4 (topFace.vertexBundles [i].coordinates - centerOfScaling);
+				topFace.vertexBundles [i].coordinates = newPoint + centerOfScaling;
+			}
+
+			for (int i = 0; i < bottomFace.vertexBundles.Length; i++) {
+				Vector3 newPoint = scalingMatrix.MultiplyPoint3x4 (bottomFace.vertexBundles [i].coordinates - centerOfScaling);
+				bottomFace.vertexBundles [i].coordinates = newPoint + centerOfScaling;
+			}
 		}
 
 		for (int i = 0; i < faces.Length; i++) {
@@ -1320,15 +1511,22 @@ public class ModelingObject : MonoBehaviour
 		topFace.UpdateSpecialVertexCoordinates ();
 		bottomFace.UpdateSpecialVertexCoordinates ();
 
+		if (complexObject.transform.childCount != 0) {
+			complexObject.transform.GetChild(0).localScale = complexObject.transform.GetChild(0).localScale * newScale;
+		}
+
 		CalculateBoundingBox ();
 		PositionHandles (true);
 		RotateHandles ();
 	}
 
 
-	// adapt this to be also used for non uniform scaling!!!
+
     public void ScaleBy(float newScale, bool initiater)
     {     
+
+		Debug.Log ("Scale it!!!");
+
 		// first calculate scaling with top center
 		Vector3 newBoundingBoxCenterRight = GetBoundingBoxCenter() + newScale * (boundingBoxCenterToRightOnScalingBegin);
 
@@ -1455,6 +1653,12 @@ public class ModelingObject : MonoBehaviour
             faces[i].UpdateSpecialVertexCoordinates();
         }
 
+		coordinateSystem.transform.RotateAround (coordinateSystem.transform.position, angleAxis, angle);
+
+		if (complexObject.transform.childCount != 0) {
+			complexObject.transform.GetChild(0).RotateAround (coordinateSystem.transform.position, angleAxis, angle);
+		}
+
         CalculateBoundingBox();
 		PositionHandles (false);
 		RotateHandles();
@@ -1493,6 +1697,24 @@ public class ModelingObject : MonoBehaviour
     }
 
 
+	public Vector3 GetBoundingBoxBottomCenterWorld()
+	{ 
+		CalculateBoundingBoxWorld ();
+		Vector3 boundingBoxBottomCenter = 0.25f * boundingBoxWorld.coordinates [4] + 0.25f * boundingBoxWorld.coordinates [5] + 0.25f * boundingBoxWorld.coordinates [6] + 0.25f * boundingBoxWorld.coordinates [7];
+		return boundingBoxBottomCenter;
+	}
+
+
+	public Vector3 GetBoundingBoxTopCenterWorld()
+	{ 
+		CalculateBoundingBoxWorld ();
+		Vector3 boundingBoxBottomCenter = 0.25f * boundingBoxWorld.coordinates [0] + 0.25f * boundingBoxWorld.coordinates [1] + 0.25f * boundingBoxWorld.coordinates [2] + 0.25f * boundingBoxWorld.coordinates [3];
+		return boundingBoxBottomCenter;
+	}
+
+
+
+
 	public Vector3 GetBoundingBoxBottomCenter()
 	{ 
 		CalculateBoundingBox ();
@@ -1507,6 +1729,7 @@ public class ModelingObject : MonoBehaviour
 		Vector3 boundingBoxBottomCenter = 0.25f * boundingBox.coordinates [0] + 0.25f * boundingBox.coordinates [1] + 0.25f * boundingBox.coordinates [2] + 0.25f * boundingBox.coordinates [3];
 		return boundingBoxBottomCenter;
 	}
+
 
 	public Vector3 GetBoundingBoxFrontCenter()
 	{ 
@@ -1542,14 +1765,65 @@ public class ModelingObject : MonoBehaviour
 		return boundingBoxCenter;
 	}
 
+	public Vector3 GetBoundingBoxCenterWorld()
+	{
+		Vector3 boundingBoxCenter = 0.5f * GetBoundingBoxBottomCenterWorld () + 0.5f * GetBoundingBoxTopCenterWorld ();
+		return boundingBoxCenter;
+	}
+
+
+
+	public int[] GetThreeAdjacentCorners(int id, bool local){
+
+		int[] xyz = new int[3];
+
+		Vector3 corner = coordinateSystem.transform.InverseTransformPoint(boundingBox.coordinates [id]);
+
+		if (!local) {
+			corner = boundingBox.coordinates [id];
+		}
+
+		for (int i=0; i < boundingBox.coordinates.Length; i++){
+			
+			if (i != id) {
+				
+				Vector3 current = coordinateSystem.transform.InverseTransformPoint(boundingBox.coordinates [i]);
+
+				if (!local) {
+					current = boundingBox.coordinates [i];
+				}
+
+				if (Mathf.Abs(current.y-corner.y) < 0.01f && Mathf.Abs(current.z-corner.z) < 0.01f) {
+		
+					xyz [0] = i;
+				}
+
+				if (Mathf.Abs(current.x-corner.x) < 0.01f && Mathf.Abs(current.z-corner.z) < 0.01f) {
+
+					xyz [1] = i;
+				}
+
+				if (Mathf.Abs(current.x-corner.x) < 0.01f && Mathf.Abs(current.y-corner.y) < 0.01f) {
+		
+					xyz [2] = i;
+				}
+			}
+		}
+
+		return xyz;
+	}
   
-	public Vector3 GetBoundingBoxMinima()
+	public Vector3 GetBoundingBoxMinima(bool local)
 	{
 		Vector3 minima = new Vector3 (9999f, 9999f, 9999f);
 
 		for (int i = 0; i < topFace.vertexBundles.Length; i++)
 		{
-			Vector3 current = topFace.vertexBundles[i].coordinates;
+			if (!local) {
+				current = topFace.vertexBundles [i].coordinates;
+			} else {
+				current = coordinateSystem.transform.InverseTransformPoint(transform.TransformPoint(topFace.vertexBundles [i].coordinates));					
+			}
 
 			if (current.x < minima.x) {
 				minima.x = current.x;
@@ -1567,7 +1841,11 @@ public class ModelingObject : MonoBehaviour
 
 		for (int i = 0; i < bottomFace.vertexBundles.Length; i++)
 		{
-			Vector3 current = bottomFace.vertexBundles[i].coordinates;
+			if (!local) {
+				current = bottomFace.vertexBundles [i].coordinates;
+			} else {
+				current = coordinateSystem.transform.InverseTransformPoint(transform.TransformPoint(bottomFace.vertexBundles [i].coordinates));					
+			}
 
 			if (current.x < minima.x) {
 				minima.x = current.x;
@@ -1586,13 +1864,17 @@ public class ModelingObject : MonoBehaviour
 		return minima;
 	}
 
-	public Vector3 GetBoundingBoxMaxima()
+	public Vector3 GetBoundingBoxMaxima(bool local)
 	{
 		Vector3 maxima = new Vector3 (-9999f, -9999f, -9999f);
 
 		for (int i = 0; i < topFace.vertexBundles.Length; i++)
 		{
-			Vector3 current = topFace.vertexBundles[i].coordinates;
+			if (!local) {
+				current = topFace.vertexBundles [i].coordinates;
+			} else {
+				current = coordinateSystem.transform.InverseTransformPoint(transform.TransformPoint(topFace.vertexBundles [i].coordinates));					
+			}
 
 			if (current.x > maxima.x) {
 				maxima.x = current.x;
@@ -1610,7 +1892,11 @@ public class ModelingObject : MonoBehaviour
 
 		for (int i = 0; i < bottomFace.vertexBundles.Length; i++)
 		{
-			Vector3 current = bottomFace.vertexBundles[i].coordinates;
+			if (!local) {
+				current = bottomFace.vertexBundles [i].coordinates;
+			} else {
+				current = coordinateSystem.transform.InverseTransformPoint(transform.TransformPoint(bottomFace.vertexBundles [i].coordinates));					
+			}
 
 			if (current.x > maxima.x) {
 				maxima.x = current.x;
@@ -1651,12 +1937,35 @@ public class ModelingObject : MonoBehaviour
 
 	}
 
+	public int GetIdOfClosestVertex(Vector3 position, Vector3[] coordinates){
+
+		Vector3 closestVertex = coordinates[0];
+
+		float shortestDistance = 999999f;
+		int idOfClosestVertex = 0;
+
+		for (int i = 0; i < coordinates.Length; i++)
+		{
+			Vector3 newCoordinate = coordinates[i];
+
+			if (Vector3.Distance(position, newCoordinate) < shortestDistance)
+			{
+				closestVertex = newCoordinate;
+				shortestDistance = Vector3.Distance(position, newCoordinate);
+				idOfClosestVertex = i;
+			}
+		}
+
+		return idOfClosestVertex;
+
+	}
+
 	public void RepositionScalers(){
 		topFace.RepositionScaler ();
 		bottomFace.RepositionScaler ();
 	}
 
-	public void EnterTrashArea(){		
+	public void EnterTrashArea(){	
 		handles.DisableHandles ();
 		HideBoundingBox (true);
 
@@ -1696,6 +2005,13 @@ public class ModelingObject : MonoBehaviour
 		transform.GetChild(0).GetComponent<Renderer>().material.color = currentColor;
 	}
 
+	public void InsertObject(GameObject newComplexObjectPrefab){
+		GameObject newComplexObject = Instantiate (newComplexObjectPrefab);
+		newComplexObject.transform.SetParent (complexObject.transform);
+		newComplexObject.transform.localPosition = new Vector3 (0f, -0.3f, 0f);
+
+		transform.GetChild (0).GetComponent<MeshRenderer> ().enabled = false;
+	}
 
 }
 		

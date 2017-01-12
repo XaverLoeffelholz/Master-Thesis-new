@@ -176,11 +176,13 @@ public class Face : MonoBehaviour {
     }
 
 	public void CalculateCenter(){
-		
+
 		Vector3 centerPositionNew = new Vector3 (0, 0, 0);
 
 		for (int i = 0; i < vertexBundles.Length; i++) {
-			centerPositionNew += vertexBundles [i].coordinates;
+			if (vertexBundles [i] != null) {
+				centerPositionNew += vertexBundles [i].coordinates;
+			}
 		}
 
 		centerPositionNew = centerPositionNew / vertexBundles.Length;

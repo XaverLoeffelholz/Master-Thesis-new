@@ -20,7 +20,7 @@ public class ObjectSelecter : MonoBehaviour {
         active = false;
 
         initialScale = transform.localScale;
-		initialScaleButtonGO = buttonGameObject.transform.localScale;
+		//initialScaleButtonGO = buttonGameObject.transform.localScale;
 
 		stageScaler = GameObject.Find ("StageScaler").transform;
     }
