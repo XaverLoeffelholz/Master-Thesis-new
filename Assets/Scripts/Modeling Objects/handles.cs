@@ -120,7 +120,7 @@ public class handles : MonoBehaviour {
 
 		TouchElements.Instance.PositionRotationButtons (connectedModelingObject);
 
-		if (!TouchElements.Instance.rotationToggleUIElement.rotationActive) {
+		if (!TouchElements.Instance.rotationToggleUIElement.active) {
 			TouchElements.Instance.SetRotationToggleActive ();
 		}
 

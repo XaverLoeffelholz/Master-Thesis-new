@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class NewUielement : MonoBehaviour {
 
-	public enum typeOfUiElement { UniformScale, YMovement, ToggleRotation, RotateX, RotateY, RotateZ };
+	public enum typeOfUiElement { UniformScale, YMovement, ToggleRotation, RotateX, RotateY, RotateZ, ToggleTranslation };
 	public typeOfUiElement typeOfThis;
 
 	public Selection SelectionManager;

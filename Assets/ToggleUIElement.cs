@@ -5,7 +5,7 @@ using UnityEngine.UI;
 
 public class ToggleUIElement : MonoBehaviour {
 
-	public bool rotationActive = false;
+	public bool active = false;
 
 	public Image toggleBG;
 	public RectTransform toggleObject;
@@ -21,14 +21,14 @@ public class ToggleUIElement : MonoBehaviour {
 	}
 
 	public void Toggle(){
-		rotationActive = !rotationActive;
+		active = !active;
 
-		if (rotationActive) {
+		if (active) {
 			toggleBG.gameObject.SetActive(true);
-			LeanTween.moveX (toggleObject, 20f, 0.1f).setEase (LeanTweenType.easeInOutQuad);
+			//LeanTween.moveX (toggleObject, 20f, 0.1f).setEase (LeanTweenType.easeInOutQuad);
 		} else {
 			toggleBG.gameObject.SetActive(false);
-			LeanTween.moveX (toggleObject, 0f, 0.1f).setEase (LeanTweenType.easeInOutQuad);
+			//LeanTween.moveX (toggleObject, 0f, 0.1f).setEase (LeanTweenType.easeInOutQuad);
 		}
 	}
 }

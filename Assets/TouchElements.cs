@@ -11,6 +11,8 @@ public class TouchElements : Singleton<TouchElements> {
 	public CanvasGroup RotationToggle;
 	public ToggleUIElement rotationToggleUIElement;
 
+	public CanvasGroup TranslationToggle;
+
 	public CanvasGroup RotateX;
 	public CanvasGroup RotateY;
 	public CanvasGroup RotateZ;
@@ -36,7 +38,7 @@ public class TouchElements : Singleton<TouchElements> {
 		if (currentTrans != null) {
 			transform.position = Camera.main.WorldToScreenPoint(currentTrans.position) + new Vector3(0f,25f,0f);
 
-			if (rotationToggleUIElement.rotationActive && selectionManager.currentSelection != null) {				
+			if (rotationToggleUIElement.active && selectionManager.currentSelection != null) {				
 				PositionRotationButtons (selectionManager.currentSelection.GetComponent<ModelingObject>());
 			}
 		}
@@ -105,7 +107,7 @@ public class TouchElements : Singleton<TouchElements> {
 	}
 
 	public void SetRotationToggleActive(){
-		if (!rotationToggleUIElement.rotationActive) {
+		if (!rotationToggleUIElement.active) {
 			rotationToggleUIElement.Toggle ();
 		}
 
@@ -120,7 +122,7 @@ public class TouchElements : Singleton<TouchElements> {
 	}
 
 	public void SetRotationToggleInActive(){
-		if (rotationToggleUIElement.rotationActive) {
+		if (rotationToggleUIElement.active) {
 			rotationToggleUIElement.Toggle ();
 		}
 
