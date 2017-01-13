@@ -460,7 +460,7 @@ public class handle : MonoBehaviour {
 
 	public void FinishUsingHandle(Selection controller){
 		if (typeOfHandle != handleType.Height && typeOfHandle != handleType.ScaleFace) {
-			if (handles.rotationHandlesvisible) {
+			if (handles.rotationHandlesvisible || (ModeChanger.Instance.modeChangerActive && ModeChanger.Instance.currentMode == ModeChanger.BuildingMode.RotationMode)) {
 				handles.ShowRotationHandles();
 			}
 			handles.ShowNonUniformScalingHandles();
@@ -859,17 +859,17 @@ public class handle : MonoBehaviour {
 					if (typeOfHandle != handleType.Rotation) {
 						LeanTween.scale (arrow, new Vector3 (initialSizeArrow.x * 1.1f, initialSizeArrow.y * 1.1f, initialSizeArrow.z * 1.1f), 0.06f);
 					}
-					//LeanTween.color (arrow, hoverColor, 0.06f);
+					LeanTween.color (arrow, hoverColor, 0.06f);
 				}
 
 				if (rotationArrow != null) {
-					//LeanTween.color (rotationArrow, hoverColor, 0.06f);
+					LeanTween.color (rotationArrow, hoverColor, 0.06f);
 				}
 
 				if (typeOfHandle == handleType.Rotation) {
-					//LeanTween.color (arrowPart1, hoverColor, 0.06f);
-					//LeanTween.color (arrowPart2, hoverColor, 0.06f);
-					//LeanTween.color (arrowPart3, hoverColor, 0.06f);
+					LeanTween.color (arrowPart1, hoverColor, 0.06f);
+					LeanTween.color (arrowPart2, hoverColor, 0.06f);
+					LeanTween.color (arrowPart3, hoverColor, 0.06f);
 					//handles.HideRotationHandlesExcept(this);
 				}
 

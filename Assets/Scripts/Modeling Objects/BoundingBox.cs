@@ -34,7 +34,7 @@ public class BoundingBox : MonoBehaviour {
 
 		Lines lines = linesGO.GetComponent<Lines> ();
 
-		/*
+
 		lines.DrawLinesWorldCoordinate(new Vector3[] {coordinates[0],coordinates[1],coordinates[2],coordinates[3]}, 0);
 		lines.DrawLinesWorldCoordinate(new Vector3[] {coordinates[4],coordinates[5],coordinates[6],coordinates[7]}, 4);
 
@@ -42,7 +42,7 @@ public class BoundingBox : MonoBehaviour {
 		lines.DrawLinesWorldCoordinate(new Vector3[] {coordinates[1],coordinates[5]},10);
 		lines.DrawLinesWorldCoordinate(new Vector3[] {coordinates[2],coordinates[6]},12);
 		lines.DrawLinesWorldCoordinate(new Vector3[] {coordinates[3],coordinates[7]},14);
-		*/
+
 		
 
 		// needs to be changed for local stuff

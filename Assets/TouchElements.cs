@@ -17,6 +17,7 @@ public class TouchElements : Singleton<TouchElements> {
 	public CanvasGroup RotateY;
 	public CanvasGroup RotateZ;
 	public CanvasGroup bubble;
+	public CanvasGroup bubbleSmall;
 
 	public bool visible;
 	public bool focused;
@@ -31,6 +32,12 @@ public class TouchElements : Singleton<TouchElements> {
 		visible = false;
 		focused = false;
 		allElememts.alpha = 0f;
+
+		if (ModeChanger.Instance.modeChangerActive) {
+			bubble.gameObject.SetActive (false);
+			bubbleSmall.gameObject.SetActive (true);
+			RotationToggle.gameObject.SetActive (false);
+		}
 	}
 	
 	// Update is called once per frame
@@ -68,6 +75,7 @@ public class TouchElements : Singleton<TouchElements> {
 		PositionRotationButtons(currentObj);
 
 		bubble.alpha = 1f;
+		bubbleSmall.alpha = 1f;
 		ScaleHandle.alpha = 1f;
 		YMoveHandle.alpha = 1f;
 		RotationToggle.alpha = 1f;
@@ -89,6 +97,7 @@ public class TouchElements : Singleton<TouchElements> {
 		//CanvasGroup keepButton; 
 		ShowRotationButtons (false);
 		bubble.alpha = 0f;
+		bubbleSmall.alpha = 0f;
 
 		if (visibleHandle != null) {
 			if (visibleHandle.typeOfHandle == handle.handleType.MoveY) {

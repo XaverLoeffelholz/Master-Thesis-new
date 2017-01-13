@@ -169,7 +169,7 @@ public class ModelingObject : MonoBehaviour
 			RotateHandles ();
 			handles.ShowNonUniformScalingHandles ();
 
-			if (handles.rotationHandlesvisible) {
+			if (handles.rotationHandlesvisible || (ModeChanger.Instance.modeChangerActive && ModeChanger.Instance.currentMode == ModeChanger.BuildingMode.RotationMode)) {
 				handles.ShowRotationHandles ();
 			}	
 		}
@@ -647,7 +647,7 @@ public class ModelingObject : MonoBehaviour
 		RotateHandles ();
 
 		handles.ShowNonUniformScalingHandles ();
-		if (handles.rotationHandlesvisible) {
+		if (handles.rotationHandlesvisible  || (ModeChanger.Instance.modeChangerActive && ModeChanger.Instance.currentMode == ModeChanger.BuildingMode.RotationMode)) {
 			handles.ShowRotationHandles ();
 		}
 
@@ -685,7 +685,7 @@ public class ModelingObject : MonoBehaviour
 		// get Closest bounding box coordinate 
 		//Vector3 closesBBcorner = GetPosOfClosestVertex(Camera.main.transform.position, boundingBox.coordinates);
 
-		if (handles.rotationHandlesvisible) {
+		if (handles.rotationHandlesvisible  || (ModeChanger.Instance.modeChangerActive && ModeChanger.Instance.currentMode == ModeChanger.BuildingMode.RotationMode)) {
 
 		//	int idOfClosestVertToCamera = GetIdOfClosestVertex(Camera.main.transform.position, boundingBox.coordinates);
 
@@ -1139,7 +1139,7 @@ public class ModelingObject : MonoBehaviour
     {
 		CalculateBoundingBox ();
 
-		if (!handles.rotationHandlesvisible) {
+		if (!handles.rotationHandlesvisible || (ModeChanger.Instance.modeChangerActive && ModeChanger.Instance.currentMode == ModeChanger.BuildingMode.RotationMode)) {
 			boundingBox.DrawBoundingBox ();
 		}
 
